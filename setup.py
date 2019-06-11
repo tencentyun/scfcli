@@ -26,16 +26,16 @@ def read_version():
     return re.search(r"__version__ = '([^']+)'", content).group(1)
 
 
-cmd_name = "tcf"
+cmd_name = "scf"
 
 setup(
-    name='tcf',
+    name='scf',
     version=read_version(),
     packages=find_packages(),
     description='This is a local tools for SCF.',
     long_description=io.open('README.md', encoding='utf-8').read(),
     author='Tencent Cloud',
-    url='https://github.com/tencentyun/tcfcli.git',
+    url='https://github.com/tencentyun/scfcli.git',
     maintainer_email="qcloud_middleware@qq.com",
     license="Apache License 2.0",
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*',
