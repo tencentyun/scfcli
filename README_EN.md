@@ -1,12 +1,12 @@
-# tcf cli
+# scf cli
 
 ------
 
-## Introduction of tcf
+## Introduction of scf cli
 
-tcf is short for tencent cloud function, It's a command-line tool for SCF (Serverless Cloud Function). With tcf cli, you can easily create, package and deploy your serverless project in minutes. Tcf can manage functions and events base on a configuration file named `template.yaml`.
+scf cli is a command-line tool for SCF (Serverless Cloud Function). With scf cli, you can easily create, package and deploy your serverless project in minutes. scf can manage functions and events base on a configuration file named `template.yaml`.
 
-tcf cli is an open-source project, you are welcomed to feedback by replying to [issues on Github](https://github.com/tencentyun/tcfcli/issues).
+scf cli is an open-source project, you are welcomed to feedback by replying to [issues on Github](https://github.com/tencentyun/scfcli/issues).
 
 ## Features
 
@@ -20,7 +20,7 @@ tcf cli is an open-source project, you are welcomed to feedback by replying to [
 
 ### Prerequisites
 
-Before installation of tcf, please make sure the following softwares are already installed.
+Before installation of scf cli, please make sure the following softwares are already installed.
 
 * Python 2.7+ or Python 3.6+
 * pip
@@ -28,29 +28,29 @@ Before installation of tcf, please make sure the following softwares are already
 * programming language you want to use (such as Node.js 8.9)
 
 
-#### Install tcf via pip
+#### Install scf cli via pip
 
-Install tcf by running  `pip install tcf`
-
-```bash
-$ pip install tcf
-```
-
-Verify that the tcf cli installed correctly by running `tcf --version`.
+Install scf by running  `pip install scf`
 
 ```bash
-$ tcf --version
-TCF CLI, version 0.1.0
+$ pip install scf
 ```
 
-### Configuring the tcf cli
+Verify that the scf cli installed correctly by running `scf --version`.
 
-For general use, the tcf configure command is the fastest way to set up your tcf cli.
+```bash
+$ scf --version
+scf CLI, version 0.1.0
+```
+
+### Configuring the scf cli
+
+For general use, the scf configure command is the fastest way to set up your scf cli.
 
 You can get in [Tencent Cloud Console](https://console.cloud.tencent.com/developer), then get SecretId and SecretKey in [CAM Console](https://console.cloud.tencent.com/cam/capi).
 
 ```bash
-$ tcf configure set --region ap-guangzhou --appid 1253970223 --secret-id AKIxxxxxxxxxx --secret-key uxxlxxxxxxxx
+$ scf configure set --region ap-guangzhou --appid 1253970223 --secret-id AKIxxxxxxxxxx --secret-key uxxlxxxxxxxx
 ```
 
 ### Init a Project
@@ -58,7 +58,7 @@ $ tcf configure set --region ap-guangzhou --appid 1253970223 --secret-id AKIxxxx
 Create a new project named `testscf` with runtime Node.js 8.9 by running the following command.
 
 ```bash
-$ tcf init --runtime nodejs8.9 --name testscf
+$ scf init --runtime nodejs8.9 --name testscf
 ```
 
 
@@ -69,10 +69,10 @@ Change into the newly created directory by running  `$ cd testscf`
 Invokes a Serverless Cloud Function without event. 
 
 ```bash
-$ tcf native invoke -t template.yaml --no-event
+$ scf native invoke -t template.yaml --no-event
 ```
 
-Note: Native invoke only support Node.js runtime by now. And you need to upgrade tcf cli version >= 0.2.0 . 
+Note: Native invoke only support Node.js runtime by now. And you need to upgrade scf cli version >= 0.2.0 . 
 
 ### Package the Project
 
@@ -81,16 +81,16 @@ By running command  `ls` , you can see the project included README, hello\_world
 Use this command when you want to package your project into a zip file.
 
 ```
-$ tcf package --template-file template.yaml
+$ scf package --template-file template.yaml
 ```
 By running command  `ls` again, you can see the project updated with  `deploy.yaml` file and a zip file named like  `32b29935-1ec1-11e9-be82-9801a7af1801.zip` 
 
 ### Deploy the Project
 
-Use this command when you have made changes to your functions, events in template.yaml or you simply want to deploy your project .
+Use this command when you have made changes to your functions, events in template.yaml or you simply want to deploy your project.
 
 ```bash
-$ tcf deploy --template-file deploy.yaml 
+$ scf deploy --template-file deploy.yaml 
 ```
 
-After that, you can go to [SCF Console](https://console.cloud.tencent.com/scf) to check whether the function is successfully deployed
+After that, you can go to [SCF Console](https://console.cloud.tencent.com/scf) to check whether the function is successfully deployed.

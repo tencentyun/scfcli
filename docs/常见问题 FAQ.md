@@ -2,7 +2,7 @@
 
 ###  setuptools版本过旧
 
-表现： error in tcf setup command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers
+表现： error in scf setup command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers
 
 解决方法：pip install -U setuptools
 
@@ -19,7 +19,7 @@
 
 表现：Error: You must provide a function identifier (function's Logical ID in the template). Possible options in your template: ['xxxB', 'xxxA']
 
-解决方法：调用 local invoke 命令时带有函数名，如 tcf local invoke -t template.yaml xxxA
+解决方法：调用 local invoke 命令时带有函数名，如 scf local invoke -t template.yaml xxxA
 
 
 ### 部署时出现 [SSL: CERTIFICATE_VERIFY_FAILED] 错误
