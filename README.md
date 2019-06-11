@@ -69,18 +69,18 @@ $ scf configure set --region ap-guangzhou --appid 1253970223 --secret-id AKIxxxx
 
 选择进入到合适的代码目录，例如 `cd ~`。
 
-通过执行如下命令，创建运行环境为 Node.js 8.9，名称为 testscf 的项目。
+通过执行如下命令，创建运行环境为 Node.js 8.9，名称为 testscf 的函数。
 
 ```bash
 $ scf init --runtime nodejs8.9 --name testscf
 ```
 
-此命令会在当前目录下创建 testscf 项目目录。
+此命令会在当前目录下创建 testscf 函数目录。
 
 
 ### 本地触发函数
 
-执行 `$ cd testscf` 进入项目目录。
+执行 `$ cd testscf` 进入函数目录。
 
 通过执行如下命令，本地模拟触发函数。
 
@@ -92,18 +92,18 @@ $ scf native invoke -t template.yaml --no-event
 
 ### 打包项目
 
-执行 `$ cd testscf` 进入项目目录。
+执行 `$ cd testscf` 进入函数目录。
 
-可以通过 `ls` 命令看到，当前项目目录下包括了 README 说明文档，hello_world 代码目录，template.yaml 配置文件。
+可以通过 `ls` 命令看到，当前项目目录下包括了 README 说明文档和 template.yaml 配置文件。
 
 通过执行如下打包命令：
 ```
 $ scf package --template-file template.yaml
 ```
 
-scf 会依据 template.yaml 文件内的描述，将 hello_world 代码目录内的代码生成部署程序包，并生成 deploy 配置文件。
+scf 会依据 template.yaml 文件内的描述，将函数目录内的代码生成部署程序包，并生成 deploy 配置文件。
 
-此时再次通过 `ls` 命令，可以看到项目目录内多了 deploy.yaml 部署用配置文件，以及类似 `32b29935-1ec1-11e9-be82-9801a7af1801.zip` 的部署包。
+此时再次通过 `ls` 命令，可以看到目录内多了 deploy.yaml 部署用配置文件，以及类似 `32b29935-1ec1-11e9-be82-9801a7af1801.zip` 的部署包。
 
 
 ### 部署云函数
