@@ -21,7 +21,7 @@ def invoke(template, namespace_identifier, function_identifier, event, no_event,
     \b
     Common usage:
         \b
-        $ tcf local invoke -t template.yaml
+        $ scf local invoke -t template.yaml
     '''
     do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
               docker_volume_basedir, docker_network, log_file, skip_pull_image, region)

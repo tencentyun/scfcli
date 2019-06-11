@@ -25,7 +25,7 @@ def invoke(template, namespace_identifier, function_identifier, env_vars, event,
     \b
     Common usage:
         \b
-        $ tcf native invoke -t template.yaml
+        $ scf native invoke -t template.yaml
     '''
     do_invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args)
 

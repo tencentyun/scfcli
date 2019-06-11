@@ -38,7 +38,7 @@ class LocalApiService(object):
                            stderr=self._stderr)
 
         self._show_routes(routes_list, port=self._port, host=self._host)
-        logger.info('Mounting finsh. You can browse to the above endpoints to invoke functions. Support modify function code online, only need to restart tcf when the template changed.')
+        logger.info('Mounting finsh. You can browse to the above endpoints to invoke functions. Support modify function code online, only need to restart scf when the template changed.')
 
         svc.listen()
 

@@ -66,10 +66,10 @@ def init(location, runtime, output_dir, name, namespace, no_input):
         \b
         Initializes a new scf using Python 3.6 default template runtime
         \b
-        $ tcf init --runtime python3.6
+        $ scf init --runtime python3.6
         \b
         Initializes a new scf project using custom template in a Git repository
         \b
-        $ tcf init --location gh:pass/demo-python
+        $ scf init --location gh:pass/demo-python
     """
     Init.do_cli(location, runtime, output_dir, name, namespace, no_input)

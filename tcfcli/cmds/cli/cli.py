@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefm
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="TCF CLI")
+@click.version_option(version=__version__, prog_name="SCF CLI")
 def cli():
     pass
 

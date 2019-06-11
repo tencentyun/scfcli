@@ -13,10 +13,10 @@ def generate_event():
         \b
         Generate a cmq event:
         \b
-        $ tcf local generate-event cmq notification  --owner  19911112
+        $ scf local generate-event cmq notification  --owner  19911112
         \b
         Use the | to send to invoke
         \b
-        tcf local generate-event cmq notification  --owner  19911112 | tcf local invoke -t template.yaml
+        scf local generate-event cmq notification  --owner  19911112 | scf local invoke -t template.yaml
     """
     pass
