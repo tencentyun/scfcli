@@ -88,7 +88,7 @@ $ scf init --runtime nodejs8.9 --name testscf
 $ scf native invoke -t template.yaml --no-event
 ```
 
-注：当前仅Node.js runtime支持该能力，并且需要升级scf CLI >= 0.2.0版本。为保证部署云端和本地运行的结果一致，建议本地安装的runtime版本和云端版本保持一致。例如，如在云端使用Node.js 8.9，则本机建议也安装Node.js 8.x版本。
+注：当前仅Node.js 及Python runtime支持该能力。为保证部署云端和本地运行的结果一致，建议本地安装的runtime版本和云端版本保持一致。例如，如在云端使用Node.js 8.9，则本机建议也安装Node.js 8.x版本。
 
 ### 打包项目
 
