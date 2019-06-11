@@ -1,0 +1,53 @@
+Resources:
+  {{cookiecutter.namespace}}:
+    Type: TencentCloud::Serverless::Namespace
+    {{cookiecutter.project_name}}:
+      Type: TencentCloud::Serverless::Function
+      Properties:
+        CodeUri: ./
+        Description: This is a template function
+        Environment:
+          Variables:
+            ENV_FIRST: env1
+            ENV_SECOND: env2
+        Handler: index.main_handler
+        MemorySize: 128
+        {%- if cookiecutter.runtime == 'php7' %}
+        Runtime: Php7
+        {%- elif cookiecutter.runtime == 'php5' %}
+        Runtime: Php5
+        {%- else %}
+        Runtime: Php7
+        {%- endif %}
+        Timeout: 3
+        #VpcConfig:
+        #    VpcId: 'vpc-qdqc5k2p'
+        #    SubnetId: 'subnet-pad6l61i'
+        #Events:
+        #    timer:
+        #        Type: Timer
+        #        Properties:
+        #            CronExpression: '*/5 * * * *'
+        #            Enable: True
+        #    cli-appid.cos.ap-beijing.myqcloud.com: # full bucket name
+        #        Type: COS
+        #        Properties:
+        #            Bucket: cli-appid.cos.ap-beijing.myqcloud.com
+        #            Filter:
+        #                Prefix: filterdir/
+        #                Suffix: .jpg
+        #            Events: cos:ObjectCreated:*
+        #            Enable: True
+        #    topic:            # topic name
+        #        Type: CMQ
+        #        Properties:
+        #            Name: qname
+        #    hello_world_apigw:  # ${FunctionName} + '_apigw'
+        #        Type: APIGW
+        #        Properties:
+        #            StageName: release
+        #            HttpMethod: ANY
+
+Globals:
+  Function:
+    Timeout: 10
