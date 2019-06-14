@@ -4,6 +4,7 @@ import os
 import click
 import subprocess
 import threading
+import signal
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.user_exceptions import InvokeContextException
@@ -91,14 +92,22 @@ class InvokeContext(object):
                 child.kill()
             except Exception:
                 pass
+
         try:
             child = subprocess.Popen(args=[self.cmd]+self.argv, env=self.env)
         except OSError:
             click.secho("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
             return
         timer = threading.Timer(self._runtime.timeout, timeout_handle, [child])
+
+        def signal_handler(sig, frame):
+            click.secho("Recv a signal, exit.")
+            child.kill()
+        signal.signal(signal.SIGINT, signal_handler)
+
         if not self._debug_context.is_debug:
             timer.start()
+
         child.wait()
         timer.cancel()
 
