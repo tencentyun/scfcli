@@ -1,4 +1,4 @@
-通过本地调试能力，scf CLI可以在本地的模拟环境中运行代码，发送模拟测试事件，并获取到函数代码的运行日志及耗时、内存占用等信息。
+Through local debugging capabilities, the SCF CLI can run code in a local simulation environment, send simulated test events, and get the running log of the function code and information such as time-consuming and memory usage.
 
 ## Dependent component
 
@@ -6,23 +6,23 @@ Local debugging native does not need to rely on Docker and ensure that the Node.
 
 ## Debug command
 
-scf cli通过 `native invoke` 子命令完成本地触发运行。scf 命令行工具将依据指定的函数模板配置文件，在本机的指定目录中运行相应代码，并通过指定的触发事件，实现在本地的云函数模拟运行。
+The scf cli completes the local trigger run by the `native invoke ` subcommand. The scf command line tool will run the corresponding cloud in the specified directory of the machine according to the specified function template configuration file, and implement the local cloud function simulation run through the specified trigger event.
 
 ### Parameter Description
 
 The parameters supported by the `scf native invoke` command are as follows:
 
-参数 | Required | 描述 | Example
+Parameter | Required | Description | Example
 --- | --- | --- | ---
 Event | no | The source of the file for the simulated test event, the file content must be in JSON format | Event.json
-Template | no | 项目描述配置文件的路径或文件名。默认为 template.yaml | Template.yaml
+Template | no | The path or file name of the configuration file. The default is template.yaml | Template.yaml
 Env-vars | no | The environment variable configuration when the function is running, you need to specify the environment variable configuration file, the content must be in JSON format. | Env.json
 Debug-port | no | The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port. | 3366
 Debug-args | no | The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts. | 
 
 The support option FUNCTION_IDENTIFIER is described as follows:
 
-参数 | Required | 描述 | Example
+Parameter | Required | Description | Example
 --- | --- | --- | ---
 FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if there are multiple function descriptions in the project description configuration file, you can use this parameter to specify the function to be debugged. | Hello_world
 
@@ -30,8 +30,8 @@ FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if
 
 The simulation event used to trigger the cloud function locally can be passed through the command pipeline of linux or passed through a file.
 
-- **通过命令管道传递：** `scf native invoke` 命令支持从命令行管道中接收事件。我们可以通过执行 `scf native generate-event` 命令生成事件并传递，形成例如 `scf native generate-event cos post | scf native invoke --template template.yaml` 的调试命令。我们也可以自行构造输出 JSON 格式内容并传递给 `scf native invoke` 命令，形成例如 `echo '{"test":"value"}' | scf native invoke --template template.yaml` 的调试命令。
-- **通过文件传递：**通过使用 `scf native invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf native invoke --template template.yaml --event event.json` 的调试命令。
+- **Passing through the command pipeline:** The {coded1}scf native invoke command supports receiving events from the command line pipeline. We can generate events and pass them by executing the `scf native generate-event` command to form a debug command such as `scf native generate-event cos post | scf native invoke --template template.yaml` . We can also construct the output JSON format content and pass it to the `scf native invoke` command to form a debug command such as `echo '{"test":"value"}' | scf native invoke --template template.yaml `.
+- {strong0}Passing the file: {/strong0} Specify the file containing the contents of the test simulation event by using the --event parameter of the `scf native invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf native invoke --template template.yaml --event event.json` .
 
 ### Use example
 
