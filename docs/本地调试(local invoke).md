@@ -3,11 +3,11 @@
 
 ## 依赖组件
 
-在运行本地调试前，需确保本地环境中已经安装并启动 Docker 。Docker 的安装及配置过程可以参考 [安装与配置](https://cloud.tencent.com/document/product/583/33449)。
+在运行本地调试前，需确保本地环境中已经安装并启动 Docker。Docker 的安装及配置过程可以参考 [安装与配置](https://cloud.tencent.com/document/product/583/33449)。
 
 ## 调试命令
 
-scf cli通过 `local invoke` 子命令完成本地触发运行。scf 命令行工具将依据指定的函数模板配置文件，启动容器实例，将代码目录挂载到容器实例的指定目录中，并通过指定的触发事件，运行代码，实现在本地的云函数模拟运行。
+scf cli 通过 `local invoke` 子命令完成本地触发运行。scf 命令行工具将依据指定的函数模板配置文件，启动容器实例，将代码目录挂载到容器实例的指定目录中，并通过指定的触发事件，运行代码，实现在本地的云函数模拟运行。
 
 ### 参数说明
 
@@ -37,13 +37,14 @@ scf cli通过 `local invoke` 子命令完成本地触发运行。scf 命令行�
 
 用于在本地触发云函数的模拟事件，可以通过linux 的命令管道传递，也可以通过文件传递。
 - **通过命令管道传递：** `scf local invoke` 命令支持从命令行管道中接收事件。我们可以通过执行 `scf local generate-event` 命令生成事件并传递，形成例如 `scf local generate-event cos post | scf local invoke --template template.yaml` 的调试命令。我们也可以自行构造输出 JSON 格式内容并传递给 `scf local invoke` 命令，形成例如 `echo '{"test":"value"}' | scf local invoke --template template.yaml ` 的调试命令。
-- **通过文件传递：**通过使用 `scf local invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf local invoke --template template.yaml --event event.json ` 的调试命令。 
+- **通过文件传递：** 通过使用 `scf local invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf local invoke --template template.yaml --event event.json ` 的调试命令。 
 
 ### 使用示例
 
 在通过 `scf init` 初始化得到的示例项目中，均带有已准备好的代码文件及模板配置文件。以该示例项目为例，假定在环境为 Python 2.7下，/Users/xxx/code/scf 目录中创建了一个 testproject 项目。
 
 我们通过命令管道传递 cos post 文件的模拟事件，触发函数运行。函数代码内容仅为打印 event 并返回 "hello world"。函数代码 /Users/xxx/code/scf/testproject/hello_world/main.py 示例如下：
+
 ```python
 # -*- coding: utf8 -*-
 
@@ -52,7 +53,9 @@ def main_handler(event, context):
     return "hello world"
 
 ```
+
 1. 通过执行 `scf local generate-event cos post | scf local invoke --template template.yaml` 命令，启动函数在本地运行：
+
 ```bash
 $ scf local generate-event cos post | scf local invoke --template template.yaml 
 read event from stdin
@@ -63,15 +66,20 @@ END RequestId: 766e10b0-fd41-42ed-acd4-c161833e3bd2
 REPORT RequestId: 766e10b0-fd41-42ed-acd4-c161833e3bd2 Duration: 0 ms Billed Duration: 100 ms Memory Size: 128 MB Max Memory Used: 15 MB
 "hello world"
 ```
+
 通过输出内容可以看到，函数运行完成后，输出了函数的打印日志、及函数返回内容。
+
 2. 生成如下的 event.json 测试事件文件：
+
 ```json
 {
 "key1":"value1",
 "key2":"value2"
 }
 ```
+
 3. 通过执行 `scf local invoke --template template.yaml --event event.json` 命令，启动函数在本地运行，并通过文件输出测试事件：
+
 ```bash
 $ scf local invoke --template template.yaml --event event.json 
 pull image ccr.ccs.tencentyun.com/scfrepo/scfcli:python3.6......
@@ -81,6 +89,7 @@ END RequestId: 4a06d73d-e716-4e58-bc5f-ecfc955d77bd
 REPORT RequestId: 4a06d73d-e716-4e58-bc5f-ecfc955d77bd Duration: 0 ms Billed Duration: 100 ms Memory Size: 128 MB Max Memory Used: 15 MB
 "hello world"
 ```
+
 通过输出内容可以看到，函数代码打印了测试事件，并返回了指定内容。
 
 
