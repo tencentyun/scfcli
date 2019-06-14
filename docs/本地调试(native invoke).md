@@ -31,23 +31,24 @@ scf cli通过 `native invoke` 子命令完成本地触发运行。scf 命令行�
 
 用于在本地触发云函数的模拟事件，可以通过linux 的命令管道传递，也可以通过文件传递。
 - **通过命令管道传递：** `scf native invoke` 命令支持从命令行管道中接收事件。我们可以通过执行 `scf native generate-event` 命令生成事件并传递，形成例如 `scf native generate-event cos post | scf native invoke --template template.yaml` 的调试命令。我们也可以自行构造输出 JSON 格式内容并传递给 `scf native invoke` 命令，形成例如 `echo '{"test":"value"}' | scf native invoke --template template.yaml ` 的调试命令。
-- **通过文件传递：**通过使用 `scf native invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf native invoke --template template.yaml --event event.json ` 的调试命令。 
+- **通过文件传递：** 通过使用 `scf native invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf native invoke --template template.yaml --event event.json ` 的调试命令。 
 
 ### 使用示例
 
 在通过 `scf init` 初始化得到的示例项目中，均带有已准备好的代码文件及模板配置文件。以该示例项目为例，假定在环境为 Node.js 8.9下，/Users/xxx/code/scf 目录中创建了一个 hello_world 项目。
 
 我们通过命令管道传递 cos post 文件的模拟事件，触发函数运行。函数代码内容仅为打印 event 并返回 "hello world"。函数代码 /Users/xxx/code/scf/testproject/hello_world/main.js 示例如下：
-```
 
+```
 'use strict';
 exports.main_handler = async (event, context, callback) => {
     console.log("%j", event);
     return "hello world"
 };
-
 ```
+
 1. 通过执行 `scf native generate-event cos post | scf native invoke --template template.yaml` 命令，启动函数在本地运行：
+
 ```bash
 Enter a event: [0m
 START RequestId: 3e3e71c9-dc56-1967-c0a3-3a454e2ce634
@@ -57,16 +58,20 @@ REPORT RequestId: 3e3e71c9-dc56-1967-c0a3-3a454e2ce634  Duration: 1.91 ms
 Billed Duration: 100 ms Memory Size: 128 MB     Max Memory Used: 20 MB
 "hello world"
 ```
+
 通过输出内容可以看到，函数在本地运行完成后，输出了函数的打印日志、及函数返回内容。
 
 2. 生成如下的 event.json 测试事件文件：
+
 ```json
 {
 "key1":"value1",
 "key2":"value2"
 }
 ```
+
 3. 通过执行 `scf native invoke --template template.yaml --event event.json` 命令，启动函数在本地运行，并通过文件输出测试事件：
+
 ```bash
 Enter a event: [0m
 START RequestId: 6d06b0cf-4cc9-1f76-5f92-1f5871ff110a
@@ -78,6 +83,7 @@ Billed Duration: 100 ms Memory Size: 128 MB     Max Memory Used: 20 MB
 
 "hello world"
 ```
+
 通过输出内容可以看到，函数代码打印了测试事件，并返回了指定内容。
 
 
