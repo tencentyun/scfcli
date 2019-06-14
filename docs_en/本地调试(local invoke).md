@@ -12,7 +12,7 @@ The scf cli completes the local trigger run by the `local invoke` subcommand. Th
 
 The parameters supported by the `scf local invoke` command are as follows:
 
-参数 | Required | 描述 | Example
+Parameter | Required | Description | Example
 --- | --- | --- | ---
 Event | no | The source of the file for the simulated test event, the file content must be in JSON format | Event.json
 Template | no | The project describes the path or file name of the configuration file. The default is template.yaml | Template.yaml
@@ -27,7 +27,7 @@ Skip-pull-image | no | Skip checking and pulling new container images |
 
 The support option FUNCTION_IDENTIFIER is described as follows:
 
-参数 | Required | 描述 | Example
+Parameter | Required | Description | Example
 --- | --- | --- | ---
 FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if there are multiple function descriptions in the project description configuration file, you can use this parameter to specify the function to be debugged. | Hello_world
 
@@ -36,7 +36,7 @@ FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if
 The simulation event used to trigger the cloud function locally can be passed through the command pipeline of linux or passed through a file.
 
 - **Passing through the command pipeline:** The `scf local invoke` command supports receiving events from the command line pipeline. We can generate events and pass them by executing the `scf local generate-event` command to form a debug command such as `scf local generate-event cos post | scf local invoke --template template.yaml `. We can also construct the output JSON format content and pass it to the `scf local invoke` command to form a debug command such as `echo '{"test":"value"}' | scf local invoke --template template.yaml` .
-- **通过文件传递：**通过使用 `scf local invoke` 命令的 `--event` 参数，指定包含有测试模拟事件内容的文件。文件内容必须为 JSON 数据结构，形成例如 `scf local invoke --template template.yaml --event event.json` 的调试命令。
+- {strong0} Passing the file: {/strong0} Specify the file containing the contents of the test simulation event by using the --event parameter of the `scf local invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf local invoke --template template.yaml --event event.json` .
 
 ### Use example
 
@@ -53,7 +53,7 @@ def main_handler(event, context):
 
 ```
 
-1. 通过执行 `scf local generate-event cos post | scf local invoke --template template.yaml` 命令，启动函数在本地运行：
+1. The startup function runs locally by executing the `scf local generate-event cos post | scf local invoke --template template.yaml ` command:
 
 ```bash
 $ scf local generate-event cos post | scf local invoke --template template.yaml 
@@ -66,8 +66,9 @@ REPORT RequestId: 766e10b0-fd41-42ed-acd4-c161833e3bd2 Duration: 0 ms Billed Dur
 "hello world"
 ```
 
-通过输出内容可以看到，函数运行完成后，输出了函数的打印日志、及函数返回内容。
-2. 生成如下的 event.json 测试事件文件：
+As you can see from the output, after the function finishes running, it outputs the print log of the function and the function return content. 
+
+2. Generate the following event.json test event file:
 
 ```json
 {
