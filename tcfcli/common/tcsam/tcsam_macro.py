@@ -27,6 +27,7 @@ class TcSamMacro(object):
     TrCMQ = "CMQ"
     TrCOS = "COS"
     TrTimer = "Timer"
+    TrCKafka = "Ckafka"
 
 
 
@@ -42,4 +43,6 @@ class TriggerMacro(object):
     Enable = "Enable"
     Name = "Name"
     Bucket = "Bucket"
-
+    Topic = "Topic"
+    MaxMsgNum = "MaxMsgNum"
+    Offset = "Offset"

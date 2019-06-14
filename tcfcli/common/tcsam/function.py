@@ -2,6 +2,7 @@ from .event import apigw_schema
 from .event import cmq_schema
 from .event import timer_schema
 from .event import cos_schema
+from .event import ckafka_schema
 from .tcsam_macro import TcSamMacro as macro
 
 func_schema = {
@@ -41,7 +42,7 @@ func_schema = {
                     "properties":{},
                     "additionalProperties": {
                         "type": "object",
-                        "oneOf": [apigw_schema, cos_schema, timer_schema, cmq_schema]
+                        "oneOf": [apigw_schema, cos_schema, timer_schema, cmq_schema, ckafka_schema]
                     }
 
                 }, 

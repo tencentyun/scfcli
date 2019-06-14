@@ -4,7 +4,6 @@ import os
 import click
 import subprocess
 import threading
-import signal
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.user_exceptions import InvokeContextException
@@ -100,15 +99,13 @@ class InvokeContext(object):
             return
         timer = threading.Timer(self._runtime.timeout, timeout_handle, [child])
 
-        def signal_handler(sig, frame):
-            click.secho("Recv a signal, exit.")
-            child.kill()
-        signal.signal(signal.SIGINT, signal_handler)
-
         if not self._debug_context.is_debug:
             timer.start()
-
-        child.wait()
+        try:
+            child.wait()
+        except KeyboardInterrupt:
+            child.kill()
+            click.secho("Recv a SIGINT, exit.")
         timer.cancel()
 
     @property

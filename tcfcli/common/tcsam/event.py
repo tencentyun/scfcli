@@ -19,9 +19,11 @@ apigw_schema = {
                 },
                 trmacro.IntegratedResp: {
                     "type": "boolean",
-                }
+                },
+                trmacro.Enable: {
+                    "enum": ["OPEN", "CLOSE", True, False]
+                },
             },
-            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -45,7 +47,6 @@ timer_schema = {
                 }   
             },
             "required": ["CronExpression"],
-            "additionalProperties": False
         },
     },
     "required": [macro.Type, macro.Properties],
@@ -62,9 +63,11 @@ cmq_schema = {
         macro.Properties: {
             "type": ["object", "null"],
             "properties": {
-                "Name": {"type": "string"}
+                "Name": {"type": "string"},
+                trmacro.Enable: {
+                    "enum": ["OPEN", "CLOSE", True, False]
+                },
             },
-            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -88,14 +91,38 @@ cos_schema = {
                         trmacro.Suffix: {"type": "string"}
                     }
                 },
-                "Bucket": {"type": "string"},
+                trmacro.Bucket: {"type": "string"},
                 macro.Events: {"type": "string"},
                 trmacro.Enable: {
                     "enum": ["OPEN", "CLOSE", True, False]
                 }
             },
-            "required": ["Events"],
-            "additionalProperties": False
+            "required": [macro.Events],
+        }
+    },
+    "required": [macro.Type, macro.Properties],
+    "additionalProperties": False
+}
+
+
+ckafka_schema = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "tcsam.ns.func.event.ckafka",
+    "type": "object",
+    "properties": {
+        macro.Type: {"const": macro.TrCKafka},
+        macro.Properties: {
+            "type": "object",
+            "properties": {
+                trmacro.Name: {"type": "string"},
+                trmacro.Topic: {"type": "string"},
+                trmacro.MaxMsgNum: {"type": "integer"},
+                trmacro.Offset: {"type": "string"},
+                trmacro.Enable: {
+                    "enum": ["OPEN", "CLOSE", True, False]
+                }
+            },
+            "required": [trmacro.Name, trmacro.Topic, trmacro.MaxMsgNum],
         }
     },
     "required": [macro.Type, macro.Properties],

@@ -102,8 +102,10 @@ class ScfClient(object):
         proper = trigger.get(tsmacro.Properties, {})
         if trigger_type == tsmacro.TrCOS and trmacro.Bucket in proper:
             req.TriggerName = proper[trmacro.Bucket]
-        if trigger_type == tsmacro.TrCMQ and trmacro.Name in proper:
+        if trigger_type in [tsmacro.TrCMQ] and trmacro.Name in proper:
             req.TriggerName = proper[trmacro.Name]
+        if trigger_type in [tsmacro.TrCKafka] and trmacro.Name in proper:
+            req.TriggerName = proper[trmacro.Name] + "-" + proper.get(trmacro.Topic)
         self._fill_trigger_req_desc(req, trigger_type, proper)
         enable = proper.get(trmacro.Enable)
         if isinstance(enable, bool):
@@ -141,6 +143,9 @@ class ScfClient(object):
         
         elif t == tsmacro.TrCOS:
             desc = {"event": proper.get(tsmacro.Events), "filter": proper.get(trmacro.Filter)}
+            desc = json.dumps(desc, separators=(',', ':'))
+        elif t == tsmacro.TrCKafka:
+            desc = {"maxMsgNum": proper.get(trmacro.MaxMsgNum), "offset": proper.get(trmacro.Offset)}
             desc = json.dumps(desc, separators=(',', ':'))
         else:
             raise Exception("Invalid trigger type:{}".format(str(t)))
