@@ -1,7 +1,7 @@
 import click
 import sys
 from tcfcli.common.template import Template
-from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException
+from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, DeployException
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
@@ -50,11 +50,12 @@ class Deploy(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("Deploy function '{name}' failure. Error: {e}.".format(name=func_name,
-                                                            e=s), fg="red")
+            
+            click.secho("Publish Failed", fg='red')
+            err_msg = "Deploy function '{name}' failure. Error: {e}.".format(name=func_name, e=s)
             if err.get_request_id():
-                click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
-            return
+                err_msg += " RequestId: {}".format(err.get_request_id().encode("UTF-8"))    
+            raise DeployException(err_msg)
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
         self._do_deploy_trigger(func, func_name, func_ns)
@@ -71,11 +72,12 @@ class Deploy(object):
                 else:
                     s = err.get_message().encode("UTF-8")
 
+                click.secho("Deploy trigger Failed.", fg="red")
                 click.secho(
                     "Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger,
-                                                            e=s), fg="red")
+                                                            e=s), err=True, fg="red")
                 if err.get_request_id():
-                    click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
+                    click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), err=True, fg="red")
                 continue
-            click.secho("Deploy trigger '{name}' success".format(name=trigger),fg="green")
+            click.secho("Deploy trigger '{name}' success".format(name=trigger), fg="green")
 
