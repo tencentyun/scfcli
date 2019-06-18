@@ -9,6 +9,7 @@ import signal
 import threading
 from contextlib import contextmanager
 
+from tcfcli.common.user_exceptions import InvokeException, TimeoutException
 from tcfcli.cmds.local.libs.docker.container import Container
 from tcfcli.common.user_exceptions import InvalidEnvParameters
 
@@ -33,12 +34,16 @@ class LocalRuntime(object):
         'java8',
     ]
 
+    _thread_err_msg = ""
+
     def __init__(self, func_config, env_vars=None, cwd=None, debug_options=None, container_manager=None):
         self._func_config = func_config
         self._env_vars = env_vars
         self._cwd = cwd
         self._debug_options = debug_options
         self._container_manager = container_manager
+
+        self._thread_err_msg = ""
 
         if self.get_runtime() not in self._RUNTIME_LIST:
             print(self.get_runtime())
@@ -77,12 +82,16 @@ class LocalRuntime(object):
             except KeyboardInterrupt:
                 click.secho('Abort function execution')
             except Exception as err:
-                click.secho('Invoke error:%s' % str(err))
+                click.secho('Invoke Failed.', fg="red")
+                raise InvokeException('Invoke error:%s' % str(err))
 
             finally:
                 if timer:
                     timer.cancel()
                 self._container.delete()
+
+            if self._thread_err_msg != "":
+                raise TimeoutException(self._thread_err_msg)
 
     def get_func_name(self):
         return self._func_config.name
@@ -265,7 +274,8 @@ class LocalRuntime(object):
             container.delete()
 
         def stop_container():
-            click.secho('Function "%s" timeout after %d seconds' % (self.get_func_name(), timeout))
+            click.secho('Function Timeout.', fg="red")
+            self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self.get_func_name(), timeout)
             container.delete()
 
         if isdebug:

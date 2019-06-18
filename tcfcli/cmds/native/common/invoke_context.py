@@ -6,7 +6,7 @@ import subprocess
 import threading
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
-from tcfcli.common.user_exceptions import InvokeContextException
+from tcfcli.common.user_exceptions import InvokeContextException, TimeoutException, UserException
 from tcfcli.common.user_exceptions import InvalidOptionValue
 from tcfcli.cmds.native.common.runtime import Runtime
 from tcfcli.cmds.native.common.debug_context import DebugContext
@@ -22,6 +22,8 @@ class InvokeContext(object):
         MacroRuntime.python27: "bootstrap.py",
         MacroRuntime.python36: "bootstrap.py",
     }
+
+    _thread_err_msg = ""
 
     def __init__(self,
                  template_file,
@@ -41,6 +43,7 @@ class InvokeContext(object):
         self._runtime = None
         self._debug_context = None
         self._env_file = env_file
+        self._thread_err_msg = ""
 
     def _get_namespace(self, resource):
         ns = None
@@ -86,17 +89,16 @@ class InvokeContext(object):
 
     def invoke(self):
         def timeout_handle(child):
-            try:
-                click.secho('Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout))
-                child.kill()
-            except Exception:
-                pass
+            click.secho('Function Timeout.', fg="red")
+            child.kill()
+            self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout)
 
         try:
             child = subprocess.Popen(args=[self.cmd]+self.argv, env=self.env)
         except OSError:
-            click.secho("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
-            return
+            click.secho("Execution Failed.", fg="red")
+            raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
+
         timer = threading.Timer(self._runtime.timeout, timeout_handle, [child])
 
         if not self._debug_context.is_debug:
@@ -107,6 +109,8 @@ class InvokeContext(object):
             child.kill()
             click.secho("Recv a SIGINT, exit.")
         timer.cancel()
+        if self._thread_err_msg != "":
+            raise TimeoutException(self._thread_err_msg)
 
     @property
     def cmd(self):
