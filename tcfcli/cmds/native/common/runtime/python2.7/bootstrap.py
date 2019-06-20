@@ -119,6 +119,11 @@ def get_func_handler(mname, fname):
     except Exception as ex:
         runtime.log("del old module err", str(ex))
 
+    # change the current working directory
+    current_path = os.path.dirname(mname+".py")
+    os.chdir(current_path)
+    runtime.log('working directory: %s' % os.getcwd())
+
     module = imp.load_source("", mname+".py")
     return getattr(module, fname)
 

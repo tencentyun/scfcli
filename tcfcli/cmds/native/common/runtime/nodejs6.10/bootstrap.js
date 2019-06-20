@@ -119,6 +119,11 @@ function invoke(invokeInfo) {
 
 function initHandler(file, func) {
     try {
+        var path = require("path");
+        var current_path = path.dirname(file)
+        process.chdir(current_path)
+        runtime.log(`working directory: ${process.cwd()}`)
+
         for (var item in require.cache) {
             delete require.cache[item]
         }

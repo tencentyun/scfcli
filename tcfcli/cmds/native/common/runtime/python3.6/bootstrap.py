@@ -119,6 +119,12 @@ def get_func_handler(mname, fname):
             del sys.modules[item]
     except Exception as ex:
         runtime.log("del old module err" % str(ex))
+
+    # change the current working directory
+    current_path = os.path.dirname(mname+".py")
+    os.chdir(current_path)
+    runtime.log('working directory: %s' % os.getcwd())
+
     module_spec = importlib.util.spec_from_file_location("", mname+".py")
     module = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(module)
