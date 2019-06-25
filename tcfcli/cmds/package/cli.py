@@ -29,8 +29,9 @@ def package(template_file, cos_bucket, output_template_file):
     '''
     Package a scf and upload to the cos
     '''
-    package = Package(template_file, cos_bucket, output_template_file)
-    package.do_package()
+    click.secho("'scf package' is deprecated, you can use 'scf deploy'.", fg="green")
+    # package = Package(template_file, cos_bucket, output_template_file)
+    # package.do_package()
 
 
 class Package(object):
@@ -55,7 +56,7 @@ class Package(object):
                 )
                 if "cos_bucket_name" in code_url:
                     self.resource[ns][func][tsmacro.Properties]["CosBucketName"] = code_url["cos_bucket_name"]
-                    self.resource[ns][func][tsmacro.Properties]["CosObjectName"] = code_url["CosObjectName"]
+                    self.resource[ns][func][tsmacro.Properties]["CosObjectName"] = code_url["cos_object_name"]
                     click.secho("Upload function zip file '{}' to COS bucket '{}' success".
                                 format(os.path.basename(code_url["cos_object_name"]),
                                        code_url["cos_bucket_name"]), fg="green")
