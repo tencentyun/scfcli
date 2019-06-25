@@ -1,3 +1,4 @@
-scf.egg-info
-*.pyc
+__pycache__/
+*.py[cod]
+scf.egg-info/
 .idea
