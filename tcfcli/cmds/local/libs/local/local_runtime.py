@@ -36,12 +36,13 @@ class LocalRuntime(object):
 
     _thread_err_msg = ""
 
-    def __init__(self, func_config, env_vars=None, cwd=None, debug_options=None, container_manager=None):
+    def __init__(self, func_config, env_vars=None, cwd=None, debug_options=None, container_manager=None, is_quiet=None):
         self._func_config = func_config
         self._env_vars = env_vars
         self._cwd = cwd
         self._debug_options = debug_options
         self._container_manager = container_manager
+        self._is_quiet = is_quiet
 
         self._thread_err_msg = ""
 
@@ -202,8 +203,8 @@ class LocalRuntime(object):
             'SCF_FUNCTION_MEMORY_SIZE': str(self.get_memory()),
             'SCF_FUNCTION_TIMEOUT': str(self.get_timeout()),
             'SCF_FUNCTION_HANDLER': self.get_handler(),
-
-            'SCF_EVENT_BODY': '{}'
+            'SCF_EVENT_BODY': '{}',
+            'SCF_DISPLAY_IS_QUIET': str(self._is_quiet)
         }
 
         environ = {}

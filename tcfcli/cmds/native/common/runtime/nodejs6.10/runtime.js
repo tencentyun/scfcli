@@ -17,6 +17,7 @@ var GLOBAL_VERSION = process.env.SCF_FUNCTION_VERSION || '$LATEST';
 var GLOBAL_MEM_SIZE = process.env.SCF_FUNCTION_MEMORY_SIZE || '256';
 var GLOBAL_TIMEOUT = process.env.SCF_FUNCTION_TIMEOUT || '3';
 var GLOBAL_ENVIRON = process.env.SCF_FUNCTION_ENVIRON || '';
+var GLOBAL_IS_QUIET = (process.env.SCF_DISPLAY_IS_QUIET === 'True') || false;
 
 var GLOBAL_REQUEST_ID =  uuid();
 var GLOBAL_START_TIME = process.hrtime();
@@ -26,7 +27,9 @@ var GLOBAL_STAGE = 0;
 
 module.exports = {
     init: function() {
-        consoleLog('START RequestId: ' + GLOBAL_REQUEST_ID);
+        if (!GLOBAL_IS_QUIET) {
+            consoleLog('START RequestId: ' + GLOBAL_REQUEST_ID);
+        }
         return 0;
     }
     ,
@@ -56,7 +59,9 @@ module.exports = {
         //consoleLog(formatSystem(str));
     },
     console_log: function (str) {
-        consoleLog(formatConsole(str));
+        if (!GLOBAL_IS_QUIET) {
+            consoleLog(formatConsole(str));
+        }
     },
     report_fail: function(stackTrace, typeNum, errType) {
         result = {};
@@ -93,6 +98,12 @@ function initContext() {
 }
 
 function reportDone(resultStr) {
+    if (GLOBAL_IS_QUIET) {
+        if (typeof resultStr === 'string') {
+            consoleLog(resultStr);
+        }
+        return
+    }
     var diffMs = hrTimeMs(process.hrtime(GLOBAL_START_TIME));
     var billedMs = Math.min(100 * (Math.floor(diffMs / 100) + 1), GLOBAL_TIMEOUT * 1000);
     consoleLog('END RequestId: ' + GLOBAL_REQUEST_ID);

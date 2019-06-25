@@ -32,7 +32,8 @@ class InvokeContext(object):
                  env_file=None,
                  debug_port=None,
                  debug_args="",
-                 event="{}"):
+                 event="{}",
+                 is_quiet=False):
 
         self._template_file = template_file
         self._function = function
@@ -43,6 +44,8 @@ class InvokeContext(object):
         self._runtime = None
         self._debug_context = None
         self._env_file = env_file
+        self._is_quiet = is_quiet
+
         self._thread_err_msg = ""
 
     def _get_namespace(self, resource):
@@ -135,7 +138,8 @@ class InvokeContext(object):
             'SCF_FUNCTION_MEMORY_SIZE': str(self._runtime.mem_size),
             'SCF_FUNCTION_TIMEOUT': str(self._runtime.timeout),
             'SCF_EVENT_BODY': self._event,
-            'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env)
+            'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env),
+            'SCF_DISPLAY_IS_QUIET': str(self._is_quiet)
         }
 
         for k, v in self._runtime.env.items():

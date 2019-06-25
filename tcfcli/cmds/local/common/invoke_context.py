@@ -25,7 +25,8 @@ class InvokeContext(object):
                  log_file=None,
                  skip_pull_image=None,
                  region=None,
-                 namespace=None):
+                 namespace=None,
+                 is_quiet=False):
 
         self._template_file = template_file
         self._function_identifier = function_identifier
@@ -45,6 +46,8 @@ class InvokeContext(object):
         self._env_vars = None
         self._log_file_fp = None
         self._debug_context = None
+
+        self._is_quiet = is_quiet
 
     def __enter__(self):
         template_dict = tcsam.tcsam_validate(Template.get_template_data(self._template_file))
@@ -92,7 +95,8 @@ class InvokeContext(object):
                                    debug_context=self._debug_context,
                                    region=self._region,
                                    docker_network_id=self._docker_network,
-                                   skip_pull_image=self._skip_pull_image)
+                                   skip_pull_image=self._skip_pull_image,
+                                   is_quiet=self._is_quiet)
 
     @property
     def template(self):
