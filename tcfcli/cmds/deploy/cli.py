@@ -19,8 +19,10 @@ _BUILD_DIR = './.tcf_build'
 @click.option('--template-file', '-t', type=click.Path(exists=True), help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
 @click.option('-f', '--forced', is_flag=True, default=False,
-              help="Update the function when it already exists,default false")
-def deploy(template_file, cos_bucket, forced):
+                help="Update the function when it already exists,default false")
+@click.option('--skip-event', is_flag=True, default=False, 
+                help="Keep previous version triggers, do not cover them this time.")
+def deploy(template_file, cos_bucket, forced, skip_event):
     '''
     Deploy a scf.
     '''
@@ -28,7 +30,7 @@ def deploy(template_file, cos_bucket, forced):
     package = Package(template_file, cos_bucket)
     resource = package.do_package()
 
-    deploy = Deploy(resource, forced)
+    deploy = Deploy(resource, forced, skip_event)
     deploy.do_deploy()
 
 
@@ -110,9 +112,10 @@ class Package(object):
 
 
 class Deploy(object):
-    def __init__(self, resource, forced=False):
+    def __init__(self, resource, forced=False, skip_event=False):
         self.resources = resource
         self.forced = forced
+        self.skip_event = skip_event
 
     def do_deploy(self):
         for ns in self.resources:
@@ -122,10 +125,10 @@ class Deploy(object):
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
-                self._do_deploy_core(self.resources[ns][func], func, ns, self.forced)
+                self._do_deploy_core(self.resources[ns][func], func, ns, self.forced, self.skip_event)
             click.secho("deploy {ns} end".format(ns=ns))
 
-    def _do_deploy_core(self, func, func_name, func_ns, forced):
+    def _do_deploy_core(self, func, func_name, func_ns, forced, skip_event=False):
         err = ScfClient().deploy_func(func, func_name, func_ns, forced)
         if err is not None:
             if sys.version_info[0] == 3:
@@ -139,7 +142,8 @@ class Deploy(object):
             return
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
-        self._do_deploy_trigger(func, func_name, func_ns)
+        if not skip_event:
+            self._do_deploy_trigger(func, func_name, func_ns)
 
     def _do_deploy_trigger(self, func, func_name, func_ns):
         proper = func.get(tsmacro.Properties, {})
