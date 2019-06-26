@@ -27,7 +27,7 @@ _BUILD_DIR = './.tcf_build'
               show_default=True)
 def package(template_file, cos_bucket, output_template_file):
     '''
-    Package a scf and upload to the cos
+    [deprecated] Package a scf and upload to the cos
     '''
     click.secho("'scf package' is deprecated, you can use 'scf deploy'.", fg="green")
     # package = Package(template_file, cos_bucket, output_template_file)
