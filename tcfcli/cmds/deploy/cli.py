@@ -18,16 +18,17 @@ _BUILD_DIR = './.tcf_build'
 @click.command()
 @click.option('--template-file', '-t', type=click.Path(exists=True), help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
+@click.option('--function', type=str, help="The name of the function which should be deployed")
 @click.option('-f', '--forced', is_flag=True, default=False,
-                help="Update the function when it already exists,default false")
-@click.option('--skip-event', is_flag=True, default=False, 
-                help="Keep previous version triggers, do not cover them this time.")
-def deploy(template_file, cos_bucket, forced, skip_event):
+              help="Update the function when it already exists,default false")
+@click.option('--skip-event', is_flag=True, default=False,
+              help="Keep previous version triggers, do not cover them this time.")
+def deploy(template_file, cos_bucket, function, forced, skip_event):
     '''
     Deploy a scf.
     '''
 
-    package = Package(template_file, cos_bucket)
+    package = Package(template_file, cos_bucket, function)
     resource = package.do_package()
 
     deploy = Deploy(resource, forced, skip_event)
@@ -36,18 +37,24 @@ def deploy(template_file, cos_bucket, forced, skip_event):
 
 class Package(object):
 
-    def __init__(self, template_file, cos_bucket):
+    def __init__(self, template_file, cos_bucket, function):
         self.template_file = template_file
         self.cos_bucket = cos_bucket
         self.check_params()
         template_data = tcsam.tcsam_validate(Template.get_template_data(self.template_file))
         self.resource = template_data.get(tsmacro.Resources, {})
+        self.function = function
 
     def do_package(self):
         for ns in self.resource:
-            for func in self.resource[ns]:
+            for func in list(self.resource[ns]):
                 if func == tsmacro.Type:
                     continue
+
+                if self.function is not None and func != self.function:
+                    self.resource[ns].pop(func)
+                    continue
+
                 code_url = self._do_package_core(
                     self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, "")
                 )
