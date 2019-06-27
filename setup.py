@@ -2,7 +2,32 @@ import io
 import re
 import os
 from setuptools import setup, find_packages
+from setuptools.command.install import install
+from setuptools.command.develop import develop
+import requests
 
+def friendly(command_subclass):
+    """Please feel easy. Just report you installed SCF CLI. Not contain any other information"""
+    orig_run = command_subclass.run
+    report_url = 'https://service-nx6czqy2-1253970226.gz.apigw.tencentcs.com/release/SCF_CLI_install_report'
+    def modified_run(self):
+        try:
+            report_content = {'SCFCLI_VERSION': read_version()}
+            requests.post(report_url, json=report_content, timeout=3)
+        except Exception:
+            pass
+        orig_run(self)
+
+    command_subclass.run = modified_run
+    return command_subclass
+
+@friendly
+class ReportDevelop(develop):
+    pass
+
+@friendly
+class ReportInstall(install):
+    pass
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -46,4 +71,8 @@ setup(
     },
     install_requires=read_requirements('requirements.txt'),
     include_package_data=True,
+    cmdclass={
+        'install': ReportInstall,
+        'develop': ReportDevelop,
+    },
 )
