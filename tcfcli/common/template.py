@@ -9,7 +9,7 @@ class Template(object):
 
     @staticmethod
     def get_template_data(template_file):
-        if not os.path.exists(template_file):
+        if template_file is None or not os.path.exists(template_file):
             return {}
 
         with io.open(template_file, mode='r', encoding='utf-8') as f:
