@@ -16,7 +16,6 @@ os.chdir(work_dir)
 
 from tcfcli.cmds.cli import __version__
 from tcfcli.cmds.deploy.cli import deploy
-from tcfcli.cmds.package.cli import package
 from tcfcli.cmds.local.cli import local
 from tcfcli.cmds.init.cli import init
 from tcfcli.cmds.validate.cli import validate
@@ -35,7 +34,6 @@ def cli():
 """
 Register commands into cli group
 """
-cli.add_command(package)
 cli.add_command(deploy)
 cli.add_command(local)
 cli.add_command(init)
