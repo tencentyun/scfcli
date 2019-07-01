@@ -16,9 +16,10 @@ STD_IN = '-'
               envvar="TCF_TEMPLATE_FILE", show_default=True)
 @click.option('--debug-port', '-d', help='The port exposed for debugging.', default=None)
 @click.option('--debug-args', help='Additional args to be passed the debugger.', default="")
+@click.option('--quiet', '-q', is_flag=True, default=False, help='Only display what function return')
 @click.argument('namespace_identifier', required=False)
 @click.argument('function_identifier', required=False)
-def invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args):
+def invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args, quiet):
     '''
     \b
     Execute your scf in a environment natively
@@ -27,10 +28,10 @@ def invoke(template, namespace_identifier, function_identifier, env_vars, event,
         \b
         $ scf native invoke -t template.yaml
     '''
-    do_invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args)
+    do_invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args, quiet)
 
 
-def do_invoke(template, namespace, function, env_vars, event, no_event, debug_port, debug_args):
+def do_invoke(template, namespace, function, env_vars, event, no_event, debug_port, debug_args, quiet):
 
     if no_event:
         event_data = "{}"
@@ -46,7 +47,8 @@ def do_invoke(template, namespace, function, env_vars, event, no_event, debug_po
             env_file=env_vars,
             debug_port=debug_port,
             debug_args=debug_args,
-            event=event_data
+            event=event_data,
+            is_quiet=quiet
         ) as context:
             context.invoke()
     except Exception as e:

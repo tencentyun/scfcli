@@ -11,10 +11,11 @@ STD_IN = '-'
 @click.option('--event', '-e', type=click.Path(), default=STD_IN)
 @click.option('--no-event', is_flag=True, default=False)
 @invoke_common_options
+@click.option('--quiet', '-q', is_flag=True, default=False, help='Only display what function return')
 @click.argument('namespace_identifier', required=False)
 @click.argument('function_identifier', required=False)
 def invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
-           docker_volume_basedir, docker_network, log_file, skip_pull_image, region):
+           docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet):
     '''
     \b
     Execute your scf in a docker environment locally
@@ -24,11 +25,11 @@ def invoke(template, namespace_identifier, function_identifier, event, no_event,
         $ scf local invoke -t template.yaml
     '''
     do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
-              docker_volume_basedir, docker_network, log_file, skip_pull_image, region)
+              docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet)
 
 
 def do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
-              docker_volume_basedir, docker_network, log_file, skip_pull_image, region):
+              docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet):
 
     if no_event and event != STD_IN:
         raise UserException('event is conflict with no_event, provide only one.')
@@ -50,7 +51,9 @@ def do_invoke(template, namespace_identifier, function_identifier, event, no_eve
                            log_file=log_file,
                            skip_pull_image=skip_pull_image,
                            region=region,
-                           namespace=namespace_identifier) as context:
+                           namespace=namespace_identifier,
+                           is_quiet=quiet
+                        ) as context:
 
             context.local_runtime_manager.invoke(context.functions_name, event_data, context.stdout, context.stderr)
 

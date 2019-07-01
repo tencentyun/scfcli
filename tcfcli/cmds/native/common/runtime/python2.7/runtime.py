@@ -18,6 +18,7 @@ _GLOBAL_FUNCTION_NAME = os.environ.get('SCF_FUNCTION_NAME', 'test')
 _GLOBAL_VERSION = os.environ.get('SCF_FUNCTION_VERSION', '$LATEST')
 _GLOBAL_MEM_SIZE = os.environ.get('SCF_FUNCTION_MEMORY_SIZE', '256')
 _GLOBAL_TIMEOUT = int(os.environ.get('SCF_FUNCTION_TIMEOUT', '3'))
+_GLOBAL_IS_QUIET = (os.environ.get('SCF_DISPLAY_IS_QUIET', 'False') == 'True')
 
 _GLOBAL_FUNCTION_HANDLER = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('SCF_FUNCTION_HANDLER',
         'index:main_handler')
@@ -27,7 +28,9 @@ _GLOBAL_EVENT_BODY =  sys.argv[2] if len(sys.argv) > 2 else os.environ.get('SCF_
 
 
 def init():
-    tcf_print("START RequestId: %s" % _GLOBAL_REQUEST_ID)
+    global _GLOBAL_IS_QUIET
+    if not _GLOBAL_IS_QUIET:
+        tcf_print("START RequestId: %s" % _GLOBAL_REQUEST_ID)
 
     os.environ['SOCKETPATH'] = ''
     os.environ['CONTAINERID'] = ''
@@ -77,6 +80,12 @@ def wait_for_invoke():
 
 
 def report_done(msg, err_type=0):
+    global _GLOBAL_IS_QUIET
+    if _GLOBAL_IS_QUIET:
+        if msg:
+            tcf_print("%s" % msg)
+            return
+
     tcf_print("END RequestId: %s" % _GLOBAL_REQUEST_ID)
 
     duration = int((time.time() - _GLOBAL_START_TIME) * 1000)
@@ -111,7 +120,9 @@ def report_fail(stackTrace, mem_kb, ret_code):
 
 
 def console_log(errMsg):
-    tcf_print(errMsg)
+    global _GLOBAL_IS_QUIET
+    if not _GLOBAL_IS_QUIET:
+        tcf_print(errMsg)
 
 
 def log(errMsg):

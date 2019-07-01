@@ -12,7 +12,15 @@ class InvokeContextException(UserException):
 class TemplateNotFoundException(UserException):
     pass
 
+class DeployException(UserException):
+    pass
 
+class InvokeException(UserException):
+    pass
+
+class TimeoutException(UserException):
+    pass
+    
 class OutTemplateAlreadyExist(UserException):
     pass
 

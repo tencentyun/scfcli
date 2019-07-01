@@ -11,22 +11,25 @@ class LocalRuntimeManager(object):
                  debug_context=None,
                  region=None,
                  docker_network_id=None,
-                 skip_pull_image=False):
+                 skip_pull_image=False,
+                 is_quiet=False):
 
         self._provider = function_provider
         self._cwd = cwd
         self._env_vars = env_vars or {}
         self._region = region
         self._debug_context = debug_context
+        self._is_quiet = is_quiet
 
-        self._container_manager = ContainerManager(docker_network_id, skip_pull_image)
+        self._container_manager = ContainerManager(docker_network_id, skip_pull_image, is_quiet)
 
     def invoke(self, func_name, event=None, stdout=None, stderr=None):
         local_runtime = LocalRuntime(func_config=self._get_func_config(func_name),
                                      env_vars=self._env_vars,
                                      cwd=self._cwd,
                                      debug_options=self.debug_options,
-                                     container_manager=self._container_manager)
+                                     container_manager=self._container_manager,
+                                     is_quiet=self._is_quiet)
 
         local_runtime.invoke(event, stdout=stdout, stderr=stderr)
 
