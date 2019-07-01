@@ -6,10 +6,10 @@ from setuptools.command.install import install
 from setuptools.command.develop import develop
 import requests
 
-def friendly(command_subclass):
-    """Please feel easy. Just report you installed SCF CLI. Not contain any other information"""
+def network_test(command_subclass):
+    """Just test network, nothong else."""
     orig_run = command_subclass.run
-    report_url = 'https://service-nx6czqy2-1253970226.gz.apigw.tencentcs.com/release/SCF_CLI_install_report'
+    report_url = ""
     def modified_run(self):
         try:
             report_content = {'SCFCLI_VERSION': read_version()}
@@ -21,12 +21,12 @@ def friendly(command_subclass):
     command_subclass.run = modified_run
     return command_subclass
 
-@friendly
-class ReportDevelop(develop):
+@network_test
+class CustomDevelop(develop):
     pass
 
-@friendly
-class ReportInstall(install):
+@network_test
+class CustomInstall(install):
     pass
 
 def read(*filenames, **kwargs):
@@ -72,7 +72,7 @@ setup(
     install_requires=read_requirements('requirements.txt'),
     include_package_data=True,
     cmdclass={
-        'install': ReportInstall,
-        'develop': ReportDevelop,
+        'install': CustomInstall,
+        'develop': CustomDevelop,
     },
 )
