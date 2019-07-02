@@ -137,7 +137,7 @@ class InvokeContext(object):
             'SCF_LOCAL': 'true',
             'SCF_FUNCTION_MEMORY_SIZE': str(self._runtime.mem_size),
             'SCF_FUNCTION_TIMEOUT': str(self._runtime.timeout),
-            'SCF_EVENT_BODY': self._event,
+            'SCF_EVENT_BODY': self._event.encode("utf-8"),
             'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env),
             'SCF_DISPLAY_IS_QUIET': str(self._is_quiet)
         }
