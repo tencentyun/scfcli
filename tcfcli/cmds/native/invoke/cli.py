@@ -36,8 +36,8 @@ def do_invoke(template, namespace, function, env_vars, event, no_event, debug_po
     if no_event:
         event_data = "{}"
     else:
-        click.secho('Enter a event:', color="green")
-        with click.open_file(event, 'r') as f:
+        click.secho('Enter an event:', color="green")
+        with click.open_file(event, 'r', encoding="utf-8") as f:
             event_data = f.read()
     try:
         with InvokeContext(
