@@ -128,12 +128,12 @@ class Deploy(object):
         for ns in self.resources:
             if not self.resources[ns]:
                 continue
-            click.secho("deploy {ns} begin".format(ns=ns))
+            click.secho("Deploy namespace '{ns}' begin".format(ns=ns))
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.forced, self.skip_event)
-            click.secho("deploy {ns} end".format(ns=ns))
+            click.secho("Deploy namespace '{ns}' end".format(ns=ns))
 
     def _do_deploy_core(self, func, func_name, func_ns, forced, skip_event=False):
         err = ScfClient().deploy_func(func, func_name, func_ns, forced)
