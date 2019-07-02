@@ -4,16 +4,19 @@ import os
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 from setuptools.command.develop import develop
-import requests
 
 def network_test(command_subclass):
-    """Just test network, nothong else."""
+    """Just test network, nothing else."""
+    try:
+        import requests
+    except Exception:
+            pass   
     orig_run = command_subclass.run
-    report_url = ""
+    test_url = ""
     def modified_run(self):
         try:
-            report_content = {'SCFCLI_VERSION': read_version()}
-            requests.post(report_url, json=report_content, timeout=3)
+            test_content = {'SCFCLI_VERSION': read_version()}
+            requests.post(test_url, json=test_content, timeout=3)
         except Exception:
             pass
         orig_run(self)
