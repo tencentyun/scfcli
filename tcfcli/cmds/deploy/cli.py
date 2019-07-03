@@ -15,8 +15,8 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
-REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-guangzhou-open', 
-            'ap-hongkong', 'ap-mumbai', 'ap-shanghai']
+REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong', 
+            'ap-mumbai', 'ap-shanghai']
 
 @click.command()
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), 
