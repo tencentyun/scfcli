@@ -13,17 +13,19 @@ from tcfcli.libs.utils.cos_client import CosClient
 
 _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
+DEF_TMP_FILENAME = 'template.yaml'
 
 
 @click.command()
-@click.option('--template-file', '-t', type=click.Path(exists=True), help="TCF template file for deploy")
+@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
 @click.option('--function', type=str, help="The name of the function which should be deployed")
+@click.option('--namespace', '-n', type=str, help="The namespace which want to be deployed")
 @click.option('-f', '--forced', is_flag=True, default=False,
               help="Update the function when it already exists,default false")
 @click.option('--skip-event', is_flag=True, default=False,
               help="Keep previous version triggers, do not cover them this time.")
-def deploy(template_file, cos_bucket, function, forced, skip_event):
+def deploy(template_file, cos_bucket, function, namespace, forced, skip_event):
     '''
     Deploy a scf.
     '''
@@ -31,7 +33,7 @@ def deploy(template_file, cos_bucket, function, forced, skip_event):
     package = Package(template_file, cos_bucket, function)
     resource = package.do_package()
 
-    deploy = Deploy(resource, forced, skip_event)
+    deploy = Deploy(resource, namespace, forced, skip_event)
     deploy.do_deploy()
 
 
@@ -56,7 +58,7 @@ class Package(object):
                     continue
 
                 code_url = self._do_package_core(
-                    self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, "")
+                    self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, ""), ns, func
                 )
                 if "cos_bucket_name" in code_url:
                     self.resource[ns][func][tsmacro.Properties]["CosBucketName"] = code_url["cos_bucket_name"]
@@ -75,8 +77,8 @@ class Package(object):
             click.secho("FAM Template Not Found", fg="red")
             raise TemplateNotFoundException("Missing option --template-file")
 
-    def _do_package_core(self, func_path):
-        zipfile, zip_file_name = self._zip_func(func_path)
+    def _do_package_core(self, func_path, namespace, func_name):
+        zipfile, zip_file_name = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
         if self.cos_bucket:
             CosClient().upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
@@ -88,12 +90,12 @@ class Package(object):
 
         return code_url
 
-    def _zip_func(self, func_path):
+    def _zip_func(self, func_path, namespace, func_name):
         buff = BytesIO()
         if not os.path.exists(func_path):
             raise ContextException("Function file or path not found by CodeUri '{}'".format(func_path))
 
-        zip_file_name = str(uuid.uuid1()) + '.zip'
+        zip_file_name = str(namespace) + '-' + str(func_name) + '-latest.zip'
         cwd = os.getcwd()
         os.chdir(func_path)
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
@@ -110,17 +112,22 @@ class Package(object):
         if not os.path.exists(_BUILD_DIR):
             os.mkdir(_BUILD_DIR)
         zip_file_path = os.path.join(_BUILD_DIR, zip_file_name)
+
+        if os.path.exists(zip_file_path):
+            os.remove(zip_file_path)
+
         # a temporary support for upload func from local zipfile
         with open(zip_file_path, 'wb') as f:
             f.write(buff.read())
             buff.seek(0)
-        # click.secho("Compress function '{}' to zipfile '{}' success".format(func_config.name, zip_file_name))
+        click.secho("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name))
         return buff, zip_file_name
 
 
 class Deploy(object):
-    def __init__(self, resource, forced=False, skip_event=False):
+    def __init__(self, resource, namespace, forced=False, skip_event=False):
         self.resources = resource
+        self.namespace = namespace
         self.forced = forced
         self.skip_event = skip_event
 
@@ -136,6 +143,11 @@ class Deploy(object):
             click.secho("Deploy namespace '{ns}' end".format(ns=ns))
 
     def _do_deploy_core(self, func, func_name, func_ns, forced, skip_event=False):
+        # todo
+        # check namespace exit, create namespace
+        if self.namespace and self.namespace != func_ns:
+            func_ns = self.namespace
+
         err = ScfClient().deploy_func(func, func_name, func_ns, forced)
         if err is not None:
             if sys.version_info[0] == 3:
