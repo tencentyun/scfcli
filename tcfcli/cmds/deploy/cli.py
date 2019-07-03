@@ -15,37 +15,43 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
+REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-guangzhou-open', 
+            'ap-hongkong', 'ap-mumbai', 'ap-shanghai']
 
 @click.command()
-@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help="TCF template file for deploy")
+@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), 
+                                        help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
 @click.option('--function', type=str, help="The name of the function which should be deployed")
 @click.option('--namespace', '-n', type=str, help="The namespace which want to be deployed")
+@click.option('--region', '-r', type=click.Choice(REGIONS), 
+                                help="The region which the function want to be deployed")
 @click.option('-f', '--forced', is_flag=True, default=False,
               help="Update the function when it already exists,default false")
 @click.option('--skip-event', is_flag=True, default=False,
               help="Keep previous version triggers, do not cover them this time.")
-def deploy(template_file, cos_bucket, function, namespace, forced, skip_event):
+def deploy(template_file, cos_bucket, function, namespace, region, forced, skip_event):
     '''
     Deploy a scf.
     '''
 
-    package = Package(template_file, cos_bucket, function)
+    package = Package(template_file, cos_bucket, function, region)
     resource = package.do_package()
 
-    deploy = Deploy(resource, namespace, forced, skip_event)
+    deploy = Deploy(resource, namespace, region, forced, skip_event)
     deploy.do_deploy()
 
 
 class Package(object):
 
-    def __init__(self, template_file, cos_bucket, function):
+    def __init__(self, template_file, cos_bucket, function, region):
         self.template_file = template_file
         self.cos_bucket = cos_bucket
         self.check_params()
         template_data = tcsam.tcsam_validate(Template.get_template_data(self.template_file))
         self.resource = template_data.get(tsmacro.Resources, {})
         self.function = function
+        self.region = region
 
     def do_package(self):
         for ns in self.resource:
@@ -58,7 +64,10 @@ class Package(object):
                     continue
 
                 code_url = self._do_package_core(
-                    self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, ""), ns, func
+                    self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, ""),
+                    ns,
+                    func,
+                    self.region
                 )
                 if "cos_bucket_name" in code_url:
                     self.resource[ns][func][tsmacro.Properties]["CosBucketName"] = code_url["cos_bucket_name"]
@@ -77,11 +86,11 @@ class Package(object):
             click.secho("FAM Template Not Found", fg="red")
             raise TemplateNotFoundException("Missing option --template-file")
 
-    def _do_package_core(self, func_path, namespace, func_name):
+    def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
         if self.cos_bucket:
-            CosClient().upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
+            CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
                                         key=zip_file_name)
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name
@@ -125,9 +134,10 @@ class Package(object):
 
 
 class Deploy(object):
-    def __init__(self, resource, namespace, forced=False, skip_event=False):
+    def __init__(self, resource, namespace, region=None, forced=False, skip_event=False):
         self.resources = resource
         self.namespace = namespace
+        self.region = region
         self.forced = forced
         self.skip_event = skip_event
 
@@ -139,16 +149,17 @@ class Deploy(object):
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
-                self._do_deploy_core(self.resources[ns][func], func, ns, self.forced, self.skip_event)
+                self._do_deploy_core(self.resources[ns][func], func, ns, self.region, 
+                                    self.forced, self.skip_event)
             click.secho("Deploy namespace '{ns}' end".format(ns=ns))
 
-    def _do_deploy_core(self, func, func_name, func_ns, forced, skip_event=False):
+    def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # todo
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
             func_ns = self.namespace
 
-        err = ScfClient().deploy_func(func, func_name, func_ns, forced)
+        err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
         if err is not None:
             if sys.version_info[0] == 3:
                 s = err.get_message()
@@ -162,14 +173,14 @@ class Deploy(object):
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
         if not skip_event:
-            self._do_deploy_trigger(func, func_name, func_ns)
+            self._do_deploy_trigger(func, func_name, func_ns, region)
 
-    def _do_deploy_trigger(self, func, func_name, func_ns):
+    def _do_deploy_trigger(self, func, func_name, func_ns, region=None):
         proper = func.get(tsmacro.Properties, {})
         events = proper.get(tsmacro.Events, {})
 
         for trigger in events:
-            err = ScfClient().deploy_trigger(events[trigger], trigger, func_name, func_ns)
+            err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
             if err is not None:
                 if sys.version_info[0] == 3:
                     s = err.get_message()

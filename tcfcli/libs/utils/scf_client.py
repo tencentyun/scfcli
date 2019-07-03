@@ -15,10 +15,13 @@ import base64
 class ScfClient(object):
 
     CLOUD_API_REQ_TIMEOUT = 120
-    def __init__(self):
+    def __init__(self, region=None):
         uc = UserConfig()
         self._cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key)
-        self._region = uc.region
+        if region is None:
+            self._region = uc.region
+        else:
+            self._region = region
         hp = HttpProfile(reqTimeout=ScfClient.CLOUD_API_REQ_TIMEOUT)
         cp = ClientProfile("TC3-HMAC-SHA256", hp)
         self._client = scf_client.ScfClient(self._cred, self._region, cp)

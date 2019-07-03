@@ -5,10 +5,12 @@ from tcfcli.common.user_exceptions import UploadToCosFailed
 
 
 class CosClient(object):
-    def __init__(self):
+    def __init__(self, region=None):
         uc = UserConfig()
+        if region is None:
+            region = uc.region
         self._config = CosConfig(Secret_id=uc.secret_id, Secret_key=uc.secret_key,
-                                 Region=uc.region, Appid=uc.appid)
+                                 Region=region, Appid=uc.appid)
         self._client = CosS3Client(self._config)
 
     def upload_file2cos(self, bucket, file, key):
