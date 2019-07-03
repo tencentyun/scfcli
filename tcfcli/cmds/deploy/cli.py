@@ -1,7 +1,7 @@
 import click
 import os
 import sys
-import uuid
+import time
 from io import BytesIO
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
@@ -15,17 +15,18 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
-REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong', 
-            'ap-mumbai', 'ap-shanghai']
+REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong',
+           'ap-mumbai', 'ap-shanghai']
+
 
 @click.command()
-@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), 
-                                        help="TCF template file for deploy")
+@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True),
+              help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
 @click.option('--function', type=str, help="The name of the function which should be deployed")
 @click.option('--namespace', '-n', type=str, help="The namespace which want to be deployed")
-@click.option('--region', '-r', type=click.Choice(REGIONS), 
-                                help="The region which the function want to be deployed")
+@click.option('--region', '-r', type=click.Choice(REGIONS),
+              help="The region which the function want to be deployed")
 @click.option('-f', '--forced', is_flag=True, default=False,
               help="Update the function when it already exists,default false")
 @click.option('--skip-event', is_flag=True, default=False,
@@ -35,7 +36,7 @@ def deploy(template_file, cos_bucket, function, namespace, region, forced, skip_
     Deploy a scf.
     '''
 
-    package = Package(template_file, cos_bucket, function, region)
+    package = Package(template_file, cos_bucket, function, region, namespace)
     resource = package.do_package()
 
     deploy = Deploy(resource, namespace, region, forced, skip_event)
@@ -44,13 +45,14 @@ def deploy(template_file, cos_bucket, function, namespace, region, forced, skip_
 
 class Package(object):
 
-    def __init__(self, template_file, cos_bucket, function, region):
+    def __init__(self, template_file, cos_bucket, function, region, deploy_namespace):
         self.template_file = template_file
         self.cos_bucket = cos_bucket
         self.check_params()
         template_data = tcsam.tcsam_validate(Template.get_template_data(self.template_file))
         self.resource = template_data.get(tsmacro.Resources, {})
         self.function = function
+        self.deploy_namespace = deploy_namespace
         self.region = region
 
     def do_package(self):
@@ -89,9 +91,10 @@ class Package(object):
     def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
+
         if self.cos_bucket:
             CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
-                                        key=zip_file_name)
+                                              key=zip_file_name)
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name
         else:
@@ -104,7 +107,12 @@ class Package(object):
         if not os.path.exists(func_path):
             raise ContextException("Function file or path not found by CodeUri '{}'".format(func_path))
 
+        if self.deploy_namespace and self.deploy_namespace != namespace:
+            namespace = self.deploy_namespace
+
         zip_file_name = str(namespace) + '-' + str(func_name) + '-latest.zip'
+        zip_file_name_cos = str(namespace) + '-' + str(func_name) + '-latest' + time.strftime(
+            "-%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time()))) + '.zip'
         cwd = os.getcwd()
         os.chdir(func_path)
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
@@ -130,7 +138,8 @@ class Package(object):
             f.write(buff.read())
             buff.seek(0)
         click.secho("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name))
-        return buff, zip_file_name
+
+        return buff, zip_file_name_cos
 
 
 class Deploy(object):
@@ -149,8 +158,8 @@ class Deploy(object):
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
-                self._do_deploy_core(self.resources[ns][func], func, ns, self.region, 
-                                    self.forced, self.skip_event)
+                self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
+                                     self.forced, self.skip_event)
             click.secho("Deploy namespace '{ns}' end".format(ns=ns))
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
