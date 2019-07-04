@@ -89,14 +89,14 @@ class Package(object):
             raise TemplateNotFoundException("Missing option --template-file")
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
-        zipfile, zip_file_name = self._zip_func(func_path, namespace, func_name)
+        zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
 
         if self.cos_bucket:
             CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
-                                              key=zip_file_name)
+                                              key=zip_file_name_cos)
             code_url["cos_bucket_name"] = self.cos_bucket
-            code_url["cos_object_name"] = "/" + zip_file_name
+            code_url["cos_object_name"] = "/" + zip_file_name_cos
         else:
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
 
@@ -139,7 +139,7 @@ class Package(object):
             buff.seek(0)
         click.secho("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name))
 
-        return buff, zip_file_name_cos
+        return buff, zip_file_name, zip_file_name_cos
 
 
 class Deploy(object):

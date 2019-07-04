@@ -1,3 +1,4 @@
+import xmltodict
 from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
 from tcfcli.common.user_config import UserConfig
@@ -22,11 +23,19 @@ class CosClient(object):
                                                Metadata={
                                                    'x-cos-acl': 'public-read',
                                                    'Content-Type': 'application/x-zip-compressed',
-                                                })
+                                               })
             if not response['ETag']:
                 raise UploadToCosFailed("Upload func package failed")
         except Exception as e:
-            raise e
+            error_msg = ""
+            if "<?xml" in e.message:
+                msg_dict = xmltodict.parse(e.message)
+                if isinstance(msg_dict, dict):
+                    error_msg_dict = msg_dict.get("Error", {})
+                    error_msg = error_msg_dict.get("Code", "") + ", " + error_msg_dict.get("Message", "")
+            else:
+                error_msg = e.message
+            raise UploadToCosFailed("Upload func package failed. {} ".format(error_msg))
 
-        codeuri_in_cos = bucket + '/' + key
-        return codeuri_in_cos
+        code_uri_in_cos = bucket + '/' + key
+        return code_uri_in_cos

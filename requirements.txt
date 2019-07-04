@@ -14,3 +14,5 @@ chevron>=0.12.0, <0.13.0
 ptvsd>=4.2.0, <4.3.0
 jsonschema>=3.0.1,<4.0.0
 requests>=2.20.0
+xmltodict>=0.12.0
+
