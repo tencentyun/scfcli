@@ -56,7 +56,6 @@ Globals:
   Function:
     Runtime: Python2.7
     Timeout: 30
-    Role: QCS_SCFExcuteRole
     Handler: index.handler
     Environment:
       Variables:
@@ -108,6 +107,7 @@ ProjectTest: # 命名空间名称
       Runtime: Python2.7
       CodeUri: './'
       Description: Cron function
+      Role: QCS_SCFExcuteRole
       Timeout: 10
       MemorySize: 512
       
