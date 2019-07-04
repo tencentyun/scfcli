@@ -56,6 +56,7 @@ Globals:
   Function:
     Runtime: Python2.7
     Timeout: 30
+    Role: QCS_SCFExcuteRole
     Handler: index.handler
     Environment:
       Variables:
@@ -88,6 +89,8 @@ CodeUri | `string` | **必填。** 代码位置。支持本地文件、本地目
 Description | `string` | 云函数的描述。
 MemorySize | `integer` | 函数执行时分配的内存大小，单位是 MB，默认为 128（MB），按 128 递增。
 Timeout | `integer` | 函数在被终止之前可以运行的最长时间，单位是秒，默认为 3 秒。
+Role | `string`| 通过填写角色名称，为函数指定运行角色。 如果此字段缺省，将为函数创建一个默认的角色QCS_SCFExcuteRole。
+Policies | `string`|`string`列表|CAM Policy文档对象|CAM Policy文档对象列表 | 指定函数需要的CAM预设策略名称，或自定义策略。如Role为默认角色或缺省，则策略会被附加到该函数的默认角色上。如果设置了自定义的Role属性，则Policies属性会被忽略。
 Environment | [环境变量对象](#环境变量对象) | 为函数配置[环境变量](https://cloud.tencent.com/document/product/583/30228)。
 Events | [事件源对象](#事件源对象) | 用于定义触发此函数的事件源。
 VpcConfig | [VPC配置对象](#Vpc配置对象) | 用于配置云函数访问 VPC 私有网络。
