@@ -2,12 +2,8 @@ import os
 import click
 import platform
 
-sysstr = platform.system()
-if (sysstr == 'Linux' or 'Darwin'):
-    home = os.path.expanduser('~')
-    _USER_CONFIG_FILE = home + '/.tcli_config.ini'
-else:
-    _USER_CONFIG_FILE = ".tcli_config.ini"
+home = os.path.expanduser('~')
+_USER_CONFIG_FILE = home + '/.tcli_config.ini'
 
 version = platform.python_version()
 if version >= '3':
