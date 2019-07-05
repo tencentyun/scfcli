@@ -117,7 +117,7 @@ def get_func_handler(mname, fname):
         for item in need_del_module:
             del sys.modules[item]
     except Exception as ex:
-        runtime.log("del old module err", str(ex))
+        runtime.log("del old module err" + str(ex))
 
     # change the current working directory
     current_path = os.path.dirname(mname+".py")
