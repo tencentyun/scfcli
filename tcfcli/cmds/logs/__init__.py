@@ -12,11 +12,11 @@ from tcfcli.common.scf_client.scf_log_client import ScfLogClient
 @click.option('-ns', '--namespace',  default="default", help="Namespace name")
 @click.option('--region', default=None, help="The region of the service (e.g. ap-guangzhou)")
 @click.option('-s', '--start-time', type=str, default=None, help="Fetch logs starting at this time")
-@click.option('-e', '--end-time', type=str, default=None, help="Fetch logs up to this time")
+@click.option('-e', '--end-time', type=str, default=None, help="Fetch logs up to this time, conflict with --tail")
 @click.option('-o', '--offset', type=int, default=1, help="Time offset in minute based on the (start-time|end-time|current)")
-@click.option('-eo', '--error-only',  is_flag=True, default=False, help="Fetch only the error log")
+@click.option('-f', '--failed',  is_flag=True, default=False, help="Fetch the failed log")
 @click.option('-t', '--tail', is_flag=True ,default=False, help="Tail the log output")
-def logs(name, namespace, region, start_time, end_time, offset, error_only, tail):
+def logs(name, namespace, region, start_time, end_time, offset, failed, tail):
     """
     \b
     Fetch logs of scf from service.
@@ -40,36 +40,47 @@ def logs(name, namespace, region, start_time, end_time, offset, error_only, tail
         \b
         Fetch logs that was exceptional 
         \b
-        $ scf logs -n function  -eo(--error-only)
+        $ scf logs -n function  -f(--failed)
         \b
         Specify region of service
         \b
         $ scf logs -n function --region ap-guangzhou
     """
-    start, end = _align_time(start_time, end_time, offset)
-    client = ScfLogClient(name, namespace, region, start, end, error_only)
-    client.fetch_log()
+
+    start, end = _align_time(start_time, end_time, offset, tail)
+    client = ScfLogClient(name, namespace, region,  failed)
+    client.fetch_log(start, end, tail)
 
 
 
 
-def _align_time(_start, _end, offset):
+def _align_time(_start, _end, _offset, tail):
     tm_format = '%Y-%m-%d %H:%M:%S'
     start = end = None
+    if tail and _end:
+        raise InvalidEnvParameters("Endtime is conflict with tail")
+
     if _start:
         start = datetime.strptime(_start, tm_format)
 
     if _end:
         end = datetime.strptime(_end, tm_format)
     
+    
     # specify starttime and endtime
     if start and end:
         pass
     elif start:  # the combination of starttime and interval
-        end = start + timedelta(minutes=offset)
+        end = start + timedelta(minutes=_offset)
     elif end:   # the combination of endtime and interval
-        start = end - timedelta(minutes=offset)
+        start = end - timedelta(minutes=_offset)
     else:
-        end = datetime.now()
-        start = end - timedelta(minutes=offset)
+        if tail:
+            start = datetime.now()
+            end = start + timedelta(days=1)
+        else:
+            end = datetime.now()
+            start = end - timedelta(minutes=_offset)
+    if start >= end:
+        raise InvalidEnvParameters("endtime must be greater than starttime")
     return start.strftime(tm_format), end.strftime(tm_format)
