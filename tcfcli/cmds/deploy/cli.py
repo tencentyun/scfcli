@@ -163,9 +163,20 @@ class Deploy(object):
             click.secho("Deploy namespace '{ns}' end".format(ns=ns))
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
-        # todo
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
+            rep = ScfClient(region).get_ns(self.namespace)
+            if not rep:
+                click.secho("{ns} not exists, create it now".format(ns=self.namespace), fg="red")
+                err = ScfClient(region).create_ns(self.namespace)
+                if err is not None:
+                    if sys.version_info[0] == 3:
+                        s = err.get_message()
+                    else:
+                        s = err.get_message().encode("UTF-8")
+                    click.secho("Create namespace '{name}' failure. Error: {e}.".format(
+                        name=self.namespace, e=s), fg="red")
+                    return
             func_ns = self.namespace
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
