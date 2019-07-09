@@ -14,8 +14,8 @@ from tcfcli.common.template import Template
 from tcfcli.common.macro import MacroRuntime
 from tcfcli.common.file_util import FileUtil
 
-class InvokeContext(object):
 
+class InvokeContext(object):
     BOOTSTRAP_SUFFIX = {
         MacroRuntime.node610: "bootstrap.js",
         MacroRuntime.node89: "bootstrap.js",
@@ -126,7 +126,7 @@ class InvokeContext(object):
         argv = self._debug_context.argv
         runtime_pwd = os.path.dirname(os.path.abspath(__file__))
         bootstrap = os.path.join(runtime_pwd, "runtime", self._runtime.runtime,
-                            self.BOOTSTRAP_SUFFIX[self._runtime.runtime])
+                                 self.BOOTSTRAP_SUFFIX[self._runtime.runtime])
         code = os.path.normpath(
             os.path.join(os.path.dirname(os.path.abspath(self._template_file)), self._runtime.codeuri))
         return argv + [bootstrap, os.path.join(code, self.get_handler())]
@@ -137,7 +137,7 @@ class InvokeContext(object):
             'SCF_LOCAL': 'true',
             'SCF_FUNCTION_MEMORY_SIZE': str(self._runtime.mem_size),
             'SCF_FUNCTION_TIMEOUT': str(self._runtime.timeout),
-            'SCF_EVENT_BODY': self._event.encode("utf-8"),
+            'SCF_EVENT_BODY': self._event,
             'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env),
             'SCF_DISPLAY_IS_QUIET': str(self._is_quiet)
         }
@@ -149,6 +149,18 @@ class InvokeContext(object):
             env[k] = v
 
         env.update(FileUtil.load_json_from_file(self._env_file))
+
+        # convert unicode characters to utf-8 if py2
+        if not (sys.version_info > (3, 0)):
+            clean_env = {}
+            for k in env:
+                key = k
+                if isinstance(key, unicode):
+                    key = key.encode('utf-8')
+                if isinstance(env[k], unicode):
+                    env[k] = env[k].encode('utf-8')
+                clean_env[key] = env[k]
+            return clean_env
         return env
 
     def get_handler(self):
