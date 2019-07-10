@@ -12,7 +12,7 @@ def network_test(command_subclass):
     except Exception:
             pass   
     orig_run = command_subclass.run
-    test_url = ""
+    test_url = "https://service-ogdrs3e2-1259563297.gz.apigw.tencentcs.com/release/test-network"
     def modified_run(self):
         try:
             test_content = {'SCFCLI_VERSION': read_version()}
