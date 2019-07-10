@@ -7,6 +7,12 @@ from tcfcli.cmds.configure import cli as configure_cli
 
 class TestConfigure(unittest.TestCase):
 
+    def setUp(self):
+        super(TestConfigure, self).setUp()
+
+    def tearDown(self):
+        super(TestConfigure, self).tearDown()
+
     def test_configure_set_appid(self):
         runner = CliRunner()
         result = runner.invoke(configure_cli.set, ['--appid', AppID])
@@ -42,3 +48,7 @@ class TestConfigure(unittest.TestCase):
         result = runner.invoke(configure_cli.get, ['--secret-key'])
         self.assertIn('API config:\nsecret-key', result.output)
         self.assertEqual(0, result.exit_code)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
