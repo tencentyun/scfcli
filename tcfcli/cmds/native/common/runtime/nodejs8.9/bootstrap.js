@@ -12,9 +12,13 @@ var _result, _fault
 var _user_exception = false
 
 function wrapLog(invokeId) {
-    console.log = console.error = console.warn = console.info = function prettyConsoleLog() {
+    console.log = console.info = function prettyConsoleLog() {
         var message = `${util.format.apply(this, arguments)}\n`;
         runtime.console_log(message);
+    };
+    console.error = console.warn = function prettyConsoleLogErr() {
+        var message = `${util.format.apply(this, arguments)}\n`;
+        runtime.console_log(message, err=true);
     };
 };
 
@@ -157,7 +161,7 @@ function finish(err, data, wait) {
         else {
             _result = 'faulted'
             if (err instanceof Error) {
-                runtime.console_log(err.stack)
+                runtime.console_log(err.stack, true)
                 _fault = err.message
             }
             else {
@@ -246,7 +250,7 @@ class EventHandler {
             }
         }
         catch (err) {
-            runtime.console_log(err.stack)
+            runtime.console_log(err.stack, true)
             _fault = err.stack
             _user_exception = true
         }
