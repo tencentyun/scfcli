@@ -176,7 +176,7 @@ class Deploy(object):
                         s = err.get_message().encode("UTF-8")
                     click.secho("Create namespace '{name}' failure. Error: {e}.".format(
                         name=self.namespace, e=s), fg="red")
-                    return
+                    sys.exit(1)
             func_ns = self.namespace
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
@@ -189,7 +189,7 @@ class Deploy(object):
                                                                                e=s), fg="red")
             if err.get_request_id():
                 click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
-            return
+            sys.exit(1)
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
         if not skip_event:
@@ -198,10 +198,11 @@ class Deploy(object):
     def _do_deploy_trigger(self, func, func_name, func_ns, region=None):
         proper = func.get(tsmacro.Properties, {})
         events = proper.get(tsmacro.Events, {})
-
+        hasError = None
         for trigger in events:
             err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
             if err is not None:
+                hasError = err
                 if sys.version_info[0] == 3:
                     s = err.get_message()
                 else:
@@ -214,3 +215,5 @@ class Deploy(object):
                     click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
                 continue
             click.secho("Deploy trigger '{name}' success".format(name=trigger), fg="green")
+        if hasError is not None:
+            sys.exit(1)
