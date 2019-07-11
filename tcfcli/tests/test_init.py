@@ -25,7 +25,7 @@ class TestInit(unittest.TestCase):
     def tearDown(self):
         super(TestInit, self).tearDown()
 
-    def test_deploy_default(self):
+    def test_init_github(self):
         if os.path.exists(PythonDemoProjectPath):
             shutil.rmtree(PythonDemoProjectPath)
 

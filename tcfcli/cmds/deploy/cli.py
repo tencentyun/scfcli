@@ -47,6 +47,7 @@ class Package(object):
 
     def __init__(self, template_file, cos_bucket, function, region, deploy_namespace):
         self.template_file = template_file
+        self.template_file_dir = ""
         self.cos_bucket = cos_bucket
         self.check_params()
         template_data = tcsam.tcsam_validate(Template.get_template_data(self.template_file))
@@ -92,8 +93,7 @@ class Package(object):
             raise TemplateNotFoundException("template-file Not Found")
 
         self.template_file = os.path.abspath(self.template_file)
-        template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
-        os.chdir(template_file_dir)
+        self.template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
@@ -121,6 +121,7 @@ class Package(object):
         zip_file_name_cos = str(namespace) + '-' + str(func_name) + '-latest' + time.strftime(
             "-%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time()))) + '.zip'
         cwd = os.getcwd()
+        os.chdir(self.template_file_dir)
         os.chdir(func_path)
 
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
