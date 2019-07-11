@@ -23,20 +23,20 @@ REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong',
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True),
               help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
-@click.option('--function', type=str, help="The name of the function which should be deployed")
-@click.option('--namespace', '-n', type=str, help="The namespace which want to be deployed")
+@click.option('-n', '--name',  type=str, help="Function name")
+@click.option('-ns', '--namespace', type=str, help="Namespace name")
 @click.option('--region', '-r', type=click.Choice(REGIONS),
               help="The region which the function want to be deployed")
 @click.option('-f', '--forced', is_flag=True, default=False,
               help="Update the function when it already exists,default false")
 @click.option('--skip-event', is_flag=True, default=False,
               help="Keep previous version triggers, do not cover them this time.")
-def deploy(template_file, cos_bucket, function, namespace, region, forced, skip_event):
+def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event):
     '''
     Deploy a scf.
     '''
 
-    package = Package(template_file, cos_bucket, function, region, namespace)
+    package = Package(template_file, cos_bucket, name, region, namespace)
     resource = package.do_package()
 
     deploy = Deploy(resource, namespace, region, forced, skip_event)
