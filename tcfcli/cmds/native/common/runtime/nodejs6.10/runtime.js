@@ -1,7 +1,3 @@
-/*
- * by zalezhang 2018/12/17
- */
-
 var fs = require('fs');
 var crypto = require('crypto');
 
@@ -58,12 +54,15 @@ module.exports = {
     log: function (str) {
         //consoleLog(formatSystem(str));
     },
-    console_log: function (str) {
+    console_log: function (str, err=false) {
         if (!GLOBAL_IS_QUIET) {
-            consoleLog(formatConsole(str));
+            if (err === false)
+                consoleLog(formatConsole(str));
+            else
+                consoleLogErr(formatConsole(str));
         }
     },
-    report_fail: function(stackTrace, typeNum, errType) {
+    report_fail: function(stackTrace, errNum, errType=0) {
         result = {};
 
         result['errorCode'] = 1;
@@ -72,14 +71,15 @@ module.exports = {
             result['stackTrace'] = stackTrace;
         }
 
-        reportDone("");
-        console.dir(result);
+        reportDone("", errType=1);
+        // console.dir(result);
+        consoleLogErr(JSON.stringify(result));
     },
     report_running: function () {
         GLOBAL_START_TIME = process.hrtime();
     },
-    report_done: function (resultStr, typeNum) {
-        reportDone(resultStr);
+    report_done: function (resultStr, errType=0) {
+        reportDone(resultStr, errType);
     },
 }
 
@@ -97,32 +97,54 @@ function initContext() {
     return JSON.stringify(context)
 }
 
-function reportDone(resultStr) {
+function reportDone(resultStr, errType=0) {
     if (GLOBAL_IS_QUIET) {
         if (typeof resultStr === 'string') {
-            consoleLog(resultStr);
+            if (errType === 0)
+                consoleLog(resultStr);
+            else 
+                consoleLogErr(resultStr);
         }
         return
     }
+
     var diffMs = hrTimeMs(process.hrtime(GLOBAL_START_TIME));
     var billedMs = Math.min(100 * (Math.floor(diffMs / 100) + 1), GLOBAL_TIMEOUT * 1000);
-    consoleLog('END RequestId: ' + GLOBAL_REQUEST_ID);
-    consoleLog([
-        'REPORT RequestId: ' + GLOBAL_REQUEST_ID,
-        'Duration: ' + diffMs.toFixed(2) + ' ms',
-        'Billed Duration: ' + billedMs + ' ms',
-        'Memory Size: ' + GLOBAL_MEM_SIZE + ' MB',
-        'Max Memory Used: ' + Math.round(process.memoryUsage().rss / (1024 * 1024)) + ' MB',
-        '',
-    ].join('\t'));
+    if (errType === 0) {
+        consoleLog('END RequestId: ' + GLOBAL_REQUEST_ID);
+        consoleLog([
+            'REPORT RequestId: ' + GLOBAL_REQUEST_ID,
+            'Duration: ' + diffMs.toFixed(2) + ' ms',
+            'Billed Duration: ' + billedMs + ' ms',
+            'Memory Size: ' + GLOBAL_MEM_SIZE + ' MB',
+            'Max Memory Used: ' + Math.round(process.memoryUsage().rss / (1024 * 1024)) + ' MB',
+            '',
+        ].join('\t'));
+    } else {
+        consoleLogErr([
+            'REPORT RequestId: ' + GLOBAL_REQUEST_ID,
+            'Duration: ' + diffMs.toFixed(2) + ' ms',
+            'Billed Duration: ' + billedMs + ' ms',
+            'Memory Size: ' + GLOBAL_MEM_SIZE + ' MB',
+            'Max Memory Used: ' + Math.round(process.memoryUsage().rss / (1024 * 1024)) + ' MB',
+            '',
+        ].join('\t'));
+    }
 
     if (typeof resultStr === 'string') {
-        consoleLog('\n' + resultStr);
+        if (errType === 0)
+            consoleLog('\n' + resultStr);
+        else
+            consoleLogErr('\n' + resultStr);
     }
 }
 
 function consoleLog(str) {
     process.stdout.write(str + '\n');
+}
+
+function consoleLogErr(str) {
+    process.stderr.write(str + '\n');
 }
 
 function formatConsole(str) {
