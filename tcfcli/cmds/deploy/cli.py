@@ -87,6 +87,13 @@ class Package(object):
         if not self.template_file:
             click.secho("FAM Template Not Found", fg="red")
             raise TemplateNotFoundException("Missing option --template-file")
+        if not os.path.isfile(self.template_file):
+            click.secho("FAM Template Not Found", fg="red")
+            raise TemplateNotFoundException("template-file Not Found")
+
+        self.template_file = os.path.abspath(self.template_file)
+        template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
+        os.chdir(template_file_dir)
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
@@ -115,6 +122,7 @@ class Package(object):
             "-%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time()))) + '.zip'
         cwd = os.getcwd()
         os.chdir(func_path)
+
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
             for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                 if current_path == _BUILD_DIR:
@@ -165,19 +173,20 @@ class Deploy(object):
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
-            rep = ScfClient(region).get_ns(self.namespace)
-            if not rep:
-                click.secho("{ns} not exists, create it now".format(ns=self.namespace), fg="red")
-                err = ScfClient(region).create_ns(self.namespace)
-                if err is not None:
-                    if sys.version_info[0] == 3:
-                        s = err.get_message()
-                    else:
-                        s = err.get_message().encode("UTF-8")
-                    click.secho("Create namespace '{name}' failure. Error: {e}.".format(
-                        name=self.namespace, e=s), fg="red")
-                    sys.exit(1)
             func_ns = self.namespace
+
+        rep = ScfClient(region).get_ns(func_ns)
+        if not rep:
+            click.secho("{ns} not exists, create it now".format(ns=func_ns), fg="red")
+            err = ScfClient(region).create_ns(func_ns)
+            if err is not None:
+                if sys.version_info[0] == 3:
+                    s = err.get_message()
+                else:
+                    s = err.get_message().encode("UTF-8")
+                click.secho("Create namespace '{name}' failure. Error: {e}.".format(
+                    name=func_ns, e=s), fg="red")
+                sys.exit(1)
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
         if err is not None:
