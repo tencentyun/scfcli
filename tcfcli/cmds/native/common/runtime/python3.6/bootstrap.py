@@ -6,7 +6,7 @@ import os
 import sys
 if sys.version_info[0] != 3 or sys.version_info[1] < 6:
     print("The version of python({}) don't match the Runtime version".format(str(sys.version_info)))
-    sys.exit(0)
+    sys.exit(233)
 import json
 import logging
 import traceback
