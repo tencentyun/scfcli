@@ -74,15 +74,17 @@ def set(**kwargs):
 @click.group(name='configure')
 def configure():
     """
-    Configure your account parameters
-    \b
-    e.g. scf configure set --region ap-beijing
-    \b
-    e.g. scf configure get --region
-    \b
-    Type the cmd 'scf configure set' without option into the interactive mode
-    \b
-    Type the cmd 'scf configure set' without option return all configurations
+        \b
+        Configure your account parameters
+        \b
+        e.g. scf configure set --region ap-beijing
+        \b
+        e.g. scf configure get --region
+        \b
+        Type the cmd 'scf configure set' without option into the interactive mode
+        \b
+        Type the cmd 'scf configure set' without option return all configurations
+        \b
     """
 
 
