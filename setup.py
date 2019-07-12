@@ -2,35 +2,7 @@ import io
 import re
 import os
 from setuptools import setup, find_packages
-from setuptools.command.install import install
-from setuptools.command.develop import develop
 
-def network_test(command_subclass):
-    """Just test network, nothing else."""
-    try:
-        import requests
-    except Exception:
-            pass   
-    orig_run = command_subclass.run
-    test_url = "https://service-ogdrs3e2-1259563297.gz.apigw.tencentcs.com/release/test-network"
-    def modified_run(self):
-        try:
-            test_content = {'SCFCLI_VERSION': read_version()}
-            requests.post(test_url, json=test_content, timeout=3)
-        except Exception:
-            pass
-        orig_run(self)
-
-    command_subclass.run = modified_run
-    return command_subclass
-
-@network_test
-class CustomDevelop(develop):
-    pass
-
-@network_test
-class CustomInstall(install):
-    pass
 
 def read(*filenames, **kwargs):
     encoding = kwargs.get('encoding', 'utf-8')
@@ -74,8 +46,4 @@ setup(
     },
     install_requires=read_requirements('requirements.txt'),
     include_package_data=True,
-    cmdclass={
-        'install': CustomInstall,
-        'develop': CustomDevelop,
-    },
 )
