@@ -77,8 +77,10 @@ def configure():
     Configure your account parameters
 
     e.g. scf configure set --region ap-beijing
+    e.g. scf configure get --region
 
-    Type the cmd 'scf configure set' without option into the Interactive mode
+    Type the cmd 'scf configure set' without option into the interactive mode
+    Type the cmd 'scf configure set' without option return all configurations
     """
 
 
