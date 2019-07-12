@@ -2,16 +2,16 @@ import unittest
 import os
 import shutil
 
+from datetime import datetime
 from test_common import *
 from click.testing import CliRunner
 from tcfcli.cmds.configure import cli as configure_cli
 from tcfcli.cmds.init import cli as init_cli
-from tcfcli.cmds.deploy import cli as deploy_cli
+from tcfcli.cmds.native import cli as native_cli
 
-
-class TestDeploy(unittest.TestCase):
+class TestNative(unittest.TestCase):
     def setUp(self):
-        super(TestDeploy, self).setUp()
+        super(TestNative, self).setUp()
         runner = CliRunner()
         result = runner.invoke(configure_cli.set, ['--appid', AppID])
         self.assertEqual(0, result.exit_code)
@@ -23,10 +23,10 @@ class TestDeploy(unittest.TestCase):
         self.assertEqual(0, result.exit_code)
 
     def tearDown(self):
-        super(TestDeploy, self).tearDown()
+        super(TestNative, self).tearDown()
 
-    def test_deploy_python27(self):
-        name = "hello_world_python27"
+    def test_native_python27(self):
+        name = "landun-devops-python27-" + get_datetime()
         path = "./" + name
         if os.path.exists(path):
             shutil.rmtree(path)
@@ -36,14 +36,32 @@ class TestDeploy(unittest.TestCase):
         self.assertIn('[*] Project initialization is complete\n', result.output)
         self.assertEqual(0, result.exit_code)
 
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event"])
         self.assertEqual(0, result.exit_code)
+
         if os.path.exists(path):
             shutil.rmtree(path)
 
-    def test_deploy_python36(self):
-        name = "hello_world_python36"
+    def test_native_python27_quiet(self):
+        name = "landun-devops-python27-" + get_datetime()
+        path = "./" + name
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        runner = CliRunner()
+        result = runner.invoke(init_cli.init, ['-N', '-r', 'python2.7', '-n', name, '-ns', 'default'])
+        self.assertIn('[*] Project initialization is complete\n', result.output)
+        self.assertEqual(0, result.exit_code)
+
+        # test option: -q, --quiet 
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event", "-q"])
+        self.assertEqual(0, result.exit_code)
+
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+    def test_native_python36(self):
+        name = "landun-devops-python36-" + get_datetime()
         path = "./" + name
         if os.path.exists(path):
             shutil.rmtree(path)
@@ -53,14 +71,33 @@ class TestDeploy(unittest.TestCase):
         self.assertIn('[*] Project initialization is complete\n', result.output)
         self.assertEqual(0, result.exit_code)
 
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event"])
         self.assertEqual(0, result.exit_code)
+
         if os.path.exists(path):
             shutil.rmtree(path)
 
+    def test_deploy_python36_quiet(self):
+        name = "landun-devops-python36-" + get_datetime()
+        path = "./" + name
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        runner = CliRunner()
+        result = runner.invoke(init_cli.init, ['-N', '-r', 'python3.6', '-n', name, '-ns', 'default'])
+        self.assertIn('[*] Project initialization is complete\n', result.output)
+        self.assertEqual(0, result.exit_code)
+
+        # test option: -q, --quiet 
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event", "-q"])
+        self.assertEqual(0, result.exit_code)
+
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+
     def test_deploy_nodejs610(self):
-        name = "hello_world_nodejs610"
+        name = "landun-devops-nodejs610-" + get_datetime()
         path = "./" + name
         if os.path.exists(path):
             shutil.rmtree(path)
@@ -70,14 +107,32 @@ class TestDeploy(unittest.TestCase):
         self.assertIn('[*] Project initialization is complete\n', result.output)
         self.assertEqual(0, result.exit_code)
 
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event"])
         self.assertEqual(0, result.exit_code)
+
         if os.path.exists(path):
             shutil.rmtree(path)
 
+    def test_deploy_nodejs610_quiet(self):
+        name = "landun-devops-nodejs610-" + get_datetime()
+        path = "./" + name
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        runner = CliRunner()
+        result = runner.invoke(init_cli.init, ['-N', '-r', 'nodejs6.10', '-n', name, '-ns', 'default'])
+        self.assertIn('[*] Project initialization is complete\n', result.output)
+        self.assertEqual(0, result.exit_code)
+
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event", "-q"])
+        self.assertEqual(0, result.exit_code)
+
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+    
     def test_deploy_nodejs89(self):
-        name = "hello_world_nodejs89"
+        name = "landun-devops-nodejs89-" + get_datetime()
         path = "./" + name
         if os.path.exists(path):
             shutil.rmtree(path)
@@ -87,74 +142,33 @@ class TestDeploy(unittest.TestCase):
         self.assertIn('[*] Project initialization is complete\n', result.output)
         self.assertEqual(0, result.exit_code)
 
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event"])
         self.assertEqual(0, result.exit_code)
+
         if os.path.exists(path):
             shutil.rmtree(path)
 
-    def test_deploy_python27_namespace(self):
-        name = "hello_world_python27_ns"
+    def test_deploy_nodejs89_quiet(self):
+        name = "landun-devops-nodejs89-" + get_datetime()
         path = "./" + name
         if os.path.exists(path):
             shutil.rmtree(path)
 
         runner = CliRunner()
-        result = runner.invoke(init_cli.init, ['-N', '-r', 'python2.7', '-n', name, '-ns', 'default'])
+        result = runner.invoke(init_cli.init, ['-N', '-r', 'nodejs8.9', '-n', name, '-ns', 'default'])
         self.assertIn('[*] Project initialization is complete\n', result.output)
         self.assertEqual(0, result.exit_code)
 
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
-        self.assertEqual(0, result.exit_code)
-
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f", "-ns", "default111"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
+        result = runner.invoke(native_cli.invoke, ["-t", "./%s/template.yaml" % name, "--no-event", "-q"])
         self.assertEqual(0, result.exit_code)
 
         if os.path.exists(path):
             shutil.rmtree(path)
 
-    def test_deploy_python27_cos(self):
-        name = "hello_world_python27_cos"
-        path = "./" + name
-        cos_bucket = "scf-function-test-hk"
-        new_namespace = "default111"
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-        runner = CliRunner()
-        result = runner.invoke(init_cli.init, ['-N', '-r', 'python2.7', '-n', name, '-ns', 'default'])
-        self.assertIn('[*] Project initialization is complete\n', result.output)
-        self.assertEqual(0, result.exit_code)
-
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f", "-ns", new_namespace, "-c",
-                                                   cos_bucket])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
-        self.assertIn('to COS bucket \'%s\' success' % cos_bucket, result.output)
-        self.assertEqual(0, result.exit_code)
-
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-    def test_deploy_python27_region(self):
-        name = "hello_world_python27_region"
-        path = "./" + name
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
-        runner = CliRunner()
-        result = runner.invoke(init_cli.init, ['-N', '-r', 'python2.7', '-n', name, '-ns', 'default'])
-        self.assertIn('[*] Project initialization is complete\n', result.output)
-        self.assertEqual(0, result.exit_code)
-
-        result = runner.invoke(deploy_cli.deploy, ["-t", "./%s/template.yaml" % name, "-f", "-r", "ap-chengdu"])
-        self.assertIn('Deploy function \'%s\' success' % name, result.output)
-        self.assertEqual(0, result.exit_code)
-
-        if os.path.exists(path):
-            shutil.rmtree(path)
-
+def get_datetime():
+    now = datetime.now() # current date and time
+    date_time = now.strftime("%m%d%Y%H%M%S")
+    return date_time
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
