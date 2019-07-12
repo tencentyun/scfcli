@@ -20,6 +20,6 @@ class ScfReportClient(ScfBaseClient):
     def report(self):
         try:
             params = {'Downloads': 1, 'Source': 'cli', 'SourceVersion': __version__}
-            click.secho(self._client.call("ReportCliInfos", params))
+            self._client.call("ReportCliInfos", params)
         except Exception as err:
             pass
