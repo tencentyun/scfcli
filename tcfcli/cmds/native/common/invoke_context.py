@@ -106,14 +106,17 @@ class InvokeContext(object):
 
         if not self._debug_context.is_debug:
             timer.start()
+        ret_code = 0
         try:
-            child.wait()
+            ret_code = child.wait()
         except KeyboardInterrupt:
             child.kill()
             click.secho("Recv a SIGINT, exit.")
         timer.cancel()
         if self._thread_err_msg != "":
             raise TimeoutException(self._thread_err_msg)
+        if ret_code == 233: # runtime not match
+            sys.exit(1)
 
     @property
     def cmd(self):
