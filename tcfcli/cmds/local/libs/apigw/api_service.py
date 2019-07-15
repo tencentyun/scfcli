@@ -53,7 +53,7 @@ class LocalApiService(object):
 
     def _show_routes(self, routes_list, port, host):
         for route in routes_list:
-            if route.method[0] is not 'ANY':
+            if route.method[0] == 'ANY':
                 logger.info('Mounting {} at http://{}:{}{} {}'.format(route.func_name, host, port, route.path, route.method))
 
     def _get_static_dir_path(self):

@@ -1,5 +1,6 @@
 import click
 import json
+import sys
 from tcfcli.cmds.cli import __version__
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
@@ -13,16 +14,21 @@ import base64
 
 
 class ScfClient(object):
-
     CLOUD_API_REQ_TIMEOUT = 120
-    def __init__(self):
+
+    def __init__(self, region=None):
         uc = UserConfig()
         self._cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key)
-        self._region = uc.region
+        if region is None:
+            self._region = uc.region
+        else:
+            self._region = region
         hp = HttpProfile(reqTimeout=ScfClient.CLOUD_API_REQ_TIMEOUT)
         cp = ClientProfile("TC3-HMAC-SHA256", hp)
         self._client = scf_client.ScfClient(self._cred, self._region, cp)
         self._client._sdkVersion = "TCFCLI"
+        self._client_ext = ScfClientExt(self._cred, self._region, cp)
+        self._client_ext._sdkVersion = "TCFCLI_" + __version__
 
     def get_function(self, function_name=None):
         req = models.GetFunctionRequest()
@@ -57,7 +63,7 @@ class ScfClient(object):
 
     def create_func(self, func, func_name, func_ns):
         req = models.CreateFunctionRequest()
-        req.Namespace =  func_ns
+        req.Namespace = func_ns
         req.FunctionName = func_name
         proper = func.get(tsmacro.Properties, {})
         req.Handler = proper.get(tsmacro.Handler)
@@ -113,7 +119,30 @@ class ScfClient(object):
         req.Enable = enable
         resp = self._client.CreateTrigger(req)
         click.secho(resp.to_json_string())
-    
+
+    def get_ns(self, namespace):
+        try:
+            resp = self._client_ext.ListNamespaces()
+            namespaces = resp.get("Namespaces", [])
+            for ns_dict in namespaces:
+                if namespace == ns_dict.get("Name"):
+                    return namespace
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            click.secho("get namespace '{name}' failure. Error: {e}.".format(
+                name=namespace, e=s), fg="red")
+        return None
+
+    def create_ns(self, namespace):
+        try:
+            self._client_ext.CreateNamespace(namespace)
+        except TencentCloudSDKException as err:
+            return err
+        return
+
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
         if t == tsmacro.TrTimer:
@@ -138,9 +167,9 @@ class ScfClient(object):
             }
             desc = json.dumps(desc, separators=(',', ':'))
         elif t == tsmacro.TrCMQ:
-            #desc = proper.get(trmacro.Name, name)
+            # desc = proper.get(trmacro.Name, name)
             desc = None
-        
+
         elif t == tsmacro.TrCOS:
             desc = {"event": proper.get(tsmacro.Events), "filter": proper.get(trmacro.Filter)}
             desc = json.dumps(desc, separators=(',', ':'))
@@ -150,8 +179,6 @@ class ScfClient(object):
         else:
             raise Exception("Invalid trigger type:{}".format(str(t)))
         req.TriggerDesc = desc
-
-
 
     def deploy_trigger(self, trigger, name, func_name, func_ns):
         try:
@@ -202,3 +229,48 @@ class ScfClient(object):
             with open(zip_file, 'rb') as f:
                 return base64.b64encode(f.read()).decode('utf-8')
         return None
+
+
+class ScfClientExt(scf_client.ScfClient):
+    def ListNamespaces(self):
+        try:
+            request = {
+                'Offset': 0,
+                'Limit': 20,
+            }
+            body = self.call("ListNamespaces", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            if isinstance(e, TencentCloudSDKException):
+                raise
+            else:
+                raise TencentCloudSDKException(e.message, e.message)
+
+    def CreateNamespace(self, namespace):
+        try:
+            request = {
+                'Namespace': namespace,
+                'Description': namespace,
+                'Type': 'default'
+            }
+            body = self.call("CreateNamespace", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            if isinstance(e, TencentCloudSDKException):
+                raise
+            else:
+                raise TencentCloudSDKException(e.message, e.message)

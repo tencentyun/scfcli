@@ -5,7 +5,7 @@ import os
 import sys
 if sys.version_info[0] != 2 or sys.version_info[1] < 7:
     print("The version of python({}) don't match the Runtime version".format(str(sys.version_info)))
-    sys.exit(0)
+    sys.exit(233)
 import imp
 import json
 import logging
@@ -117,7 +117,7 @@ def get_func_handler(mname, fname):
         for item in need_del_module:
             del sys.modules[item]
     except Exception as ex:
-        runtime.log("del old module err", str(ex))
+        runtime.log("del old module err" + str(ex))
 
     # change the current working directory
     current_path = os.path.dirname(mname+".py")

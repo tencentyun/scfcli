@@ -18,6 +18,7 @@ _GLOBAL_FUNCTION_NAME = os.environ.get('SCF_FUNCTION_NAME', 'test')
 _GLOBAL_VERSION = os.environ.get('SCF_FUNCTION_VERSION', '$LATEST')
 _GLOBAL_MEM_SIZE = os.environ.get('SCF_FUNCTION_MEMORY_SIZE', '256')
 _GLOBAL_TIMEOUT = int(os.environ.get('SCF_FUNCTION_TIMEOUT', '3'))
+_GLOBAL_IS_QUIET = (os.environ.get('SCF_DISPLAY_IS_QUIET', 'False') == 'True')
 
 _GLOBAL_FUNCTION_HANDLER = sys.argv[1] if len(sys.argv) > 1 else os.environ.get('SCF_FUNCTION_HANDLER',
         'index.main_handler')
@@ -27,7 +28,9 @@ _GLOBAL_EVENT_BODY =  sys.argv[2] if len(sys.argv) > 2 else os.environ.get('SCF_
 
 
 def init():
-    tcf_print("START RequestId: %s" % _GLOBAL_REQUEST_ID)
+    global _GLOBAL_IS_QUIET
+    if not _GLOBAL_IS_QUIET:
+        tcf_print("START RequestId: %s" % _GLOBAL_REQUEST_ID)
 
     os.environ['SOCKETPATH'] = ''
     os.environ['CONTAINERID'] = ''
@@ -83,21 +86,41 @@ def wait_for_invoke():
 
 
 def report_done(msg, err_type=0):
-    tcf_print("END RequestId: %s" % _GLOBAL_REQUEST_ID)
+    global _GLOBAL_IS_QUIET
+    if _GLOBAL_IS_QUIET:
+        if msg:
+            if err_type != 0:
+                tcf_print_err("%s" % msg)
+            else:
+                tcf_print("%s" % msg)
+            return
+
+    if err_type == 0:
+        tcf_print("END RequestId: %s" % _GLOBAL_REQUEST_ID)
 
     duration = int((time.time() - _GLOBAL_START_TIME) * 1000)
     billed_duration = min(100 * int((duration / 100) + 1), _GLOBAL_TIMEOUT * 1000)
     max_mem = pstool.get_peak_memory() # memory use in MB
-    tcf_print(
-        "REPORT RequestId: %s Duration: %s ms Billed Duration: %s ms Memory Size: %s MB Max Memory Used: %s MB" % (
-            _GLOBAL_REQUEST_ID, duration, billed_duration, _GLOBAL_MEM_SIZE, max_mem
+    if err_type != 0:
+        tcf_print_err(
+            "REPORT RequestId: %s Duration: %s ms Billed Duration: %s ms Memory Size: %s MB Max Memory Used: %s MB" % (
+                _GLOBAL_REQUEST_ID, duration, billed_duration, _GLOBAL_MEM_SIZE, max_mem
+            )
         )
-    )
-
-    tcf_print("\n")
+        tcf_print_err("\n")
+    else:
+        tcf_print(
+            "REPORT RequestId: %s Duration: %s ms Billed Duration: %s ms Memory Size: %s MB Max Memory Used: %s MB" % (
+                _GLOBAL_REQUEST_ID, duration, billed_duration, _GLOBAL_MEM_SIZE, max_mem
+            )
+        )
+        tcf_print("\n")
 
     if msg:
-        tcf_print("%s" % msg)
+        if err_type != 0:
+            tcf_print_err("%s" % msg)
+        else:
+            tcf_print("%s" % msg)
 
 
 def report_running():
@@ -112,12 +135,17 @@ def report_fail(stackTrace, mem_kb, ret_code):
     if stackTrace:
         result['stackTrace'] = stackTrace
 
-    report_done('')
-    tcf_print(result)
+    report_done('', err_type=1)
+    tcf_print_err(result)
 
 
-def console_log(errMsg):
-    tcf_print(errMsg)
+def console_log(msg, err=False):
+    global _GLOBAL_IS_QUIET
+    if not _GLOBAL_IS_QUIET:
+        if err:
+            tcf_print_err(msg)
+        else:
+            tcf_print(msg)
 
 
 def log(errMsg):
@@ -125,4 +153,9 @@ def log(errMsg):
 
 
 def tcf_print(*args, **kwargs):
-    print(*args, file=tcf_stderr, flush=True, **kwargs)
+    print(*args, file=tcf_stdout, **kwargs)
+    tcf_stdout.flush()
+
+def tcf_print_err(*args, **kwargs):
+    print(*args, file=tcf_stderr, **kwargs)
+    tcf_stderr.flush()

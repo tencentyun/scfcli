@@ -8,14 +8,20 @@ class UserException(click.ClickException):
 class InvokeContextException(UserException):
     pass
 
-
 class TemplateNotFoundException(UserException):
     pass
 
-
-class OutTemplateAlreadyExist(UserException):
+class DeployException(UserException):
     pass
 
+class InvokeException(UserException):
+    pass
+
+class TimeoutException(UserException):
+    pass
+    
+class OutTemplateAlreadyExist(UserException):
+    pass
 
 class ContextException(UserException):
     pass
@@ -59,6 +65,9 @@ class InvalidEventException(UserException):
     pass
 
 class InvalidEnvVarsException(UserException):
+    pass
+
+class LogsException(UserException):
     pass
 
 class InvalidDocumentException(Exception):

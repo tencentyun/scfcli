@@ -6,7 +6,7 @@ import subprocess
 import threading
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
-from tcfcli.common.user_exceptions import InvokeContextException
+from tcfcli.common.user_exceptions import InvokeContextException, TimeoutException, UserException
 from tcfcli.common.user_exceptions import InvalidOptionValue
 from tcfcli.cmds.native.common.runtime import Runtime
 from tcfcli.cmds.native.common.debug_context import DebugContext
@@ -14,14 +14,16 @@ from tcfcli.common.template import Template
 from tcfcli.common.macro import MacroRuntime
 from tcfcli.common.file_util import FileUtil
 
-class InvokeContext(object):
 
+class InvokeContext(object):
     BOOTSTRAP_SUFFIX = {
         MacroRuntime.node610: "bootstrap.js",
         MacroRuntime.node89: "bootstrap.js",
         MacroRuntime.python27: "bootstrap.py",
         MacroRuntime.python36: "bootstrap.py",
     }
+
+    _thread_err_msg = ""
 
     def __init__(self,
                  template_file,
@@ -30,7 +32,8 @@ class InvokeContext(object):
                  env_file=None,
                  debug_port=None,
                  debug_args="",
-                 event="{}"):
+                 event="{}",
+                 is_quiet=False):
 
         self._template_file = template_file
         self._function = function
@@ -41,6 +44,9 @@ class InvokeContext(object):
         self._runtime = None
         self._debug_context = None
         self._env_file = env_file
+        self._is_quiet = is_quiet
+
+        self._thread_err_msg = ""
 
     def _get_namespace(self, resource):
         ns = None
@@ -86,27 +92,31 @@ class InvokeContext(object):
 
     def invoke(self):
         def timeout_handle(child):
-            try:
-                click.secho('Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout))
-                child.kill()
-            except Exception:
-                pass
+            click.secho('Function Timeout.', fg="red")
+            child.kill()
+            self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout)
 
         try:
             child = subprocess.Popen(args=[self.cmd]+self.argv, env=self.env)
         except OSError:
-            click.secho("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
-            return
+            click.secho("Execution Failed.", fg="red")
+            raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
+
         timer = threading.Timer(self._runtime.timeout, timeout_handle, [child])
 
         if not self._debug_context.is_debug:
             timer.start()
+        ret_code = 0
         try:
-            child.wait()
+            ret_code = child.wait()
         except KeyboardInterrupt:
             child.kill()
             click.secho("Recv a SIGINT, exit.")
         timer.cancel()
+        if self._thread_err_msg != "":
+            raise TimeoutException(self._thread_err_msg)
+        if ret_code == 233: # runtime not match
+            sys.exit(1)
 
     @property
     def cmd(self):
@@ -119,7 +129,7 @@ class InvokeContext(object):
         argv = self._debug_context.argv
         runtime_pwd = os.path.dirname(os.path.abspath(__file__))
         bootstrap = os.path.join(runtime_pwd, "runtime", self._runtime.runtime,
-                            self.BOOTSTRAP_SUFFIX[self._runtime.runtime])
+                                 self.BOOTSTRAP_SUFFIX[self._runtime.runtime])
         code = os.path.normpath(
             os.path.join(os.path.dirname(os.path.abspath(self._template_file)), self._runtime.codeuri))
         return argv + [bootstrap, os.path.join(code, self.get_handler())]
@@ -131,7 +141,8 @@ class InvokeContext(object):
             'SCF_FUNCTION_MEMORY_SIZE': str(self._runtime.mem_size),
             'SCF_FUNCTION_TIMEOUT': str(self._runtime.timeout),
             'SCF_EVENT_BODY': self._event,
-            'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env)
+            'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env),
+            'SCF_DISPLAY_IS_QUIET': str(self._is_quiet)
         }
 
         for k, v in self._runtime.env.items():
@@ -141,6 +152,18 @@ class InvokeContext(object):
             env[k] = v
 
         env.update(FileUtil.load_json_from_file(self._env_file))
+
+        # convert unicode characters to utf-8 if py2
+        if not (sys.version_info > (3, 0)):
+            clean_env = {}
+            for k in env:
+                key = k
+                if isinstance(key, unicode):
+                    key = key.encode('utf-8')
+                if isinstance(env[k], unicode):
+                    env[k] = env[k].encode('utf-8')
+                clean_env[key] = env[k]
+            return clean_env
         return env
 
     def get_handler(self):
