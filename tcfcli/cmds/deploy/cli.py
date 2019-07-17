@@ -7,6 +7,7 @@ from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common import tcsam
+from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from zipfile import ZipFile, ZIP_DEFLATED
 from tcfcli.libs.utils.cos_client import CosClient
@@ -23,7 +24,7 @@ REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong',
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True),
               help="TCF template file for deploy")
 @click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
-@click.option('-n', '--name',  type=str, help="Function name")
+@click.option('-n', '--name', type=str, help="Function name")
 @click.option('-ns', '--namespace', type=str, help="Namespace name")
 @click.option('--region', '-r', type=click.Choice(REGIONS),
               help="The region which the function want to be deployed")
@@ -94,6 +95,9 @@ class Package(object):
 
         self.template_file = os.path.abspath(self.template_file)
         self.template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
+        uc = UserConfig()
+        if self.cos_bucket.endswith("-" + uc.appid):
+            self.cos_bucket = self.cos_bucket.replace("-" + uc.appid, '')
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
