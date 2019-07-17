@@ -96,7 +96,7 @@ class Package(object):
         self.template_file = os.path.abspath(self.template_file)
         self.template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
         uc = UserConfig()
-        if self.cos_bucket.endswith("-" + uc.appid):
+        if self.cos_bucket and self.cos_bucket.endswith("-" + uc.appid):
             self.cos_bucket = self.cos_bucket.replace("-" + uc.appid, '')
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
