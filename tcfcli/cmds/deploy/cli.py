@@ -205,7 +205,7 @@ class Deploy(object):
 
             if err.get_request_id():
                 err_msg += ("\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
-            raise CloudAPIException(err_msg)
+            raise CloudAPIException(err_msg.decode("UTF-8"))
             
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
