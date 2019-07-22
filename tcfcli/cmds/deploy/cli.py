@@ -5,6 +5,7 @@ import time
 from io import BytesIO
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
+from tcfcli.common.user_exceptions import CloudAPIException
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common import tcsam
 from tcfcli.common.user_config import UserConfig
@@ -199,11 +200,13 @@ class Deploy(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("Deploy function '{name}' failure. Error: {e}.".format(name=func_name,
-                                                                               e=s), fg="red")
+            
+            err_msg = "Deploy function '{name}' failure. Error: {e}.".format(name=func_name, e=s)
+
             if err.get_request_id():
-                click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
-            sys.exit(1)
+                err_msg += ("\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
+            raise CloudAPIException(err_msg)
+            
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
         if not skip_event:
