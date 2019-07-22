@@ -201,7 +201,7 @@ class Deploy(object):
             else:
                 s = err.get_message().encode("UTF-8")
             
-            err_msg = "Deploy function '{name}' failure.\n{e}.".format(name=func_name, e=s)
+            err_msg = "Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
                 err_msg += ("\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
