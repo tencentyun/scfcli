@@ -4,6 +4,8 @@ import click
 class UserException(click.ClickException):
     exit_code = 1
 
+class CloudAPIException(UserException):
+    pass
 
 class InvokeContextException(UserException):
     pass
