@@ -89,6 +89,9 @@ def _align_time(_start, _end, _offset):
         start = end - timedelta(seconds=_offset)
     elif start and end:
         pass
+    elif (not start) and (not end):
+        end = datetime.now()
+        start = end - timedelta(seconds=60)  
     elif not start:
         raise InvalidEnvParameters("start-time name is unspecified")
     else:

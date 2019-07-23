@@ -116,7 +116,7 @@ class InvokeContext(object):
         if self._thread_err_msg != "":
             raise TimeoutException(self._thread_err_msg)
         if ret_code == 233: # runtime not match
-            sys.exit(1)
+            raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.runtime))
 
     @property
     def cmd(self):
