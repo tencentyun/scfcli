@@ -34,7 +34,7 @@ class Init(object):
         }
         click.secho("Template: %s" % params["template"])
         click.secho("Output-Dir: %s" % params["output_dir"])
-        if not location and name is not None:
+        if name is not None:
             params["no_input"] = True
             params['extra_context'] = {'project_name': name, 'runtime': runtime, 'namespace': namespace}
             click.secho("Project-Name: %s" % params['extra_context']["project_name"])
