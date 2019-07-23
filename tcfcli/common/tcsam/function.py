@@ -20,7 +20,7 @@ func_schema = {
                     "type": "object",
                     "properties": {
                         macro.Vari: {
-                            "type": "object",
+                            "type": ["object", "null"],
                             "properties": {},
                             "additionalProperties": { "type": "string" }
                         }
@@ -38,7 +38,7 @@ func_schema = {
                 },
                 macro.Timeout: {"type": "integer", "exclusiveMinimum": 0},
                 macro.Events: {
-                    "type": "object",
+                    "type": ["object","null"],
                     "properties":{},
                     "additionalProperties": {
                         "type": "object",
