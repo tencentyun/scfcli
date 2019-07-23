@@ -196,16 +196,17 @@ class Deploy(object):
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
         if err is not None:
-            if sys.version_info[0] == 3:
-                s = err.get_message()
-            else:
-                s = err.get_message().encode("UTF-8")
-            
-            err_msg = "Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
+            #if sys.version_info[0] == 3:
+            s = err.get_message()
+            #else:
+            #    s = err.get_message().encode("UTF-8")
+            if sys.version_info[0] == 2 and isinstance(s, str):
+                s = s.encode("utf8")
+            err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
-                err_msg += ("\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
-            raise CloudAPIException(err_msg.decode("UTF-8"))
+                err_msg += (u"\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
+            raise CloudAPIException(err_msg)
             
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
