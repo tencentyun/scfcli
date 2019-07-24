@@ -14,29 +14,29 @@ The parameters supported by the `scf local invoke` command are as follows:
 
 Parameter | Required | Description | Example
 --- | --- | --- | ---
-Event | no | The source of the file for the simulated test event, the file content must be in JSON format | Event.json
-Template | no | The project describes the path or file name of the configuration file. The default is template.yaml | Template.yaml
-Env-vars | no | The environment variable configuration when the function is running, you need to specify the environment variable configuration file, the content must be in JSON format. | Env.json
-Debug-port | no | The port exposed when the function is running. After the port is specified, the container will start in debug mode and expose the specified port. | 3366
-Debugger-path | no | The debugger path in this machine. After the path is specified, the container will load the debugger into the container when it runs. | /root/debugger/pydev
-Debug-args | no | The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts. | 
-Docker-volume-basedir | no | Specify the path to mount to the container | /User/xxx/code/project
-Docker-network | no | Specifies the network used by the container, using bridge mode by default | Bridge
-Log-file | no | Specify output log to file | /User/xxx/code/project/log.txt
-Skip-pull-image | no | Skip checking and pulling new container images | 
+event | no | The source of the file for the simulated test event, the file content must be in JSON format | event.json
+Template | no | The project describes the path or file name of the configuration file. The default is template.yaml | template.yaml
+env-vars | no | The environment variable configuration when the function is running, you need to specify the environment variable configuration file, the content must be in JSON format. | env.json
+debug-port | no | The port exposed when the function is running. After the port is specified, the container will start in debug mode and expose the specified port. | 3366
+debugger-path | no | The debugger path in this machine. After the path is specified, the container will load the debugger into the container when it runs. | /root/debugger/pydev
+debug-args | no | The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts. | 
+docker-volume-basedir | no | Specify the path to mount to the container | /user/xxx/code/project
+docker-network | no | Specifies the network used by the container, using bridge mode by default | bridge
+log-file | no | Specify output log to file | /user/xxx/code/project/log.txt
+skip-pull-image | no | Skip checking and pulling new container images | 
 
 The support option FUNCTION_IDENTIFIER is described as follows:
 
 Parameter | Required | Description | Example
 --- | --- | --- | ---
-FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if there are multiple function descriptions in the project description configuration file, you can use this parameter to specify the function to be debugged. | Hello_world
+FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if there are multiple function descriptions in the project description configuration file, you can use this parameter to specify the function to be debugged. | hello_world
 
-### Test simulation event
+### Test event
 
 The simulation event used to trigger the cloud function locally can be passed through the command pipeline of linux or passed through a file.
 
-- **Passing through the command pipeline:** The `scf local invoke` command supports receiving events from the command line pipeline. We can generate events and pass them by executing the `scf local generate-event` command to form a debug command such as `scf local generate-event cos post | scf local invoke --template template.yaml `. We can also construct the output JSON format content and pass it to the `scf local invoke` command to form a debug command such as `echo '{"test":"value"}' | scf local invoke --template template.yaml` .
-- {strong0} Passing the file: {/strong0} Specify the file containing the contents of the test simulation event by using the --event parameter of the `scf local invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf local invoke --template template.yaml --event event.json` .
+- **Passing through the command pipeline:** The `scf local invoke` command supports receiving events from the command line pipeline. We can generate events and pass them by executing the `scf local generate-event` command to form a debug command such as `scf local generate-event cos post | scf local invoke --template template.yaml`. We can also construct the output JSON format content and pass it to the `scf local invoke` command to form a debug command such as `echo '{"test":"value"}' | scf local invoke --template template.yaml` .
+- ** Passing the file: ** Specify the file containing the contents of the test simulation event by using the `--event` parameter of the `scf local invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf local invoke --template template.yaml --event event.json` .
 
 ### Use example
 
@@ -66,9 +66,9 @@ REPORT RequestId: 766e10b0-fd41-42ed-acd4-c161833e3bd2 Duration: 0 ms Billed Dur
 "hello world"
 ```
 
-As you can see from the output, after the function finishes running, it outputs the print log of the function and the function return content. 
+As you can see from the output, after the function finishes running, it outputs the print log of the function and the function return content.
 
-2. Generate the following event.json test event file:
+1. Generate the following event.json test event file:
 
 ```json
 {
