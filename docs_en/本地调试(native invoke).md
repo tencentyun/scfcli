@@ -2,7 +2,7 @@ Through local debugging capabilities, the SCF CLI can run code in a local simula
 
 ## Dependent component
 
-Local debugging native does not need to rely on Docker and ensure that the Node.js environment is already installed on the system. The current native command only supports Node.js and Python runtime. To ensure consistent deployment of the cloud and the local version, it is recommended that the local version of the runtime and the cloud version be the same. For example, if you are using Node.js 6.10 in the cloud, this machine is also recommended to install Node.js 6.x.
+Native debugging does not need to rely on Docker, just ensure that the environment is already installed on the system. The current native command only supports Node.js and Python runtime. To ensure consistent deployment of the cloud and the local version, it is recommended that the local version of the runtime and the cloud version be the same. For example, if you are using Node.js 6.10 in the cloud, this machine is also recommended to install Node.js 6.x.
 
 ## Debug command
 
@@ -14,11 +14,11 @@ The parameters supported by the `scf native invoke` command are as follows:
 
 Parameter | Required | Description | Example
 --- | --- | --- | ---
-Event | no | The source of the file for the simulated test event, the file content must be in JSON format | Event.json
-Template | no | The path or file name of the configuration file. The default is template.yaml | Template.yaml
-Env-vars | no | The environment variable configuration when the function is running, you need to specify the environment variable configuration file, the content must be in JSON format. | Env.json
+event | no | The source of the file for the simulated test event, the file content must be in JSON format | event.json
+template | no | The path or file name of the configuration file. The default is template.yaml | template.yaml
+env-vars | no | The environment variable configuration when the function is running, you need to specify the environment variable configuration file, the content must be in JSON format. | env.json
 Debug-port | no | The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port. | 3366
-Debug-args | no | The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts. | 
+debug-args | no | The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts. | 
 
 The support option FUNCTION_IDENTIFIER is described as follows:
 
@@ -31,7 +31,7 @@ FUNCTION_IDENTIFIER | no | Indicates the identifier and name of the function; if
 The simulation event used to trigger the cloud function locally can be passed through the command pipeline of linux or passed through a file.
 
 - **Passing through the command pipeline:** The {coded1}scf native invoke command supports receiving events from the command line pipeline. We can generate events and pass them by executing the `scf native generate-event` command to form a debug command such as `scf native generate-event cos post | scf native invoke --template template.yaml` . We can also construct the output JSON format content and pass it to the `scf native invoke` command to form a debug command such as `echo '{"test":"value"}' | scf native invoke --template template.yaml `.
-- {strong0}Passing the file: {/strong0} Specify the file containing the contents of the test simulation event by using the --event parameter of the `scf native invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf native invoke --template template.yaml --event event.json` .
+- ** Passing the file: ** Specify the file containing the contents of the test simulation event by using the `--event` parameter of the `scf native invoke` command. The file content must be a JSON data structure, forming a debug command such as `scf native invoke --template template.yaml --event event.json` .
 
 ### Use example
 
