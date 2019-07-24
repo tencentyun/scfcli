@@ -22,6 +22,8 @@ from tcfcli.cmds.validate.cli import validate
 from tcfcli.cmds.configure.cli import configure
 from tcfcli.cmds.native.cli import native
 from tcfcli.cmds.logs import logs
+from tcfcli.cmds.list.cli import list
+from tcfcli.cmds.delete.cli import delete
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
@@ -42,6 +44,8 @@ cli.add_command(configure)
 cli.add_command(validate)
 cli.add_command(native)
 cli.add_command(logs)
+cli.add_command(list)
+cli.add_command(delete)
 
 if __name__ == "__main__":
     cli()

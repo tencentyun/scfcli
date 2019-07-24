@@ -30,11 +30,48 @@ class ScfClient(object):
         self._client_ext = ScfClientExt(self._cred, self._region, cp)
         self._client_ext._sdkVersion = "TCFCLI_" + __version__
 
-    def get_function(self, function_name=None):
-        req = models.GetFunctionRequest()
-        req.FunctionName = function_name
-        resp = self._client.GetFunction(req)
-        return resp.to_json_string()
+    def get_function(self, function_name=None, namespace='default'):
+        try:
+            req = models.GetFunctionRequest()
+            req.FunctionName = function_name
+            req.Namespace = namespace
+            resp = self._client.GetFunction(req)
+            return resp.to_json_string()
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            #click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
+        return None
+
+    def delete_function(self, function_name=None, namespace='default'):
+        try:
+            req = models.DeleteFunctionRequest()
+            req.FunctionName = function_name
+            req.Namespace = namespace
+            resp = self._client.DeleteFunction(req)
+            return resp.to_json_string()
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            #click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
+        return None
+
+    def list_function(self, namespace=None):
+        try:
+            resp = self._client_ext.ListFunctions(namespace)
+            functions = resp.get("Functions", [])
+            return functions
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            click.secho("list functions failure. Error: {e}.".format(e=s), fg="red")
+        return None
 
     def update_func_code(self, func, func_name, func_ns):
         req = models.UpdateFunctionCodeRequest()
@@ -142,6 +179,20 @@ class ScfClient(object):
         except TencentCloudSDKException as err:
             return err
         return
+
+    def list_ns(self):
+        try:
+            resp = self._client_ext.ListNamespaces()
+            namespaces = resp.get("Namespaces", [])
+            return namespaces
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            click.secho("get namespace '{name}' failure. Error: {e}.".format(
+                name=namespace, e=s), fg="red")
+        return None
 
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
@@ -261,6 +312,28 @@ class ScfClientExt(scf_client.ScfClient):
                 'Type': 'default'
             }
             body = self.call("CreateNamespace", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            if isinstance(e, TencentCloudSDKException):
+                raise
+            else:
+                raise TencentCloudSDKException(e.message, e.message)
+
+    def ListFunctions(self, namespace):
+        try:
+            request = {
+                'Offset': 0,
+                'Limit': 20,
+                'Namespace': namespace
+            }
+            body = self.call("ListFunctions", request)
             response = json.loads(body)
             if "Error" not in response["Response"]:
                 return response["Response"]
