@@ -12,7 +12,7 @@ Performance: Cannot uninstall 'PyYAML'. It is a distutils installed project and 
 
 Solution: pip install -I PyYAML==xxx (see the specific version in requirements.txt)
 
-## 使用相关
+## Usage related
 
 ### How to specify a function for local debugging when there are multiple function descriptions in the yaml configuration file
 
