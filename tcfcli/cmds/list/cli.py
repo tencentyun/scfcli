@@ -28,6 +28,9 @@ class List(object):
             for namespace in namespaces:
                 List.show(region, namespace['Name'])
 
+        elif region != 'all' and namespace != 'all':
+            List.show(region, namespace)
+
 
     @staticmethod
     def show(region, namespace):

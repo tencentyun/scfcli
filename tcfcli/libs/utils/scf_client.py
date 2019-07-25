@@ -190,8 +190,7 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("get namespace '{name}' failure. Error: {e}.".format(
-                name=namespace, e=s), fg="red")
+            click.secho("list namespace failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     @staticmethod
