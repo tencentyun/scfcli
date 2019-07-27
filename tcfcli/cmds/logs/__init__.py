@@ -11,7 +11,7 @@ from tcfcli.help.message import LogsHelp as help
 TM_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
-@click.command()
+@click.command(short_help=help.SHORT_HELP)
 @click.option('-n', '--name', help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('--region', default=None, help=help.REGION)
