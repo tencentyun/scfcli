@@ -2,9 +2,8 @@ import os
 import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
+from tcfcli.help.message import DeleteHelp as help
 from tcfcli.libs.utils.scf_client import ScfClient
-REGIONS = ['ap-guangzhou', 'ap-shanghai', 'ap-beijing', 'ap-hongkong',
-            'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
 
 
 class Delete(object):
@@ -33,11 +32,20 @@ def abort_if_false(ctx, param, value):
         ctx.abort()
 
 
-@click.command()
-@click.option('--region', type=click.Choice(REGIONS), help="region name")
-@click.option('-ns', '--namespace', default="default", help="Namespace name")
-@click.option('-n', '--name', required=True, help="Function name")
+@click.command(short_help=help.SHORT_HELP)
+@click.option('-r', '--region', type=str, help=help.REGION)
+@click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
+@click.option('-n', '--name', required=True, help=help.NAME)
 @click.option('-f', '--force', is_flag=True, callback=abort_if_false, expose_value=False,
-              prompt='Are you sure delete this remote function?', help="Force delete function without ask")
+              prompt='Are you sure delete this remote function?', help=help.FORCED)
 def delete(region, namespace, name):
+    '''
+        \b
+        Delete a SCF function.
+        \b
+        Common usage:
+        \b
+            * Delete a SCF function
+              $ scf delete --name functionname --region ap-guangzhou --namespace default
+    '''
     Delete.do_cli(region, namespace, name)

@@ -1,8 +1,10 @@
+from tcfcli.help.message import CommonHelp as help
+
 EVENTS_METADATA = {
     "cmq": {
         "notification": {
             "filename": "notify",
-            "help": "Generates an CMQ Topic notification event",
+            "help": help.EVENTS_CMQ_NOTIFICATION,
             "params": {
                 "owner": {
                     "default": 12345678,
@@ -13,7 +15,7 @@ EVENTS_METADATA = {
     "ckafka": {
         "consume": {
             "filename": "consume",
-            "help": "Generates an ckafka consuming event",
+            "help": help.EVENTS_CKAFKA_CONSUME,
             "params": {
             }
         }
@@ -21,7 +23,7 @@ EVENTS_METADATA = {
     "apigateway": {
         "proxy": {
             "filename": "proxy",
-            "help": "Generates an API Gateway proxy event",
+            "help": help.EVENTS_APIGATEWAY_PROXY,
             "params": {
                 "body": {
                     "default": "{\"msg\": \"hello apigateway\"}",
@@ -32,7 +34,7 @@ EVENTS_METADATA = {
     "timer": {
         "timeup": {
             "filename": "timeout",
-            "help": "Generates an Timer event",
+            "help": help.EVENTS_TIMER_TIMEUP,
             "params": {
                 "message": {
                     "default": "hello timer",
@@ -43,21 +45,29 @@ EVENTS_METADATA = {
     "cos": {
         "put": {
             "filename": "put",
-            "help": "Generates an Cos Put event",
+            "help": help.EVENTS_COS_PUT,
             "params": {
             }
         },
         "post": {
             "filename": "post",
-            "help": "Generates an Cos Post event",
+            "help": help.EVENTS_COS_POST,
             "params": {
             }
         },
         "delete": {
             "filename": "delete",
-            "help": "Generates an Cos Delete event",
+            "help": help.EVENTS_COS_DELETE,
             "params": {
             }
         }
     }
+}
+
+EVENTS_HELP = {
+    "cmq": help.EVENTS_CMQ,
+    "cos": help.EVENTS_COS,
+    "timer": help.EVENTS_TIMER,
+    "apigateway": help.EVENTS_APIGATEWAY,
+    "ckafka": help.EVENTS_CKAFKA,
 }

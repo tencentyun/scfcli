@@ -1,6 +1,6 @@
 import click
 import os
-
+from tcfcli.help.message import CommonHelp as help
 
 _DEAFULT_TEMPLATE_FILE = 'template.[yaml|yml]'
 
@@ -33,38 +33,37 @@ def invoke_common_options(f):
         template_click_option(),
 
         click.option('--env-vars', '-n',
-                     help='JSON file contains function environment variables.',
+                     help=help.INVOKE_ENV_VARS,
                      type=click.Path(exists=True)),
 
         click.option('--debug-port', '-d',
-                     help='The port exposed for debugging. If specified, local container will start with debug mode.',
+                     help=help.INVOKE_DEBUG_PORT,
                      envvar="TCF_DEBUG_PORT"),
 
         click.option('--debugger-path',
-                     help='The debugger path in host. If specified, the debugger will mounted into the function container.'),
+                     help=help.INVOKE_DEBUGGER_PATH),
 
         click.option('--debug-args',
-                     help='Additional args to be passed the debugger.',
+                     help=help.INVOKE_DEBUG_ARGS,
                      envvar="DEBUGGER_ARGS"),
 
         click.option('--docker-volume-basedir', '-v',
-                     help='The basedir where TCF template locate in.',
+                     help=help.INVOKE_DOCKER_VOLUME_BASEDIR,
                      envvar="TCF_DOCKER_VOLUME_BASEDIR"),
 
         click.option('--docker-network',
-                     help='Specifies the name or id of an existing docker network which containers should connect to, '
-                          'along with the default bridge network.',
+                     help=help.INVOKE_DOCKER_NETWORK,
                      envvar="TCF_DOCKER_NETWORK"),
 
         click.option('--log-file', '-l',
-                     help='Path of logfile where send runtime logs to'),
+                     help=help.INVOKE_LOG_FILE),
 
         click.option('--skip-pull-image',
                      is_flag=True,
-                     help='Specify whether CLI skip pulling or update docker images',
+                     help=help.INVOKE_SKIP_PULL_IMAGE,
                      envvar="TCF_SKIP_PULL_IMAGE"),
 
-        click.option('--region'),
+        click.option('--region', help=help.INVOKE_REGION),
 
     ]
 
@@ -89,4 +88,5 @@ def service_common_options(port):
             option(f)
 
         return f
+
     return construct_options

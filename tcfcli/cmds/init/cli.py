@@ -2,11 +2,11 @@ import os
 import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
+from tcfcli.help.message import InitHelp as help
 
 
 class Init(object):
-
-    TEMPLATES_DIR ="templates"
+    TEMPLATES_DIR = "templates"
     RUNTIMES = {
         "python3.6": "tcf-demo-python",
         "python2.7": "tcf-demo-python",
@@ -17,6 +17,7 @@ class Init(object):
         "nodejs8.9": "tcf-demo-nodejs8.9",
         # "java8": "gh:tencentyun/tcf-demo-java8"
     }
+
     @staticmethod
     def _runtime_path(runtime):
         pwd = os.path.dirname(os.path.abspath(__file__))
@@ -48,28 +49,24 @@ class Init(object):
         click.secho("[*] Project initialization is complete", fg="green")
 
 
-@click.command()
-@click.option('-l', '--location', help="Template location (git, mercurial, http(s), zip, path)")
-@click.option('-r', '--runtime', type=click.Choice(Init.RUNTIMES.keys()), default="python3.6",
-              help="Scf Runtime of your app")
-@click.option('-o', '--output-dir', default='.', type=click.Path(), help="Where to output the initialized app into")
-@click.option('-n', '--name',  default="hello_world", help="Function name")
-@click.option('-ns', '--namespace',  default="default", help="Namespace name")
-@click.option('-N', '--no-input', is_flag=True, help="Disable prompting and accept default values defined template config")
+@click.command(short_help=help.SHORT_HELP)
+@click.option('-l', '--location', help=help.LOCATION)
+@click.option('-r', '--runtime', type=str, default="python3.6", help=help.RUNTIME)
+@click.option('-o', '--output-dir', default='.', type=click.Path(), help=help.OUTPUT_DIR)
+@click.option('-n', '--name', default="hello_world", help=help.NAME)
+@click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
+@click.option('-N', '--no-input', is_flag=True, help=help.NO_INPUT)
 def init(location, runtime, output_dir, name, namespace, no_input):
     """
-    \b
-    Initialize a Serverless Cloud Function with a scf template
-
-    Common usage:
-
         \b
-        Initializes a new scf using Python 3.6 default template runtime
+        The project initialization operation is performed by the scf init command.
         \b
-        $ scf init --runtime python3.6
-        \b
-        Initializes a new scf project using custom template in a Git repository
-        \b
-        $ scf init --location gh:pass/demo-python
+        Common usage:
+            \b
+          * Initializes a new scf using Python 3.6 default template runtime
+            $ scf init --runtime python3.6
+            \b
+          * Initializes a new scf project using custom template in a Git repository
+            $ scf init --location gh:pass/demo-python
     """
     Init.do_cli(location, runtime, output_dir, name, namespace, no_input)

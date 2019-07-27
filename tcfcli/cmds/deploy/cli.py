@@ -3,6 +3,8 @@ import os
 import sys
 import time
 from io import BytesIO
+
+from tcfcli.help.message import DeployHelp as help
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
 from tcfcli.common.user_exceptions import CloudAPIException
@@ -17,25 +19,30 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
-REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong',
-           'ap-mumbai', 'ap-shanghai']
 
-
-@click.command()
-@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True),
-              help="TCF template file for deploy")
-@click.option('--cos-bucket', '-c', type=str, help="COS bucket name")
-@click.option('-n', '--name', type=str, help="Function name")
-@click.option('-ns', '--namespace', type=str, help="Namespace name")
-@click.option('--region', '-r', type=click.Choice(REGIONS),
-              help="The region which the function want to be deployed")
-@click.option('-f', '--forced', is_flag=True, default=False,
-              help="Update the function when it already exists,default false")
-@click.option('--skip-event', is_flag=True, default=False,
-              help="Keep previous version triggers, do not cover them this time.")
+@click.command(short_help=help.SHORT_HELP)
+@click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help=help.TEMPLATE_FILE)
+@click.option('--cos-bucket', '-c', type=str, help=help.COS_BUCKET)
+@click.option('--name', '-n', type=str, help=help.NAME)
+@click.option('--namespace', '-ns', type=str, help=help.NAMESPACE)
+@click.option('--region', '-r', type=str, help=help.REGION)
+@click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
+@click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event):
     '''
-    Deploy a scf.
+        \b
+        Scf cli completes the function package deployment through the deploy subcommand. The scf command line tool deploys the code package, function configuration, and other information specified in the configuration file to the cloud or updates the functions of the cloud according to the specified function template configuration file.
+        \b
+        The execution of the scf deploy command is based on the function template configuration file. For the description and writing of the specific template file, please refer to the template file description.
+            * https://cloud.tencent.com/document/product/583/33454
+        \b
+        Common usage:
+            \b
+            * Deploy the package
+              $ scf deploy
+            \b
+            * Package the configuration file, and specify the COS bucket as "temp-code-1253970226"
+              $ scf deploy --cos-bucket temp-code-1253970226
     '''
 
     package = Package(template_file, cos_bucket, name, region, namespace)
@@ -196,18 +203,17 @@ class Deploy(object):
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
         if err is not None:
-            #if sys.version_info[0] == 3:
+            # if sys.version_info[0] == 3:
             s = err.get_message()
-            #else:
+            # else:
             #    s = err.get_message().encode("UTF-8")
             if sys.version_info[0] == 2 and isinstance(s, str):
                 s = s.encode("utf8")
             err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
-                err_msg += (u"\nRequestId: {}" .format(err.get_request_id().encode("UTF-8")))
+                err_msg += (u"\nRequestId: {}".format(err.get_request_id().encode("UTF-8")))
             raise CloudAPIException(err_msg)
-            
 
         click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
         if not skip_event:

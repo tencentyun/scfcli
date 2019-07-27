@@ -2,35 +2,38 @@ import click
 from tcfcli.cmds.local.common.invoke_context import InvokeContext
 from tcfcli.cmds.local.common.options import invoke_common_options
 from tcfcli.common.user_exceptions import UserException
-
+from tcfcli.help.message import LocalHelp as help
 
 STD_IN = '-'
 
 
-@click.command()
-@click.option('--event', '-e', type=click.Path(), default=STD_IN)
-@click.option('--no-event', is_flag=True, default=False)
+@click.command(short_help=help.SHORT_HELP)
+@click.option('--event', '-e', type=click.Path(), default=STD_IN, help=help.INVOKE_EVENT)
+@click.option('--no-event', is_flag=True, default=False, help=help.INVOKE_NO_ENENT)
 @invoke_common_options
-@click.option('--quiet', '-q', is_flag=True, default=False, help='Only display what function return')
+@click.option('--quiet', '-q', is_flag=True, default=False, help=help.INVOKE_QUIET)
 @click.argument('namespace_identifier', required=False)
 @click.argument('function_identifier', required=False)
-def invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
+def invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args,
+           debugger_path,
            docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet):
     '''
     \b
-    Execute your scf in a docker environment locally
+    Execute your scf in a docker environment locally.
     \b
     Common usage:
         \b
-        $ scf local invoke -t template.yaml
+        * Startup function runs locally
+          $ scf local invoke -t template.yaml
     '''
-    do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
+    do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args,
+              debugger_path,
               docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet)
 
 
-def do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args, debugger_path,
+def do_invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args,
+              debugger_path,
               docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet):
-
     if no_event and event != STD_IN:
         raise UserException('event is conflict with no_event, provide only one.')
 
@@ -53,7 +56,7 @@ def do_invoke(template, namespace_identifier, function_identifier, event, no_eve
                            region=region,
                            namespace=namespace_identifier,
                            is_quiet=quiet
-                        ) as context:
+                           ) as context:
 
             context.local_runtime_manager.invoke(context.functions_name, event_data, context.stdout, context.stderr)
 

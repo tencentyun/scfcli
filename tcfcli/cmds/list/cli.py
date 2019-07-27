@@ -3,8 +3,10 @@ import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.libs.utils.scf_client import ScfClient
+from tcfcli.help.message import ListHelp as help
+
 REGIONS = ['ap-guangzhou', 'ap-shanghai', 'ap-beijing', 'ap-hongkong',
-            'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
+           'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
 
 
 class List(object):
@@ -31,7 +33,6 @@ class List(object):
         elif region != 'all' and namespace != 'all':
             List.show(region, namespace)
 
-
     @staticmethod
     def show(region, namespace):
         if region not in REGIONS:
@@ -44,8 +45,8 @@ class List(object):
 
         functions = ScfClient(region).list_function(namespace)
         if not functions:
-            #click.secho("Region:%s \nNamespace:%s " % (region, namespace), fg="green")
-            #click.secho("no function exists\n", fg="red")
+            # click.secho("Region:%s \nNamespace:%s " % (region, namespace), fg="green")
+            # click.secho("no function exists\n", fg="red")
             return
 
         click.secho("Region:%s \nNamespace:%s " % (region, namespace), fg="green")
@@ -56,23 +57,17 @@ class List(object):
         click.secho("\n")
 
 
-@click.command()
-@click.option('--region', default="all", help="region name")
-@click.option('-ns', '--namespace', default="all", help="Namespace name")
+@click.command(short_help=help.SHORT_HELP)
+@click.option('--region', default="all", help=help.REGION)
+@click.option('-ns', '--namespace', default="all", help=help.NAMESPACE)
 def list(region, namespace):
     """
-    \b
-    Initialize a Serverless Cloud Function with a scf template
-
-    Common usage:
-
         \b
-        Initializes a new scf using Python 3.6 default template runtime
+        Show the SCF function list.
         \b
-        $ scf init --runtime python3.6
+        Common usage:
         \b
-        Initializes a new scf project using custom template in a Git repository
-        \b
-        $ scf init --location gh:pass/demo-python
+            * All function in ap-guangzhou
+              $ scf list --region ap-guangzhou
     """
     List.do_cli(region, namespace)
