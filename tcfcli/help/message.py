@@ -141,7 +141,7 @@ class ValidateHelp():
 class LogsHelp():
     # Logs Help Message
 
-    SHORT_HELP = " Fetch logs of SCF function from service."
+    SHORT_HELP = "Fetch logs of SCF function from service."
 
     NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
