@@ -35,7 +35,7 @@ def cli():
     '''
     \b
     If you want to study how to use SCF CLI, you could refer to documentation.
-      * Documentation https://cloud.tencent.com/document/product/583/33445
+      * Documentation https://cloud.tencent.com/document/product/583/33445?from=cli
     \b
     If you have any questions, you could give us issues on Github.
       * Github  https://github.com/tencentyun/scfcli
