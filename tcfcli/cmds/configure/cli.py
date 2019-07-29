@@ -96,7 +96,7 @@ def set(**kwargs):
         if v not in ["y", "Y"]:
             v = "False (By default, it isn't deployed by COS.)"
         else:
-            v = "True (By default, it is deployed by COS."
+            v = "True (By default, it is deployed by COS.)"
         config["using_cos"] = v
         kwargs = config
     uc.set_attrs(kwargs)
