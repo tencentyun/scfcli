@@ -167,9 +167,7 @@ class Package(object):
             if cos_bucket_status != 0:
                 # 获取bucket出错，停止流程
                 error = cos_bucket_status
-                click.secho(
-                    click.style("! There are some exceptions and the process of uploading to COS is terminated!",
-                                fg='red'))
+                click.secho("! There are some exceptions and the process of uploading to COS is terminated!", fg='red')
 
                 click.secho(star_sign + "This package will be uploaded by TencentCloud Cloud API.")
                 click.secho("> Uploading this package.")
@@ -190,6 +188,9 @@ class Package(object):
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
 
         else:
+            click.secho(
+                "* If you want to increase the upload speed, you can configure using-cos with command：scf configure set",
+                fg="yellow")
             click.secho("> Uploading this package.")
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             click.secho("> Upload success")
