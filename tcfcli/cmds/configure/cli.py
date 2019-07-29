@@ -18,6 +18,7 @@ def report_info():
 @click.option('--secret-key', is_flag=True, help=help.GET_SECRET_KEY)
 @click.option('--region', is_flag=True, help=help.GET_REGION)
 @click.option('--appid', is_flag=True, help=help.GET_APPID)
+@click.option('--using_cos', is_flag=True, help=help.GET_USING_COS)
 def get(**kwargs):
     '''
         \b
@@ -53,6 +54,7 @@ def get(**kwargs):
 @click.option('--secret-key', help=help.SET_SECRET_KEY)
 @click.option('--region', help=help.SET_REGION)
 @click.option('--appid', help=help.SET_APPID)
+# @click.option('--using_cos', help=help.SET_USING_COS)
 def set(**kwargs):
     '''
         \b
@@ -87,11 +89,21 @@ def set(**kwargs):
                 default=attrs[attr],
                 show_default=False)
             config[attr] = v
+
+        v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
+                         default="n",
+                         show_default=False)
+        if v not in ["y", "Y"]:
+            v = "False (By default, it isn't deployed by COS.)"
+        else:
+            v = "True (By default, it is deployed by COS."
+        config["using_cos"] = v
         kwargs = config
     uc.set_attrs(kwargs)
     uc.flush()
+
     if not reduce(lambda x, y: (bool(x) or bool(y)), values):
-        v = click.prompt(text="Allow report information to help us optimize scfcli(Y/n)",
+        v = click.prompt(text="Allow report information to help us optimize scfcli. (y/n)",
                          default="y",
                          show_default=False)
         if v in ["y", "Y"]:

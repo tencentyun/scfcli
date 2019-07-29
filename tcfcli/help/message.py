@@ -1,8 +1,9 @@
 '''
     Powered by Dfounderliu
     Email: dfounderliu@tencent.com
+    Date: 2019 / 7 / 27
+    Help Message
 
-    Help Information
 '''
 
 import click
@@ -24,34 +25,30 @@ class CommonHelp():
     EVENTS_CMQ = "CMQ event."
     EVENTS_CMQ_NOTIFICATION = "Generates an CMQ Topic notification event."
 
-
     EVENTS_CKAFKA = "Ckafka event."
     EVENTS_CKAFKA_CONSUME = "Generates an ckafka consuming event."
-
 
     EVENTS_APIGATEWAY = "API Gateway event."
     EVENTS_APIGATEWAY_PROXY = "Generates an API Gateway proxy event."
 
-
     EVENTS_TIMER = "Timer event."
     EVENTS_TIMER_TIMEUP = "Generates an Timer event."
-
 
     EVENTS_COS = "COS Event."
     EVENTS_COS_PUT = "Generates an COS Put event."
     EVENTS_COS_POST = "Generates an COS Post event."
     EVENTS_COS_DELETE = "Generates an COS Delete event."
 
-
     INVOKE_ENV_VARS = 'JSON file contains function environment variables.'
     INVOKE_DEBUG_PORT = 'The port exposed for debugging. If specified, local container will start with debug mode.'
     INVOKE_DEBUGGER_PATH = 'The debugger path in host. If specified, the debugger will mounted into the function container.'
     INVOKE_DEBUG_ARGS = 'Additional args to be passed the debugger.'
     INVOKE_DOCKER_VOLUME_BASEDIR = 'The basedir where SCF template locate in.'
-    INVOKE_DOCKER_NETWORK =  'Specifies the name or id of an existing docker network which containers should connect to, along with the default bridge network.'
+    INVOKE_DOCKER_NETWORK = 'Specifies the name or id of an existing docker network which containers should connect to, along with the default bridge network.'
     INVOKE_LOG_FILE = 'Path of logfile where send runtime logs to file.'
     INVOKE_SKIP_PULL_IMAGE = 'Specify whether CLI skip pulling or update docker images.'
     INVOKE_REGION = "The function region. Including %s" % REGIONS_STR
+
 
 class DeleteHelp():
     # Delete Help Message
@@ -78,6 +75,7 @@ class DeployHelp():
     REGION = "The function will be deployed in this region. Including %s" % REGIONS_STR
     FORCED = "The function will be forced to update when it already exists. The default is False."
     SKIP_EVENT = "Triggers will continue with the previous setup and won't cover them this time."
+    WITHOUT_COS = "Deploy SCF function without COS. If you set cos-bucket in configure."
 
 
 class InitHelp():
@@ -103,18 +101,22 @@ class ConfigureHelp():
     SECRET_KEY = "TencentCloudAPI  SecretKey"
     REGION = "TencentCloudAPI  Region"
     APPID = "TencentCloudAPI  Region"
+    USING_COS = "Deploy function by COS. The default is False."
 
     SET_SHORT_HELP = "Set your account parameters."
     SET_SECRET_ID = SECRET_ID
     SET_SECRET_KEY = SECRET_KEY
     SET_REGION = REGION
     SET_APPID = APPID
+    SET_USING_COS = USING_COS
 
     GET_SHORT_HELP = "Get your account parameters."
     GET_SECRET_ID = SECRET_ID
     GET_SECRET_KEY = SECRET_KEY
     GET_REGION = REGION
     GET_APPID = APPID
+    GET_USING_COS = USING_COS
+
 
 class NativeHelp():
     # Native Help Message
@@ -129,6 +131,7 @@ class NativeHelp():
     INVKOE_DEBUG_PORT = 'The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port.'
     INVOKE_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
     INVOKE_QUIET = 'Only display what function return.'
+
 
 class ValidateHelp():
     # Validate Help Message

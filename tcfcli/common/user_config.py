@@ -15,15 +15,14 @@ else:
 class CliConfigParser(ConfigParser):
 
     def __init__(self, defaults=None):
-        ConfigParser.__init__(self,defaults=None)
-        #super(CliConfigParser, self).__init__(defaults)
+        ConfigParser.__init__(self, defaults=None)
+        # super(CliConfigParser, self).__init__(defaults)
 
     def optionxform(self, optionstr):
         return optionstr
 
 
 class UserConfig(object):
-
     API = "API"
 
     def __init__(self):
@@ -31,6 +30,7 @@ class UserConfig(object):
         self.secret_key = 'None'
         self.region = 'None'
         self.appid = 'None'
+        self.using_cos = "None"
         self._load_config()
 
     def set_attrs(self, attrs):
@@ -41,7 +41,7 @@ class UserConfig(object):
     def get_attrs(self, attrs):
         objs = self._list_attrs()
         ret = {}
-        for attr in [ k for k, v in attrs.items() if v]:
+        for attr in [k for k, v in attrs.items() if v]:
             obj = self._name_attr2obj(attr)
             if obj in objs:
                 ret[self._name_obj2attr(attr)] = objs[obj]
@@ -75,7 +75,7 @@ class UserConfig(object):
 
     def _list_attrs(self):
         attrs = vars(self)
-        return {k : attrs[k]  for k in attrs if not k.startswith("_")}
+        return {k: attrs[k] for k in attrs if not k.startswith("_")}
 
     @staticmethod
     def _name_attr2obj(name):
@@ -88,8 +88,8 @@ class UserConfig(object):
 
 if __name__ == '__main__':
     uc = UserConfig()
-    #print uc.get_attrs({"secret-sssd": True, "region": False, "secret-key": "000000000"})
-    #print uc.get_attrs({"secret-id": True, "region": True, "secret-key": "000000000"})
-    #uc.set_attrs({"region":"asss-gz"})
-    #uc.flush()
+    # print uc.get_attrs({"secret-sssd": True, "region": False, "secret-key": "000000000"})
+    # print uc.get_attrs({"secret-id": True, "region": True, "secret-key": "000000000"})
+    # uc.set_attrs({"region":"asss-gz"})
+    # uc.flush()
     print(uc.get_attrs({"region": True, "secret-key": "000000000"}))
