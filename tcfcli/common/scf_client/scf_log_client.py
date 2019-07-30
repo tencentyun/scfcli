@@ -37,7 +37,7 @@ class ScfLogClient(ScfBaseClient):
     def fetch_log(self, startime, endtime, count, tail=False):
         for logs in self.__fetch_log(startime, endtime, count, tail):
             for log in logs:
-                Operation("Log startTime: " % str(log.StartTime)).process()
+                Operation("Log startTime: %s" % str(log.StartTime)).process()
                 if log.RetCode == 0:
                     click.secho(str(log.Log).replace("\n\n", "\n"))
                 else:
