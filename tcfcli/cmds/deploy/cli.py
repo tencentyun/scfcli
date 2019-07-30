@@ -119,7 +119,7 @@ class Package(object):
         default_bucket_name = ""
         if UserConfig().using_cos.startswith("True"):
             cos_bucket_status = True
-            default_bucket_name = "serverless-cloud-function-deploy-" + str(UserConfig().appid)
+            default_bucket_name = "serverless-cloud-function-" + str(UserConfig().appid)
         else:
             cos_bucket_status = False
 
@@ -184,7 +184,10 @@ class Package(object):
                     key=zip_file_name_cos
                 )
                 click.secho("> Upload success")
-                code_url["cos_bucket_name"] = default_bucket_name
+
+                code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid,
+                                                                          '') if default_bucket_name and default_bucket_name.endswith(
+                    "-" + UserConfig().appid) else default_bucket_name
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
 
         else:

@@ -18,7 +18,7 @@ def report_info():
 @click.option('--secret-key', is_flag=True, help=help.GET_SECRET_KEY)
 @click.option('--region', is_flag=True, help=help.GET_REGION)
 @click.option('--appid', is_flag=True, help=help.GET_APPID)
-@click.option('--using_cos', is_flag=True, help=help.GET_USING_COS)
+@click.option('--using-cos', is_flag=True, help=help.GET_USING_COS)
 def get(**kwargs):
     '''
         \b
@@ -54,7 +54,7 @@ def get(**kwargs):
 @click.option('--secret-key', help=help.SET_SECRET_KEY)
 @click.option('--region', help=help.SET_REGION)
 @click.option('--appid', help=help.SET_APPID)
-# @click.option('--using_cos', help=help.SET_USING_COS)
+@click.option('--using-cos', help=help.SET_USING_COS)
 def set(**kwargs):
     '''
         \b
@@ -73,32 +73,40 @@ def set(**kwargs):
         kwargs[k] = True
 
     uc = UserConfig()
+
+    using_cos_true = "False (By default, it isn't deployed by COS.)"
+    using_cos_false = "True (By default, it is deployed by COS.)"
+
+    temp_using_cos = kwargs["using_cos"]
+    if "using_cos" in kwargs and temp_using_cos:
+        kwargs["using_cos"] = using_cos_true if temp_using_cos not in ["y", "Y"] else using_cos_false
+
     values = [v for k, v in kwargs.items()]
     if not reduce(lambda x, y: (bool(x) or bool(y)), values):
         list(map(set_true, kwargs))
         attrs = uc.get_attrs(kwargs)
         config = {}
         for attr in sorted(attrs):
-            attr_value = attrs[attr]
-            if attr == "secret-id":
-                attr_value = "*" * 32 + attr_value[32:]
-            elif attr == "secret-key":
-                attr_value = "*" * 28 + attr_value[28:]
-            v = click.prompt(
-                text="TencentCloud {}({})".format(attr, attr_value),
-                default=attrs[attr],
-                show_default=False)
-            config[attr] = v
+            if attr != "using-cos":
+                attr_value = attrs[attr]
+                if attr == "secret-id":
+                    attr_value = "*" * 32 + attr_value[32:]
+                elif attr == "secret-key":
+                    attr_value = "*" * 28 + attr_value[28:]
+                v = click.prompt(
+                    text="TencentCloud {}({})".format(attr, attr_value),
+                    default=attrs[attr],
+                    show_default=False)
+                config[attr] = v
 
         v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
                          default="n",
                          show_default=False)
-        if v not in ["y", "Y"]:
-            v = "False (By default, it isn't deployed by COS.)"
-        else:
-            v = "True (By default, it is deployed by COS.)"
-        config["using_cos"] = v
+
+        config["using_cos"] = using_cos_true if v not in ["y", "Y"] else using_cos_false
+
         kwargs = config
+
     uc.set_attrs(kwargs)
     uc.flush()
 
