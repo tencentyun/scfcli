@@ -101,7 +101,7 @@ class Package(object):
                         code_url["cos_object_name"]), code_url["cos_bucket_name"])
                     Operation(msg).success()
                 elif "zip_file" in code_url:
-                    if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime] in SERVICE_RUNTIME:
+                    if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime][0:].lower() in SERVICE_RUNTIME:
                         error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
                         raise UploadFailed(error)
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
