@@ -2,6 +2,7 @@ import click
 import time
 from datetime import datetime
 from datetime import timedelta
+import tcfcli.common.base_infor as infor
 from tcfcli.cmds.native.common.invoke_context import InvokeContext
 from tcfcli.cmds.local.common.options import invoke_common_options
 from tcfcli.common.user_exceptions import InvalidEnvParameters
@@ -9,6 +10,7 @@ from tcfcli.common.scf_client.scf_log_client import ScfLogClient
 from tcfcli.help.message import LogsHelp as help
 
 TM_FORMAT = '%Y-%m-%d %H:%M:%S'
+REGIONS = infor.REGIONS
 
 
 @click.command(short_help=help.SHORT_HELP)
@@ -46,28 +48,32 @@ def logs(name, namespace, region, count, start_time, end_time, duration, failed,
         * Specify region of service
           $ scf logs -n function --region ap-guangzhou
     """
-    if name is None:
-        raise InvalidEnvParameters("Function name is unspecified")
 
-    if duration and (start_time or end_time):
-        raise InvalidEnvParameters("Duration is conflict with (start_time, end_time)")
-
-    if tail:
-        start = datetime.now()
-        end = start + timedelta(days=1)
-        if count:
-            end = start
-            start = end - timedelta(days=1)
+    if region and region not in REGIONS:
+        click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
     else:
-        start, end = _align_time(start_time, end_time, duration)
-    client = ScfLogClient(name, namespace, region, failed)
-    if tail and count:
-        client.fetch_log_tail_c(start.strftime(TM_FORMAT),
-                                end.strftime(TM_FORMAT), count, tail)
-        return
-    if not count:
-        count = 10000  # cloudapi limit
-    client.fetch_log(start.strftime(TM_FORMAT), end.strftime(TM_FORMAT), count, tail)
+        if name is None:
+            raise InvalidEnvParameters("Function name is unspecified")
+
+        if duration and (start_time or end_time):
+            raise InvalidEnvParameters("Duration is conflict with (start_time, end_time)")
+
+        if tail:
+            start = datetime.now()
+            end = start + timedelta(days=1)
+            if count:
+                end = start
+                start = end - timedelta(days=1)
+        else:
+            start, end = _align_time(start_time, end_time, duration)
+        client = ScfLogClient(name, namespace, region, failed)
+        if tail and count:
+            client.fetch_log_tail_c(start.strftime(TM_FORMAT),
+                                    end.strftime(TM_FORMAT), count, tail)
+            return
+        if not count:
+            count = 10000  # cloudapi limit
+        client.fetch_log(start.strftime(TM_FORMAT), end.strftime(TM_FORMAT), count, tail)
 
 
 def _align_time(_start, _end, _offset):

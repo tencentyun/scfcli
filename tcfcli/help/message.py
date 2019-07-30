@@ -7,12 +7,16 @@
 '''
 
 import click
+import tcfcli.common.base_infor as infor
 
-REGIONS = ['ap-beijing', 'ap-chengdu', 'ap-guangzhou', 'ap-hongkong', 'ap-mumbai', 'ap-shanghai']
+REGIONS = infor.REGIONS
 REGIONS_STR = click.style("%s" % (", ".join(REGIONS)), fg='green')
 
-RUNTIME = ["python3.6", "python2.7", "go1", "php5", "php7", "nodejs6.10", "nodejs8.9"]
+RUNTIME = infor.EVENT_RUNTIME
 RUNTIME_STR = click.style("%s" % (", ".join(RUNTIME)), fg='green')
+
+HTTP_RUNTIME = infor.HTTP_RUNTIME
+HTTP_RUNTIME_STR = click.style("%s" % (", ".join(HTTP_RUNTIME)), fg='green')
 
 
 class CommonHelp():
@@ -85,9 +89,9 @@ class InitHelp():
 
     NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
-    TYPE = "Function Type (Event,HTTP)."
+    TYPE = "Function Type (Event,HTTP). The default is Event."
     LOCATION = "Template location (git, mercurial, http(s), zip, path)."
-    RUNTIME = "Runtime of this funtion. Including %s." % RUNTIME_STR
+    RUNTIME = "Runtime of this funtion. Event type include %s, HTTP type include %s." % (RUNTIME_STR, HTTP_RUNTIME_STR)
     OUTPUT_DIR = "The path where will output the initialized app into."
     NO_INPUT = "Disable prompting and accept default values defined template config."
 

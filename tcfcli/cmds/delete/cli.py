@@ -2,29 +2,36 @@ import os
 import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
+import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeleteHelp as help
 from tcfcli.libs.utils.scf_client import ScfClient
+
+REGIONS = infor.REGIONS
 
 
 class Delete(object):
     @staticmethod
     def do_cli(region, namespace, name):
-        rep = ScfClient(region).get_ns(namespace)
-        if not rep:
-            click.secho("namespace {ns} not exists".format(ns=namespace), fg="red")
-            return
 
-        rep = ScfClient(region).get_function(function_name=name, namespace=namespace)
-        if not rep:
-            click.secho("function {function} not exists".format(function=name), fg="red")
-            return
+        if region and region not in REGIONS:
+            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+        else:
+            rep = ScfClient(region).get_ns(namespace)
+            if not rep:
+                click.secho("! namespace {ns} not exists".format(ns=namespace), fg="red")
+                return
 
-        rep = ScfClient(region).delete_function(function_name=name, namespace=namespace)
-        if not rep:
-            click.secho("function {function} delete failed".format(function=name), fg="red")
-            return
+            rep = ScfClient(region).get_function(function_name=name, namespace=namespace)
+            if not rep:
+                click.secho("! function {function} not exists".format(function=name), fg="red")
+                return
 
-        click.secho("function {function} delete success".format(function=name), fg="green")
+            rep = ScfClient(region).delete_function(function_name=name, namespace=namespace)
+            if not rep:
+                click.secho("! function {function} delete failed".format(function=name), fg="red")
+                return
+
+            click.secho("function {function} delete success".format(function=name), fg="green")
 
 
 def abort_if_false(ctx, param, value):

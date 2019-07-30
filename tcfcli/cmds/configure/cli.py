@@ -1,5 +1,6 @@
 import click
 import platform
+import tcfcli.common.base_infor as infor
 from tcfcli.help.message import ConfigureHelp as help
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.scf_client.scf_report_client import ScfReportClient
@@ -11,6 +12,9 @@ if version >= '3':
 
 def report_info():
     pass
+
+
+REGIONS = infor.REGIONS
 
 
 @click.command(short_help=help.GET_SHORT_HELP)
@@ -77,9 +81,14 @@ def set(**kwargs):
     using_cos_true = "False (By default, it isn't deployed by COS.)"
     using_cos_false = "True (By default, it is deployed by COS.)"
 
-    temp_using_cos = kwargs["using_cos"]
-    if "using_cos" in kwargs and temp_using_cos:
-        kwargs["using_cos"] = using_cos_true if temp_using_cos not in ["y", "Y"] else using_cos_false
+    if "region" in kwargs and kwargs["region"]:
+        if kwargs["region"] not in REGIONS:
+            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+            kwargs["region"] = uc.region
+            return
+
+    if "using_cos" in kwargs and kwargs["using_cos"]:
+        kwargs["using_cos"] = using_cos_true if kwargs["using_cos"] not in ["y", "Y"] else using_cos_false
 
     values = [v for k, v in kwargs.items()]
     if not reduce(lambda x, y: (bool(x) or bool(y)), values):
@@ -88,16 +97,26 @@ def set(**kwargs):
         config = {}
         for attr in sorted(attrs):
             if attr != "using-cos":
-                attr_value = attrs[attr]
-                if attr == "secret-id":
-                    attr_value = "*" * 32 + attr_value[32:]
-                elif attr == "secret-key":
-                    attr_value = "*" * 28 + attr_value[28:]
-                v = click.prompt(
-                    text="TencentCloud {}({})".format(attr, attr_value),
-                    default=attrs[attr],
-                    show_default=False)
-                config[attr] = v
+                while True:
+                    attr_value = attrs[attr]
+                    if attr == "secret-id":
+                        attr_value = "*" * 32 + attr_value[32:]
+                    elif attr == "secret-key":
+                        attr_value = "*" * 28 + attr_value[28:]
+
+                    v = click.prompt(
+                        text="TencentCloud {}({})".format(attr, attr_value),
+                        default=attrs[attr],
+                        show_default=False)
+                    config[attr] = v
+
+                    if attr != "region":
+                        break
+                    else:
+                        if v in REGIONS:
+                            break
+                        else:
+                            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
 
         v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
                          default="n",

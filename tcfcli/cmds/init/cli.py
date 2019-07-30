@@ -3,16 +3,16 @@ import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.help.message import InitHelp as help
+import tcfcli.common.base_infor as infor
 
-TYPE = ['HTTP', 'Event']
-
-EVENT_RUNTIME_SUPPORT_LIST = ["python3.6", "python2.7", "go1", "php5", "php7", "nodejs6.10", "nodejs8.9"]
-HTTP_RUNTIME_SUPPORT_LIST = ["nodejs8.9", "nodejs8.9-service"]
-
+TYPE = infor.FUNCTION_TYPE
+EVENT_RUNTIME_SUPPORT_LIST = infor.EVENT_RUNTIME
+HTTP_RUNTIME_SUPPORT_LIST = infor.HTTP_RUNTIME
 TYPE_SUPPORT_RUNTIME = {
     'Event': EVENT_RUNTIME_SUPPORT_LIST,
     'HTTP': HTTP_RUNTIME_SUPPORT_LIST
 }
+
 
 class Init(object):
     TEMPLATES_DIR = "templates"
@@ -62,7 +62,7 @@ class Init(object):
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('-l', '--location', help=help.LOCATION)
-@click.option('-r', '--runtime', type=click.Choice(Init.RUNTIMES.keys()), default="python3.6", help=help.RUNTIME)
+@click.option('-r', '--runtime', type=str, default="python3.6", help=help.RUNTIME)
 @click.option('-o', '--output-dir', default='.', type=click.Path(), help=help.OUTPUT_DIR)
 @click.option('-n', '--name', default="hello_world", help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)

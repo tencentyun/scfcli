@@ -144,10 +144,10 @@ class ScfClient(object):
             SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
             if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
                 func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                print "create_service"
+                # print "create_service"
                 self.create_service(func, func_name, func_ns)
             else:
-                print "create_func"
+                # print "create_func"
                 self.create_func(func, func_name, func_ns)
             return
         except TencentCloudSDKException as err:

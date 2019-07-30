@@ -4,16 +4,16 @@ from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.help.message import ListHelp as help
+import tcfcli.common.base_infor as infor
 
-REGIONS = ['ap-guangzhou', 'ap-shanghai', 'ap-beijing', 'ap-hongkong',
-           'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
+REGIONS = infor.REGIONS
 
 
 class List(object):
     @staticmethod
     def do_cli(region, namespace):
         if region != 'all' and region not in REGIONS:
-            click.secho("region {r} not exists ,please select from {R}".format(r=region, R=REGIONS), fg="red")
+            click.secho("! The region must in all, %s." % (", ".join(REGIONS)), fg="red")
 
         if region == 'all' and namespace == 'all':
             for region in REGIONS:
@@ -35,7 +35,7 @@ class List(object):
 
     @staticmethod
     def show(region, namespace):
-        if region not in REGIONS:
+        if region and region not in REGIONS:
             click.secho("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS), fg="red")
             return
         rep = ScfClient(region).get_ns(namespace)

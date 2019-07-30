@@ -6,6 +6,7 @@ import xmltodict
 import re
 from io import BytesIO
 
+import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
@@ -21,17 +22,15 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
-REGIONS = ['ap-guangzhou', 'ap-shanghai', 'ap-beijing', 'ap-hongkong',
-           'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
-
-SERVICE_RUNTIME = ['Nodejs8.9-service']
+REGIONS = infor.REGIONS
+SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help=help.TEMPLATE_FILE)
 @click.option('--cos-bucket', '-c', type=str, help=help.COS_BUCKET)
 @click.option('--name', '-n', type=str, help=help.NAME)
 @click.option('--namespace', '-ns', type=str, help=help.NAMESPACE)
-@click.option('--region', '-r', type=click.Choice(REGIONS), help=help.REGION)
+@click.option('--region', '-r', type=str, help=help.REGION)
 @click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
 @click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
@@ -52,12 +51,15 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
               $ scf deploy --cos-bucket temp-code-1253970226
     '''
 
-    package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
-    resource = package.do_package()
-    if resource == None:
-        return
-    deploy = Deploy(resource, namespace, region, forced, skip_event)
-    deploy.do_deploy()
+    if region and region not in REGIONS:
+        click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+    else:
+        package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
+        resource = package.do_package()
+        if resource == None:
+            return
+        deploy = Deploy(resource, namespace, region, forced, skip_event)
+        deploy.do_deploy()
 
 
 class Package(object):
