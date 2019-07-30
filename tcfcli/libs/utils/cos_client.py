@@ -4,6 +4,7 @@ from qcloud_cos import CosS3Client
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.user_exceptions import UploadToCosFailed
 from qcloud_cos.cos_comm import *
+from tcfcli.common.operation_msg import Operation
 from qcloud_cos.cos_auth import CosS3Auth
 from qcloud_cos.version import __version__
 
@@ -166,6 +167,13 @@ class CosClient(object):
             # else:
             #     error_msg = e.message
             # raise UploadToCosFailed("Upload func package failed. {} ".format(error_msg))
+            try:
+                if "<?xml" in str(e):
+                    error_code = re.findall("<Code>(.*?)</Code>", str(e))[0]
+                    error_message = re.findall("<Message>(.*?)</Message>", str(e))[0]
+                    Operation("COS client error code: %s, message: %s" % (error_code, error_message)).warning()
+            finally:
+                Operation("Creating faild.").warning()
             raise UploadToCosFailed("Upload func package failed.")
 
         code_uri_in_cos = bucket + '/' + key
