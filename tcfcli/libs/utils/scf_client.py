@@ -7,6 +7,7 @@ from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.scf.v20180416 import scf_client, models
+from tcfcli.common.scf_client import scf_service_models
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.tcsam.tcsam_macro import TriggerMacro as trmacro
@@ -118,9 +119,36 @@ class ScfClient(object):
         resp = self._client.CreateFunction(req)
         return resp.to_json_string()
 
+    def create_service(self, func, func_name, func_ns):
+        req = scf_service_models.CreateFunctionRequest()
+        req.Namespace = func_ns
+        req.FunctionName = func_name
+        proper = func.get(tsmacro.Properties, {})
+        req.Handler = proper.get(tsmacro.Handler)
+        req.Description = proper.get(tsmacro.Desc)
+        req.MemorySize = proper.get(tsmacro.MemSize)
+        req.Runtime = proper.get(tsmacro.Runtime)
+        req.Type = proper.get(tsmacro.Type)
+        if req.Runtime:
+            req.Runtime = req.Runtime[0].upper() + req.Runtime[1:].lower()
+        req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
+        req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
+        req.Code = self._model_code(proper.get(tsmacro.LocalZipFile),
+                                    proper.get(tsmacro.CosBucketName),
+                                    proper.get(tsmacro.CosObjectName))
+        resp = self._client.CreateFunction(req)
+        return resp.to_json_string()
+
     def deploy_func(self, func, func_name, func_ns, forced):
         try:
-            self.create_func(func, func_name, func_ns)
+            SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
+            if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+                func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+                print "create_service"
+                self.create_service(func, func_name, func_ns)
+            else:
+                print "create_func"
+                self.create_func(func, func_name, func_ns)
             return
         except TencentCloudSDKException as err:
             if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"] and forced:

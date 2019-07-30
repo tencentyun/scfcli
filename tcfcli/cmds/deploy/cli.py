@@ -21,13 +21,17 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = './.tcf_build'
 DEF_TMP_FILENAME = 'template.yaml'
 
+REGIONS = ['ap-guangzhou', 'ap-shanghai', 'ap-beijing', 'ap-hongkong',
+           'ap-chengdu', 'ap-singapore', 'ap-guangzhou-open', 'ap-mumbai']
+
+SERVICE_RUNTIME = ['Nodejs8.9-service']
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help=help.TEMPLATE_FILE)
 @click.option('--cos-bucket', '-c', type=str, help=help.COS_BUCKET)
 @click.option('--name', '-n', type=str, help=help.NAME)
 @click.option('--namespace', '-ns', type=str, help=help.NAMESPACE)
-@click.option('--region', '-r', type=str, help=help.REGION)
+@click.option('--region', '-r', type=click.Choice(REGIONS), help=help.REGION)
 @click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
 @click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
@@ -50,7 +54,8 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
 
     package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
     resource = package.do_package()
-
+    if resource == None:
+        return
     deploy = Deploy(resource, namespace, region, forced, skip_event)
     deploy.do_deploy()
 
@@ -93,6 +98,9 @@ class Package(object):
                                 format(os.path.basename(code_url["cos_object_name"]),
                                        code_url["cos_bucket_name"]), fg="green")
                 elif "zip_file" in code_url:
+                    if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime] in SERVICE_RUNTIME:
+                        click.secho("Service just support cos to deploy")
+                        return None
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
 
         # click.secho("Generate resource '{}' success".format(self.resource), fg="green")
@@ -184,10 +192,8 @@ class Package(object):
                     key=zip_file_name_cos
                 )
                 click.secho("> Upload success")
-
-                code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid,
-                                                                          '') if default_bucket_name and default_bucket_name.endswith(
-                    "-" + UserConfig().appid) else default_bucket_name
+                code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid, '') \
+                    if default_bucket_name and default_bucket_name.endswith("-" + UserConfig().appid) else default_bucket_name
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
 
         else:

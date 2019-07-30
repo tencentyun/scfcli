@@ -4,6 +4,15 @@ from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.help.message import InitHelp as help
 
+TYPE = ['HTTP', 'Event']
+
+EVENT_RUNTIME_SUPPORT_LIST = ["python3.6", "python2.7", "go1", "php5", "php7", "nodejs6.10", "nodejs8.9"]
+HTTP_RUNTIME_SUPPORT_LIST = ["nodejs8.9", "nodejs8.9-service"]
+
+TYPE_SUPPORT_RUNTIME = {
+    'Event': EVENT_RUNTIME_SUPPORT_LIST,
+    'HTTP': HTTP_RUNTIME_SUPPORT_LIST
+}
 
 class Init(object):
     TEMPLATES_DIR = "templates"
@@ -15,6 +24,7 @@ class Init(object):
         "php7": "tcf-demo-php",
         "nodejs6.10": "tcf-demo-nodejs6.10",
         "nodejs8.9": "tcf-demo-nodejs8.9",
+        "nodejs8.9-service": "tcf-demo-nodejs8.9-service"
         # "java8": "gh:tencentyun/tcf-demo-java8"
     }
 
@@ -25,7 +35,7 @@ class Init(object):
         return os.path.join(pwd, Init.TEMPLATES_DIR, runtime_pro)
 
     @staticmethod
-    def do_cli(location, runtime, output_dir, name, namespace, no_input):
+    def do_cli(location, runtime, output_dir, name, namespace, no_input, type):
 
         click.secho("[+] Initializing project...", fg="green")
         params = {
@@ -37,8 +47,9 @@ class Init(object):
         click.secho("Output-Dir: %s" % params["output_dir"])
         if name is not None:
             params["no_input"] = True
-            params['extra_context'] = {'project_name': name, 'runtime': runtime, 'namespace': namespace}
+            params['extra_context'] = {'project_name': name, 'runtime': runtime, 'namespace': namespace, 'type': type}
             click.secho("Project-Name: %s" % params['extra_context']["project_name"])
+            click.secho("Type: %s" % params['extra_context']["type"])
             click.secho("Runtime: %s" % params['extra_context']["runtime"])
 
         try:
@@ -51,12 +62,13 @@ class Init(object):
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('-l', '--location', help=help.LOCATION)
-@click.option('-r', '--runtime', type=str, default="python3.6", help=help.RUNTIME)
+@click.option('-r', '--runtime', type=click.Choice(Init.RUNTIMES.keys()), default="python3.6", help=help.RUNTIME)
 @click.option('-o', '--output-dir', default='.', type=click.Path(), help=help.OUTPUT_DIR)
 @click.option('-n', '--name', default="hello_world", help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-N', '--no-input', is_flag=True, help=help.NO_INPUT)
-def init(location, runtime, output_dir, name, namespace, no_input):
+@click.option('--type', default='Event', type=click.Choice(TYPE), help=help.TYPE)
+def init(location, runtime, output_dir, name, namespace, no_input, type):
     """
         \b
         The project initialization operation is performed by the scf init command.
@@ -69,4 +81,7 @@ def init(location, runtime, output_dir, name, namespace, no_input):
           * Initializes a new scf project using custom template in a Git repository
             $ scf init --location gh:pass/demo-python
     """
-    Init.do_cli(location, runtime, output_dir, name, namespace, no_input)
+    if runtime not in TYPE_SUPPORT_RUNTIME[type]:
+        click.secho("{type} not support runtime: {runtime}".format(type=type, runtime=runtime), fg="red")
+        return
+    Init.do_cli(location, runtime, output_dir, name, namespace, no_input, type)

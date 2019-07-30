@@ -6,6 +6,7 @@ class Runtime(object):
     RUNTIME = {
         MacroRuntime.node610: MacroRuntime.cmd_node610,
         MacroRuntime.node89: MacroRuntime.cmd_node89,
+        MacroRuntime.node89_s: MacroRuntime.cmd_node89_s,
         MacroRuntime.python36: MacroRuntime.cmd_python36,
         MacroRuntime.python27: MacroRuntime.cmd_python27,
     }

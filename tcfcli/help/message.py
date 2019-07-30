@@ -85,11 +85,11 @@ class InitHelp():
 
     NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
-
-    LOCATION = "Template location (git, mercurial, http(s), zip, path)"
-    RUNTIME = "Runtime of this funtion. Including %s" % RUNTIME_STR
-    OUTPUT_DIR = "The path where will output the initialized app into"
-    NO_INPUT = "Disable prompting and accept default values defined template config"
+    TYPE = "Function Type (Event,HTTP)."
+    LOCATION = "Template location (git, mercurial, http(s), zip, path)."
+    RUNTIME = "Runtime of this funtion. Including %s." % RUNTIME_STR
+    OUTPUT_DIR = "The path where will output the initialized app into."
+    NO_INPUT = "Disable prompting and accept default values defined template config."
 
 
 class ConfigureHelp():

@@ -5,6 +5,7 @@ Resources:
       Type: TencentCloud::Serverless::Function
       Properties:
         CodeUri: ./
+        Type: {{cookiecutter.type}}
         Description: This is a template function
         Environment:
           Variables:

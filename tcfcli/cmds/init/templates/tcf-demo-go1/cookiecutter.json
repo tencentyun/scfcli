@@ -1,5 +1,6 @@
 {
     "project_name": "demo-go1",
     "runtime": "go1",
-    "namespace": "default"
+    "namespace": "default",
+    "type": "Event"
 }

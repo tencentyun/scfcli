@@ -9,6 +9,10 @@ class MacroRuntime(object):
     node89 = "nodejs8.9"
     cmd_node89 = "node"
 
+    # nodejs 8.9 -service
+    node89_s = "nodejs8.9-service"
+    cmd_node89_s = "node"
+
     # python3.6
     python36 = "python3.6"
     cmd_python36 = "python"

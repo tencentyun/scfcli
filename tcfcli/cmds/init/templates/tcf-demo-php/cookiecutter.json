@@ -1,5 +1,6 @@
 {
     "project_name": "demo-php",
     "runtime": "php7",
-    "namespace": "default"
+    "namespace": "default",
+    "type": "Event"
 }

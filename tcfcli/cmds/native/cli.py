@@ -1,5 +1,6 @@
 import click
 from .invoke.cli import invoke
+from .startapi.cli import startapi
 from .generate_event.cli import generate_event
 from tcfcli.help.message import NativeHelp as help
 
@@ -25,4 +26,5 @@ def native():
 
 
 native.add_command(invoke)
+native.add_command(startapi)
 native.add_command(generate_event)

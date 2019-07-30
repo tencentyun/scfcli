@@ -1,0 +1,15 @@
+Resources:
+  {{cookiecutter.namespace}}:
+    Type: TencentCloud::Serverless::Namespace
+    {{cookiecutter.project_name}}:
+      Type: TencentCloud::Serverless::Function
+      Properties:
+        CodeUri: ./
+        Type: {{cookiecutter.type}}
+        Description: This is a template service
+        Handler: index.js
+        Runtime: Nodejs8.9-service
+
+Globals:
+  Function:
+    Description: This is a template service
