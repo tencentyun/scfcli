@@ -42,7 +42,7 @@ class ScfLogClient(ScfBaseClient):
                     click.secho(str(log.Log).replace("\n\n", "\n"))
                 else:
                     click.secho(str(log.Log).replace("\n\n", "\n"), fg="red")
-                click.secho("\n\n")
+                click.secho("\n")
 
     def __fetch_log(self, startime, endtime, count, tail, order="asc"):
         step = 1000
