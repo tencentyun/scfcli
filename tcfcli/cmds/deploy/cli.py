@@ -101,7 +101,7 @@ class Package(object):
                                        code_url["cos_bucket_name"]), fg="green")
                 elif "zip_file" in code_url:
                     if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime] in SERVICE_RUNTIME:
-                        click.secho("Service just support cos to deploy")
+                        click.secho("Service just support cos to deploy,please set using-cos by 'scf configure set --using-cos y'")
                         return None
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
 

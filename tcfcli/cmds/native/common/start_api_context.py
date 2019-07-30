@@ -3,13 +3,13 @@ import sys
 import os
 import click
 import subprocess
-import threading
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.user_exceptions import InvokeContextException, UserException
 from tcfcli.cmds.native.common.runtime import Runtime
 from tcfcli.common.template import Template
 from tcfcli.common.file_util import FileUtil
+import tcfcli.common.base_infor as infor
 
 
 class StartApiContext(object):
@@ -60,11 +60,23 @@ class StartApiContext(object):
         del fun[tsmacro.Type]
         return fun
 
+    def _check_function_type(self, resource):
+        ns = resource.keys()[0]
+        func = resource[ns].keys()[0]
+        if resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'HTTP':
+            raise InvokeContextException("You must provide a HTTP Type Service")
+        if resource[ns][func][tsmacro.Properties][tsmacro.Runtime] not in infor.SERVICE_RUNTIME:
+            raise InvokeContextException("You must provide a support Runtime,from{s_r}".format(s_r=infor.SERVICE_RUNTIME))
+
     def __enter__(self):
         template_dict = tcsam.tcsam_validate(Template.get_template_data(self._template_file))
 
         resource = template_dict.get(tsmacro.Resources, {})
+        self.resource = resource
         func = self._get_function(self._get_namespace(resource))
+
+        self._check_function_type(resource)
+
         self._runtime = Runtime(func.get(tsmacro.Properties, {}))
         return self
 
@@ -85,7 +97,7 @@ class StartApiContext(object):
             child.kill()
             click.secho("Recv a SIGINT, exit.")
 
-        if ret_code == 233: # runtime not match
+        if ret_code == 233:  # runtime not match
             raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.runtime))
 
     @property
@@ -102,7 +114,6 @@ class StartApiContext(object):
     def env(self):
         env = {
             'SCF_LOCAL': 'true',
-            'SCF_FUNCTION_MEMORY_SIZE': str(self._runtime.mem_size),
             'SCF_FUNCTION_ENVIRON': json.dumps(self._runtime.env)
         }
 

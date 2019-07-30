@@ -99,6 +99,28 @@ class ScfClient(object):
         resp = self._client.UpdateFunctionConfiguration(req)
         return resp.to_json_string()
 
+    def update_service_code(self, func, func_name, func_ns):
+        req = scf_service_models.UpdateFunctionCodeRequest()
+        req.Namespace = func_ns
+        req.FunctionName = func_name
+        proper = func.get(tsmacro.Properties, {})
+        req.Handler = proper.get(tsmacro.Handler)
+        req.CosBucketName = proper.get(tsmacro.CosBucketName)
+        req.CosObjectName = proper.get(tsmacro.CosObjectName)
+        resp = self._client.UpdateFunctionCode(req)
+        return resp.to_json_string()
+
+    def update_service_config(self, func, func_name, func_ns):
+        req = scf_service_models.UpdateFunctionConfigurationRequest()
+        req.Namespace = func_ns
+        req.FunctionName = func_name
+        proper = func.get(tsmacro.Properties, {})
+        req.Description = proper.get(tsmacro.Desc)
+        req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
+        req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
+        resp = self._client.UpdateFunctionConfiguration(req)
+        return resp.to_json_string()
+
     def create_func(self, func, func_name, func_ns):
         req = models.CreateFunctionRequest()
         req.Namespace = func_ns
@@ -157,8 +179,13 @@ class ScfClient(object):
                 return err
         click.secho("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name), fg="red")
         try:
-            self.update_func_config(func, func_name, func_ns)
-            self.update_func_code(func, func_name, func_ns)
+            if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+                    func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+                self.update_service_config(func, func_name, func_ns)
+                self.update_service_code(func, func_name, func_ns)
+            else:
+                self.update_func_config(func, func_name, func_ns)
+                self.update_func_code(func, func_name, func_ns)
         except TencentCloudSDKException as err:
             return err
         return
