@@ -3,6 +3,7 @@ import json
 import sys
 from tcfcli.cmds.cli import __version__
 from tcfcli.common.user_exceptions import *
+from tcfcli.common.operation_msg import Operation
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -178,7 +179,7 @@ class ScfClient(object):
                 pass
             else:
                 return err
-        click.secho("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name), fg="red")
+        Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
         try:
             if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
                     func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
