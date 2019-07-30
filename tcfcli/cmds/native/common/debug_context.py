@@ -7,6 +7,7 @@ class DebugContext(object):
     DEBUG_CMD = {
         MacroRuntime.node610: MacroRuntime.cmd_node610,
         MacroRuntime.node89: MacroRuntime.cmd_node89,
+        MacroRuntime.node89_s: MacroRuntime.cmd_node89_s,
         MacroRuntime.python27: MacroRuntime.cmd_python27,
         MacroRuntime.python36: MacroRuntime.cmd_python36
     }
@@ -39,6 +40,8 @@ class DebugContext(object):
         if self.runtime == MacroRuntime.node610:
             argv += self.debug_arg_node610
         elif self.runtime == MacroRuntime.node89:
+            argv += self.debug_arg_node89
+        elif self.runtime == MacroRuntime.node89_s:
             argv += self.debug_arg_node89
         elif self.runtime == MacroRuntime.python36:
             argv += self.debug_arg_python36

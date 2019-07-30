@@ -134,6 +134,8 @@ class NativeHelp():
     INVOKE_TEMPLATE = "The path or file name of the configuration file. The default is template.yaml."
     INVKOE_DEBUG_PORT = 'The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port.'
     INVOKE_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
+    START_API_DEBUG_PORT = 'The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port.'
+    START_API_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
     INVOKE_QUIET = 'Only display what function return.'
 
 

@@ -7,6 +7,7 @@ from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.user_exceptions import InvokeContextException, UserException
 from tcfcli.cmds.native.common.runtime import Runtime
+from tcfcli.cmds.native.common.debug_context import DebugContext
 from tcfcli.common.template import Template
 from tcfcli.common.file_util import FileUtil
 import tcfcli.common.base_infor as infor
@@ -18,12 +19,16 @@ class StartApiContext(object):
     def __init__(self,
                  template_file,
                  function=None,
+                 debug_port=None,
+                 debug_args="",
                  namespace=None,
                  env_file=None,
                  ):
 
         self._template_file = template_file
         self._function = function
+        self._debug_port = debug_port
+        self._debug_argv = debug_args
         self._namespace = namespace
         self._runtime = None
         self._env_file = env_file
@@ -79,6 +84,7 @@ class StartApiContext(object):
         self._check_function_type(resource)
 
         self._runtime = Runtime(func.get(tsmacro.Properties, {}))
+        self._debug_context = DebugContext(self._debug_port, self._debug_argv, self._runtime.runtime)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -107,9 +113,10 @@ class StartApiContext(object):
 
     @property
     def argv(self):
+        argv = self._debug_context.argv
         code = os.path.normpath(
             os.path.join(os.path.dirname(os.path.abspath(self._template_file)), self._runtime.codeuri))
-        return [os.path.join(code, self.get_handler())]
+        return argv+[os.path.join(code, self.get_handler())]
 
     @property
     def env(self):
