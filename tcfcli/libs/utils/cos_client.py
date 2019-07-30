@@ -173,8 +173,7 @@ class CosClient(object):
                     error_message = re.findall("<Message>(.*?)</Message>", str(e))[0]
                     Operation("COS client error code: %s, message: %s" % (error_code, error_message)).warning()
             finally:
-                Operation("Creating faild.").warning()
-            raise UploadToCosFailed("Upload func package failed.")
+                raise UploadToCosFailed("Upload func package failed.")
 
         code_uri_in_cos = bucket + '/' + key
         return code_uri_in_cos
