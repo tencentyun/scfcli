@@ -1,4 +1,5 @@
 import click
+from tcfcli.common.operation_msg import Operation
 from tcfcli.cmds.local.common.invoke_context import InvokeContext
 from tcfcli.cmds.local.common.options import invoke_common_options
 from tcfcli.common.user_exceptions import UserException
@@ -66,7 +67,7 @@ def do_invoke(template, namespace_identifier, function_identifier, event, no_eve
 
 def _get_event(event_file):
     if event_file == STD_IN:
-        click.secho('read event from stdin')
+        Operation('read event from stdin').process()
 
     with click.open_file(event_file, 'r') as f:
         return f.read()

@@ -3,9 +3,138 @@ from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.user_exceptions import UploadToCosFailed
+from qcloud_cos.cos_comm import *
+from qcloud_cos.cos_auth import CosS3Auth
+from qcloud_cos.version import __version__
+
+
+class CosReset(CosS3Client):
+
+    def send_request(self, method, url, bucket, timeout=30, **kwargs):
+        """封装request库发起http请求"""
+        if self._conf._timeout is not None:  # 用户自定义超时时间
+            timeout = self._conf._timeout
+        if self._conf._ua is not None:
+            kwargs['headers']['User-Agent'] = self._conf._ua
+        else:
+            kwargs['headers']['User-Agent'] = 'cos-python-sdk-v' + __version__
+        if self._conf._token is not None:
+            kwargs['headers']['x-cos-security-token'] = self._conf._token
+        if bucket is not None:
+            kwargs['headers']['Host'] = self._conf.get_host(bucket)
+        kwargs['headers'] = format_values(kwargs['headers'])
+        if 'data' in kwargs:
+            kwargs['data'] = to_bytes(kwargs['data'])
+        for j in range(self._retry + 1):
+            try:
+                if method == 'POST':
+                    res = self._session.post(url, timeout=timeout, **kwargs)
+                elif method == 'GET':
+                    res = self._session.get(url, timeout=timeout, **kwargs)
+                elif method == 'PUT':
+                    res = self._session.put(url, timeout=timeout, **kwargs)
+                elif method == 'DELETE':
+                    res = self._session.delete(url, timeout=timeout, **kwargs)
+                elif method == 'HEAD':
+                    res = self._session.head(url, timeout=timeout, **kwargs)
+                if res.status_code < 400:  # 2xx和3xx都认为是成功的
+                    return res
+            except Exception as e:  # 捕获requests抛出的如timeout等客户端错误,转化为客户端错误
+                if j < self._retry:
+                    continue
+                raise CosClientError(str(e))
+
+        if res.status_code >= 400:  # 所有的4XX,5XX都认为是COSServiceError
+            if method == 'HEAD' and res.status_code == 404:  # Head 需要处理
+                info = dict()
+                info['code'] = 'NoSuchResource'
+                info['message'] = 'The Resource You Head Not Exist'
+                info['resource'] = url
+                if 'x-cos-request-id' in res.headers:
+                    info['requestid'] = res.headers['x-cos-request-id']
+                if 'x-cos-trace-id' in res.headers:
+                    info['traceid'] = res.headers['x-cos-trace-id']
+                raise CosServiceError(method, info, res.status_code)
+            else:
+                msg = res.text
+                if msg == u'':  # 服务器没有返回Error Body时 给出头部的信息
+                    msg = res.headers
+                raise CosServiceError(method, msg, res.status_code)
+
+        return None
+
+    #  s3 object interface begin
+    def put_object(self, Bucket, Body, Key, EnableMD5=False, **kwargs):
+        """单文件上传接口，适用于小文件，最大不得超过5GB
+
+        :param Bucket(string): 存储桶名称.
+        :param Body(file|string): 上传的文件内容，类型为文件流或字节流.
+        :param Key(string): COS路径.
+        :param EnableMD5(bool): 是否需要SDK计算Content-MD5，打开此开关会增加上传耗时.
+        :kwargs(dict): 设置上传的headers.
+        :return(dict): 上传成功返回的结果，包含ETag等信息.
+
+        .. code-block:: python
+
+            config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key, Token=token)  # 获取配置对象
+            client = CosS3Client(config)
+            # 上传本地文件到cos
+            with open('test.txt', 'rb') as fp:
+                response = client.put_object(
+                    Bucket='bucket',
+                    Body=fp,
+                    Key='test.txt'
+                )
+                print (response['ETag'])
+        """
+        check_object_content_length(Body)
+        headers = mapped(kwargs)
+        url = self._conf.uri(bucket=Bucket, path=Key)
+        if EnableMD5:
+            md5_str = get_content_md5(Body)
+            if md5_str:
+                headers['Content-MD5'] = md5_str
+        rt = self.send_request(
+            method='PUT',
+            url=url,
+            bucket=Bucket,
+            auth=CosS3Auth(self._conf, Key),
+            data=Body,
+            headers=headers)
+
+        response = dict(**rt.headers)
+        return response
+
+    # s3 bucket interface begin
+    def create_bucket(self, Bucket, **kwargs):
+        """创建一个bucket
+
+        :param Bucket(string): 存储桶名称.
+        :param kwargs(dict): 设置请求headers.
+        :return: None.
+
+        .. code-block:: python
+
+            config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key, Token=token)  # 获取配置对象
+            client = CosS3Client(config)
+            # 创建bucket
+            response = client.create_bucket(
+                Bucket='bucket'
+            )
+        """
+        headers = mapped(kwargs)
+        url = self._conf.uri(bucket=Bucket)
+        rt = self.send_request(
+            method='PUT',
+            url=url,
+            bucket=Bucket,
+            auth=CosS3Auth(self._conf),
+            headers=headers)
+        return None
 
 
 class CosClient(object):
+
     def __init__(self, region=None):
         uc = UserConfig()
         if region is None:
@@ -13,7 +142,7 @@ class CosClient(object):
         self._region = region
         self._config = CosConfig(Secret_id=uc.secret_id, Secret_key=uc.secret_key,
                                  Region=region, Appid=uc.appid)
-        self._client = CosS3Client(self._config)
+        self._client = CosReset(self._config)
 
     def upload_file2cos(self, bucket, file, key):
         # save funcs in the func directory
@@ -76,7 +205,7 @@ class CosClient(object):
         except Exception as e:
             return e
 
-    def creat_bucket(self, bucket):
+    def create_bucket(self, bucket):
         '''
             根据bucket和config里面的region进行Bucket创建
         :param bucket: str  bucket名字
@@ -85,7 +214,7 @@ class CosClient(object):
         try:
             self._client.create_bucket(
                 Bucket=bucket,
-                ACL='private',
+                ACL='privateaaa',
             )
             return True
         except Exception as e:

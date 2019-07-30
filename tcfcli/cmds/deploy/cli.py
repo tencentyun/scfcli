@@ -2,15 +2,15 @@ import click
 import os
 import sys
 import time
-import xmltodict
 import re
+
 from io import BytesIO
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
+from tcfcli.common.operation_msg import Operation
 from tcfcli.common.template import Template
-from tcfcli.common.user_exceptions import TemplateNotFoundException, InvalidTemplateException, ContextException
-from tcfcli.common.user_exceptions import CloudAPIException
+from tcfcli.common.user_exceptions import *
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common import tcsam
 from tcfcli.common.user_config import UserConfig
@@ -24,6 +24,7 @@ DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
+
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help=help.TEMPLATE_FILE)
@@ -52,7 +53,7 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
     '''
 
     if region and region not in REGIONS:
-        click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+        raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     else:
         package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
         resource = package.do_package()
@@ -96,13 +97,13 @@ class Package(object):
                 if "cos_bucket_name" in code_url:
                     self.resource[ns][func][tsmacro.Properties]["CosBucketName"] = code_url["cos_bucket_name"]
                     self.resource[ns][func][tsmacro.Properties]["CosObjectName"] = code_url["cos_object_name"]
-                    click.secho("Upload function zip file '{}' to COS bucket '{}' success".
-                                format(os.path.basename(code_url["cos_object_name"]),
-                                       code_url["cos_bucket_name"]), fg="green")
+                    msg = "Upload function zip file '{}' to COS bucket '{}' success.".format(os.path.basename( \
+                        code_url["cos_object_name"]), code_url["cos_bucket_name"])
+                    Operation(msg).success()
                 elif "zip_file" in code_url:
                     if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime] in SERVICE_RUNTIME:
-                        click.secho("Service just support cos to deploy,please set using-cos by 'scf configure set --using-cos y'")
-                        return None
+                        error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
+                        raise UploadFailed(error)
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
 
         # click.secho("Generate resource '{}' success".format(self.resource), fg="green")
@@ -110,14 +111,15 @@ class Package(object):
 
     def check_params(self):
         if not self.template_file:
-            click.secho("FAM Template Not Found", fg="red")
-            raise TemplateNotFoundException("Missing option --template-file")
+            # click.secho("FAM Template Not Found", fg="red")
+            raise TemplateNotFoundException("FAM Template Not Found. Missing option --template-file")
         if not os.path.isfile(self.template_file):
-            click.secho("FAM Template Not Found", fg="red")
-            raise TemplateNotFoundException("template-file Not Found")
+            # click.secho("FAM Template Not Found", fg="red")
+            raise TemplateNotFoundException("FAM Template Not Found, template-file Not Found")
 
         self.template_file = os.path.abspath(self.template_file)
         self.template_file_dir = os.path.dirname(os.path.abspath(self.template_file))
+
         uc = UserConfig()
         if self.cos_bucket and self.cos_bucket.endswith("-" + uc.appid):
             self.cos_bucket = self.cos_bucket.replace("-" + uc.appid, '')
@@ -134,77 +136,76 @@ class Package(object):
             cos_bucket_status = False
 
         if self.without_cos:
-            click.secho("> Uploading this package without COS.")
+            Operation("Uploading this package without COS.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
-            click.secho("> Upload success")
+            Operation("Upload success").success()
 
         elif self.cos_bucket:
-            click.secho("> Uploading this package to COS, bucket_name:" + click.style(
-                self.cos_bucket + "-" + UserConfig().appid, fg='green'))
-            CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(),
-                                              key=zip_file_name_cos)
-            click.secho("> Upload success")
+            bucket_name = self.cos_bucket + "-" + UserConfig().appid
+            Operation("Uploading this package to COS, bucket_name: %s" % (bucket_name)).process()
+            CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(), key=zip_file_name_cos)
+            Operation("Upload success").success()
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name_cos
 
         elif cos_bucket_status:
 
-            star_sign = click.style("* ", fg='yellow')
+            Operation("By default, this package will be uploaded to COS.").information()
+            Operation("Default COS-bucket: " + default_bucket_name).information()
+            Operation("If you don't want to upload the package to COS by default, you could change your configure!") \
+                .information()
 
-            echo_default_bucket_name = click.style(default_bucket_name, fg='green')
-
-            click.secho(star_sign + "By default, this package will be uploaded to COS.")
-            click.secho(star_sign + "Default COS-bucket: " + click.style(default_bucket_name, fg='green'))
-            click.secho(
-                star_sign + "If you don't want to upload the package to COS by default, you could change your configure!")
             # 根据region设置cos_client
             cos_client = CosClient(region)
-
-            click.secho("> Checking you COS-bucket.")
+            Operation("Checking you COS-bucket.").process()
             # 获取COS bucket
             cos_bucket_status = cos_client.get_bucket(default_bucket_name)
 
             if cos_bucket_status == -1:
-                click.secho("> Creating default COS-bucket: " + echo_default_bucket_name)
-                create_status = cos_client.creat_bucket(bucket=default_bucket_name)
+                Operation("reating default COS-bucket: " + default_bucket_name).process()
+                create_status = cos_client.create_bucket(bucket=default_bucket_name)
                 if create_status == True:
                     cos_bucket_status = 0
-                    click.secho("> Creating success.")
+                    Operation("Creating success.").success()
                 else:
-                    cos_bucket_status = create_status
-                    click.secho("> Creating faild.")
+                    try:
+                        if "<?xml" in str(create_status):
+                            error_code = re.findall("<Code>(.*?)</Code>", str(create_status))[0]
+                            error_message = re.findall("<Message>(.*?)</Message>", str(create_status))[0]
+                            Operation("COS client error code: %s, message: %s" % (error_code, error_message)).warning()
+                    finally:
+                        cos_bucket_status = create_status
+                        Operation("Creating faild.").warning()
 
             if cos_bucket_status != 0:
-                # 获取bucket出错，停止流程
-                error = cos_bucket_status
-                click.secho("! There are some exceptions and the process of uploading to COS is terminated!", fg='red')
 
-                click.secho(star_sign + "This package will be uploaded by TencentCloud Cloud API.")
-                click.secho("> Uploading this package.")
+                Operation("There are some exceptions and the process of uploading to COS is terminated!").warning()
+                Operation("This package will be uploaded by TencentCloud Cloud API.").information()
+                Operation("Uploading this package.").process()
                 code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
-                click.secho("> Upload success")
+                Operation("Upload success").success()
 
             else:
 
                 # 获取bucket正常，继续流程
-                click.secho("> Uploading to COS, bucket_name:" + echo_default_bucket_name)
+                Operation("Uploading to COS, bucket_name:" + default_bucket_name).process()
                 cos_client.upload_file2cos(
                     bucket=default_bucket_name,
                     file=zipfile.read(),
                     key=zip_file_name_cos
                 )
-                click.secho("> Upload success")
                 code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid, '') \
-                    if default_bucket_name and default_bucket_name.endswith("-" + UserConfig().appid) else default_bucket_name
+                    if default_bucket_name and default_bucket_name.endswith(
+                    "-" + UserConfig().appid) else default_bucket_name
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
 
         else:
-            click.secho(
-                "* If you want to increase the upload speed, you can configure using-cos with command：scf configure set",
-                fg="yellow")
-            click.secho("> Uploading this package.")
+            Operation( \
+                "If you want to increase the upload speed, you can configure using-cos with command：scf configure set") \
+                .information()
+            Operation("Uploading this package.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
-            click.secho("> Upload success")
+            Operation("Upload success").success()
 
         return code_url
 
@@ -245,7 +246,7 @@ class Package(object):
         with open(zip_file_path, 'wb') as f:
             f.write(buff.read())
             buff.seek(0)
-        click.secho("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name))
+        Operation("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name)).success()
 
         return buff, zip_file_name, zip_file_name_cos
 
@@ -262,13 +263,13 @@ class Deploy(object):
         for ns in self.resources:
             if not self.resources[ns]:
                 continue
-            click.secho("Deploy namespace '{ns}' begin".format(ns=ns))
+            Operation("Deploy namespace '{ns}' begin".format(ns=ns)).process()
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
-            click.secho("Deploy namespace '{ns}' end".format(ns=ns))
+            Operation("Deploy namespace '{ns}' end".format(ns=ns)).process()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
@@ -277,16 +278,14 @@ class Deploy(object):
 
         rep = ScfClient(region).get_ns(func_ns)
         if not rep:
-            click.secho("{ns} not exists, create it now".format(ns=func_ns), fg="red")
+            Operation("{ns} not exists, create it now".format(ns=func_ns)).process()
             err = ScfClient(region).create_ns(func_ns)
             if err is not None:
                 if sys.version_info[0] == 3:
                     s = err.get_message()
                 else:
                     s = err.get_message().encode("UTF-8")
-                click.secho("Create namespace '{name}' failure. Error: {e}.".format(
-                    name=func_ns, e=s), fg="red")
-                sys.exit(1)
+                raise NamespaceException("Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s))
 
         err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
         if err is not None:
@@ -299,10 +298,10 @@ class Deploy(object):
             err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
-                err_msg += (u"\nRequestId: {}".format(err.get_request_id().encode("UTF-8")))
+                err_msg += (u"RequestId: {}".format(err.get_request_id().encode("UTF-8")))
             raise CloudAPIException(err_msg)
 
-        click.secho("Deploy function '{name}' success".format(name=func_name), fg="green")
+        Operation("Deploy function '{name}' success".format(name=func_name)).success()
         if not skip_event:
             self._do_deploy_trigger(func, func_name, func_ns, region)
 
@@ -319,12 +318,10 @@ class Deploy(object):
                 else:
                     s = err.get_message().encode("UTF-8")
 
-                click.secho(
-                    "Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger,
-                                                                          e=s), fg="red")
+                Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s)).warning()
                 if err.get_request_id():
                     click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
                 continue
-            click.secho("Deploy trigger '{name}' success".format(name=trigger), fg="green")
+            Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
         if hasError is not None:
             sys.exit(1)

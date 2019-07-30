@@ -2,6 +2,7 @@ import click
 import json
 import sys
 from tcfcli.cmds.cli import __version__
+from tcfcli.common.user_exceptions import *
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
@@ -43,7 +44,7 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            #click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
+            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def delete_function(self, function_name=None, namespace='default'):
@@ -58,7 +59,7 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            #click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
+            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def list_function(self, namespace=None):
@@ -165,7 +166,7 @@ class ScfClient(object):
         try:
             SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
             if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+                    func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
                 # print "create_service"
                 self.create_service(func, func_name, func_ns)
             else:
@@ -353,10 +354,11 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
-            if isinstance(e, TencentCloudSDKException):
-                raise
-            else:
-                raise TencentCloudSDKException(e.message, e.message)
+            raise TCSDKException(e)
+            # if isinstance(e, TencentCloudSDKException):
+            #     raise
+            # else:
+            #     raise TencentCloudSDKException(e.message, e.message)
 
     def CreateNamespace(self, namespace):
         try:
@@ -375,10 +377,11 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
-            if isinstance(e, TencentCloudSDKException):
-                raise
-            else:
-                raise TencentCloudSDKException(e.message, e.message)
+            raise TCSDKException(e)
+            # if isinstance(e, TencentCloudSDKException):
+            #     raise
+            # else:
+            #     raise TencentCloudSDKException(e.message, e.message)
 
     def ListFunctions(self, namespace):
         try:
@@ -397,7 +400,8 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
-            if isinstance(e, TencentCloudSDKException):
-                raise
-            else:
-                raise TencentCloudSDKException(e.message, e.message)
+            raise TCSDKException(e)
+            # if isinstance(e, TencentCloudSDKException):
+            #     raise
+            # else:
+            #     raise TencentCloudSDKException(e.message, e.message)

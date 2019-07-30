@@ -2,7 +2,9 @@ import os
 import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
+from tcfcli.common.operation_msg import Operation
 from tcfcli.libs.utils.scf_client import ScfClient
+from tcfcli.common.user_exceptions import *
 from tcfcli.help.message import ListHelp as help
 import tcfcli.common.base_infor as infor
 
@@ -13,7 +15,7 @@ class List(object):
     @staticmethod
     def do_cli(region, namespace):
         if region != 'all' and region not in REGIONS:
-            click.secho("! The region must in all, %s." % (", ".join(REGIONS)), fg="red")
+            raise ArgsException("! The region must in all, %s." % (", ".join(REGIONS)))
 
         if region == 'all' and namespace == 'all':
             for region in REGIONS:
@@ -36,12 +38,12 @@ class List(object):
     @staticmethod
     def show(region, namespace):
         if region and region not in REGIONS:
-            click.secho("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS), fg="red")
-            return
+            raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
+            # return
         rep = ScfClient(region).get_ns(namespace)
         if not rep:
-            click.secho("namespace {ns} not exists".format(ns=namespace), fg="red")
-            return
+            raise NamespaceException("namespace {ns} not exists".format(ns=namespace))
+            # return
 
         functions = ScfClient(region).list_function(namespace)
         if not functions:
@@ -49,7 +51,8 @@ class List(object):
             # click.secho("no function exists\n", fg="red")
             return
 
-        click.secho("Region:%s \nNamespace:%s " % (region, namespace), fg="green")
+        Operation("Region:%s" % (region)).process()
+        Operation("Namespace:%s " % (namespace)).process()
         click.secho("%-15s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName"))
         for function in functions:
             click.secho("%-15s %-15s %-20s %-20s %-60s" % (function['Runtime'], function['Status'], function['AddTime'],

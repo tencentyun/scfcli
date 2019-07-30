@@ -3,6 +3,7 @@ import platform
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import ConfigureHelp as help
 from tcfcli.common.user_config import UserConfig
+from tcfcli.common.operation_msg import Operation
 from tcfcli.common.scf_client.scf_report_client import ScfReportClient
 
 version = platform.python_version()
@@ -83,7 +84,7 @@ def set(**kwargs):
 
     if "region" in kwargs and kwargs["region"]:
         if kwargs["region"] not in REGIONS:
-            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+            Operation("The region must in %s." % (", ".join(REGIONS))).warning()
             kwargs["region"] = uc.region
             return
 
@@ -116,7 +117,7 @@ def set(**kwargs):
                         if v in REGIONS:
                             break
                         else:
-                            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+                            Operation("The region must in %s." % (", ".join(REGIONS))).warning()
 
         v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
                          default="n",

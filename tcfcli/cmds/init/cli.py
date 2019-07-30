@@ -1,6 +1,8 @@
 import os
 import click
 import zipfile
+from tcfcli.common.operation_msg import Operation
+from tcfcli.common.user_exceptions import *
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.help.message import InitHelp as help
@@ -38,26 +40,33 @@ class Init(object):
     @staticmethod
     def do_cli(location, runtime, output_dir, name, namespace, no_input, type):
 
+        click.secho('''   _____ _____ ______      _____  _     _____ 
+  /  ___/  __ \|  ___|    /  __ \| |   |_   _|
+  \ `--.| /  \/| |_ ______| /  \/| |     | |  
+   `--. \ |    |  _|______| |    | |     | |  
+  /\__/ / \__/\| |        | \__/\| |_____| |_ 
+  \____/ \____/\_|         \____/\_____/\___/ ''')
+
         click.secho("[+] Initializing project...", fg="green")
         params = {
             "template": location if location else Init._runtime_path(runtime),
             "output_dir": output_dir,
             "no_input": no_input,
         }
-        click.secho("Template: %s" % params["template"])
-        click.secho("Output-Dir: %s" % params["output_dir"])
+        Operation("Template: %s" % params["template"]).process()
+        Operation("Output-Dir: %s" % params["output_dir"]).process()
         if name is not None:
             params["no_input"] = True
             params['extra_context'] = {'project_name': name, 'runtime': runtime, 'namespace': namespace, 'type': type}
-            click.secho("Project-Name: %s" % params['extra_context']["project_name"])
-            click.secho("Type: %s" % params['extra_context']["type"])
-            click.secho("Runtime: %s" % params['extra_context']["runtime"])
-
+            Operation("Project-Name: %s" % params['extra_context']["project_name"]).process()
+            Operation("Type: %s" % params['extra_context']["type"]).process()
+            Operation("Runtime: %s" % params['extra_context']["runtime"]).process()
         try:
             cookiecutter(**params)
         except exceptions.CookiecutterException as e:
-            click.secho(str(e), fg="red")
-            raise click.Abort()
+            # click.secho(str(e), fg="red")
+            # raise click.Abort()
+            raise InitException(e)
         if runtime in infor.SERVICE_RUNTIME:
             click.secho("[*] Project initing,please wait.....", fg="green")
             zipfile_path = os.path.join(os.path.abspath(output_dir), name, 'node_modules.zip')
@@ -66,6 +75,7 @@ class Init(object):
             zipobj.close()
             os.remove(zipfile_path)
         click.secho("[*] Project initialization is complete", fg="green")
+        Operation("You could 'cd %s', and start this project." % (params['extra_context']["project_name"])).information()
 
 
 @click.command(short_help=help.SHORT_HELP)
@@ -90,6 +100,6 @@ def init(location, runtime, output_dir, name, namespace, no_input, type):
             $ scf init --location gh:pass/demo-python
     """
     if runtime not in TYPE_SUPPORT_RUNTIME[type]:
-        click.secho("{type} not support runtime: {runtime}".format(type=type, runtime=runtime), fg="red")
-        return
+        raise InitException("{type} not support runtime: {runtime}".format(type=type, runtime=runtime))
+        # return
     Init.do_cli(location, runtime, output_dir, name, namespace, no_input, type)

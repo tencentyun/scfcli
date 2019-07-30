@@ -2,6 +2,8 @@ import os
 import click
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
+from tcfcli.common.operation_msg import Operation
+from tcfcli.common.user_exceptions import *
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeleteHelp as help
 from tcfcli.libs.utils.scf_client import ScfClient
@@ -14,24 +16,24 @@ class Delete(object):
     def do_cli(region, namespace, name):
 
         if region and region not in REGIONS:
-            click.secho("! The region must in %s." % (", ".join(REGIONS)), fg="red")
+            raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
         else:
             rep = ScfClient(region).get_ns(namespace)
             if not rep:
-                click.secho("! namespace {ns} not exists".format(ns=namespace), fg="red")
-                return
+                raise DeleteException("Namespace {ns} not exists".format(ns=namespace))
+                # return
 
             rep = ScfClient(region).get_function(function_name=name, namespace=namespace)
             if not rep:
-                click.secho("! function {function} not exists".format(function=name), fg="red")
-                return
+                raise DeleteException("Function {function} not exists".format(function=name))
+                # return
 
             rep = ScfClient(region).delete_function(function_name=name, namespace=namespace)
             if not rep:
-                click.secho("! function {function} delete failed".format(function=name), fg="red")
-                return
+                raise DeleteException("Function {function} delete failed".format(function=name))
+                # return
 
-            click.secho("function {function} delete success".format(function=name), fg="green")
+            Operation("Function {function} delete success".format(function=name)).success()
 
 
 def abort_if_false(ctx, param, value):

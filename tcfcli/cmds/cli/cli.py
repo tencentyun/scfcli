@@ -14,7 +14,6 @@ os.chdir('../../..')
 sys.path.insert(0, os.getcwd())
 os.chdir(work_dir)
 
-from tcfcli.help.message import CommonHelp as help
 from tcfcli.cmds.cli import __version__
 from tcfcli.cmds.deploy.cli import deploy
 from tcfcli.cmds.local.cli import local
@@ -22,7 +21,7 @@ from tcfcli.cmds.init.cli import init
 from tcfcli.cmds.validate.cli import validate
 from tcfcli.cmds.configure.cli import configure
 from tcfcli.cmds.native.cli import native
-from tcfcli.cmds.logs import logs
+from tcfcli.cmds.logs.cli import logs
 from tcfcli.cmds.list.cli import list
 from tcfcli.cmds.delete.cli import delete
 
@@ -57,7 +56,6 @@ cli.add_command(local)
 
 cli.add_command(delete)
 cli.add_command(list)
-
 
 if __name__ == "__main__":
     cli()
