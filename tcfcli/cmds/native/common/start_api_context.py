@@ -65,8 +65,9 @@ class StartApiContext(object):
         func = resource[ns].keys()[0]
         if resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'HTTP':
             raise InvokeContextException("You must provide a HTTP Type Service")
-        if resource[ns][func][tsmacro.Properties][tsmacro.Runtime] not in infor.SERVICE_RUNTIME:
-            raise InvokeContextException("You must provide a support Runtime,from{s_r}".format(s_r=infor.SERVICE_RUNTIME))
+        runtime = resource[ns][func][tsmacro.Properties][tsmacro.Runtime]
+        if (runtime[0:].lower()) not in infor.SERVICE_RUNTIME:
+            raise InvokeContextException("You must provide a support Runtime,from one of {s_r}".format(s_r=infor.SERVICE_RUNTIME))
 
     def __enter__(self):
         template_dict = tcsam.tcsam_validate(Template.get_template_data(self._template_file))

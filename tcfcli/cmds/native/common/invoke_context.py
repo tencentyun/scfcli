@@ -13,6 +13,7 @@ from tcfcli.cmds.native.common.debug_context import DebugContext
 from tcfcli.common.template import Template
 from tcfcli.common.macro import MacroRuntime
 from tcfcli.common.file_util import FileUtil
+import tcfcli.common.base_infor as infor
 
 
 class InvokeContext(object):
@@ -78,11 +79,22 @@ class InvokeContext(object):
         del fun[tsmacro.Type]
         return fun
 
+    def _check_function_type(self, resource):
+        ns = resource.keys()[0]
+        func = resource[ns].keys()[0]
+        if resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'Event':
+            raise InvokeContextException("You must provide a Event Type Function")
+        runtime = resource[ns][func][tsmacro.Properties][tsmacro.Runtime]
+        if (runtime[0:].lower()) not in infor.EVENT_RUNTIME:
+            raise InvokeContextException("You must provide a support Runtime,from one of {s_r}".format(s_r=infor.EVENT_RUNTIME))
+
     def __enter__(self):
         template_dict = tcsam.tcsam_validate(Template.get_template_data(self._template_file))
 
         resource = template_dict.get(tsmacro.Resources, {})
         func = self._get_function(self._get_namespace(resource))
+
+        self._check_function_type(resource)
         self._runtime = Runtime(func.get(tsmacro.Properties, {}))
         self._debug_context = DebugContext(self._debug_port, self._debug_argv, self._runtime.runtime)
         return self
