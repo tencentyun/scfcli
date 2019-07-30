@@ -1,5 +1,6 @@
 import os
 import click
+import zipfile
 from cookiecutter.main import cookiecutter
 from cookiecutter import exceptions
 from tcfcli.help.message import InitHelp as help
@@ -57,6 +58,13 @@ class Init(object):
         except exceptions.CookiecutterException as e:
             click.secho(str(e), fg="red")
             raise click.Abort()
+        if runtime in infor.SERVICE_RUNTIME:
+            click.secho("[*] Project initing,please wait.....", fg="green")
+            zipfile_path = os.path.join(os.path.abspath(output_dir), name, 'node_modules.zip')
+            zipobj = zipfile.ZipFile(zipfile_path, mode="r")
+            zipobj.extractall(os.path.join(os.path.abspath(output_dir), name))
+            zipobj.close()
+            os.remove(zipfile_path)
         click.secho("[*] Project initialization is complete", fg="green")
 
 
