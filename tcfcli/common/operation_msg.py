@@ -10,7 +10,7 @@ class Operation():
 
     def success(self):
         try:
-            click.secho(click.style("[v]", bg="green") + click.style(u' %s' % self.format_message().decode("utf-8"),
+            click.secho(click.style(u"[v]", bg="green") + click.style(u' %s' % self.format_message().decode("utf-8"),
                                                                      fg="green"))
         except:
             click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % self.format_message(), fg="green"))
