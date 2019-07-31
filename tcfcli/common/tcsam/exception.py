@@ -1,5 +1,6 @@
 from click import ClickException
 import click
+import platform
 
 
 class TcSamException(ClickException):
@@ -7,12 +8,12 @@ class TcSamException(ClickException):
         return self.message
 
     def show(self):
-        try:
-            click.secho(
-                click.style("[x]", bg="red") + click.style(u' %s' % self.format_message().decode("utf-8"), fg="red"))
-        except:
-            click.secho(
-                click.style("[×]", bg="red") + click.style(u' %s' % self.format_message(), fg="red"))
-        click.secho(click.style("[×]".decode("utf-8"), bg="red") + click.style(' %s' % self.format_message(), fg="red"))
+        version = platform.python_version()
+        if version >= '3':
+            click.secho(click.style(u"[×]", bg="red") + click.style(u' %s' % self.format_message(), fg="red"))
+        else:
+            click.secho(click.style(u"[x]", bg="red") + click.style(u' %s' % self.format_message().decode("utf-8"),
+                                                                    fg="red"))
 
-    exit_code = 1
+
+exit_code = 1

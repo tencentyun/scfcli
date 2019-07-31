@@ -30,7 +30,7 @@ class UserConfig(object):
         self.secret_key = 'None'
         self.region = 'None'
         self.appid = 'None'
-        self.using_cos = "None"
+        self.using_cos = "False (By default, it isn't deployed by COS.)"
         self._load_config()
 
     def set_attrs(self, attrs):

@@ -120,10 +120,13 @@ def set(**kwargs):
                             Operation("The region must in %s." % (", ".join(REGIONS))).warning()
 
         v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
-                         default="n",
+                         default="y" if str(attrs["using-cos"]).startswith("True") else "n",
                          show_default=False)
 
-        config["using_cos"] = using_cos_true if v not in ["y", "Y"] else using_cos_false
+        if v:
+            config["using_cos"] = using_cos_true if v not in ["y", "Y"] else using_cos_false
+        else:
+            config["using_cos"] = attrs["using-cos"]
 
         kwargs = config
 
