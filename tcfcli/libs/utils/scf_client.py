@@ -1,6 +1,7 @@
 import click
 import json
 import sys
+from tcfcli.common.operation_msg import Operation
 from tcfcli.cmds.cli import __version__
 from tcfcli.common.user_exceptions import *
 from tcfcli.common.operation_msg import Operation
@@ -73,7 +74,7 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("list functions failure. Error: {e}.".format(e=s), fg="red")
+            Operation("list functions failure. Error: {e}.".format(e=s)).warning()
         return None
 
     def update_func_code(self, func, func_name, func_ns):
@@ -211,8 +212,9 @@ class ScfClient(object):
         if isinstance(enable, bool):
             enable = ["CLOSE", "OPEN"][int(enable)]
         req.Enable = enable
+        # click.secho(str(req))
         resp = self._client.CreateTrigger(req)
-        click.secho(resp.to_json_string())
+        Operation(resp.to_json_string()).process()
 
     def get_ns(self, namespace):
         try:
@@ -226,8 +228,8 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("get namespace '{name}' failure. Error: {e}.".format(
-                name=namespace, e=s), fg="red")
+            Operation("get namespace '{name}' failure. Error: {e}.".format(
+                name=namespace, e=s)).warning()
         return None
 
     def create_ns(self, namespace):
@@ -247,7 +249,7 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            click.secho("list namespace failure. Error: {e}.".format(e=s), fg="red")
+            Operation("list namespace failure. Error: {e}.".format(e=s)).warning()
         return None
 
     @staticmethod
