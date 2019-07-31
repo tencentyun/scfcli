@@ -55,9 +55,7 @@ class List(object):
         Operation("Namespace:%s " % (namespace)).process()
         click.secho("%-20s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName"))
         for function in functions:
-            click.secho("%-20s %-15s %-20s %-20s %-60s" % (function['Runtime'], function['Status'], function['AddTime'],
-                                                           function['ModTime'], function['FunctionName']))
-            click.secho("%-15s %-15s %-20s %-20s %-60s" % (function['Runtime'], List.status(function['Status']),
+            click.secho("%-20s %-15s %-20s %-20s %-60s" % (function['Runtime'], List.status(function['Status']),
                                                            function['AddTime'], function['ModTime'],
                                                            function['FunctionName']))
         click.secho("\n")
