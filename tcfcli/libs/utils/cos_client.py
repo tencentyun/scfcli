@@ -221,7 +221,7 @@ class CosClient(object):
         try:
             self._client.create_bucket(
                 Bucket=bucket,
-                ACL='privateaaa',
+                ACL='private',
             )
             return True
         except Exception as e:
