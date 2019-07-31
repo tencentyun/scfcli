@@ -9,6 +9,8 @@
 import click
 import tcfcli.common.base_infor as infor
 
+MUST = click.style("[Required]", bg="red") + " "
+
 REGIONS = infor.REGIONS
 REGIONS_STR = click.style("%s" % (", ".join(REGIONS)), fg='green')
 
@@ -153,7 +155,7 @@ class LogsHelp():
 
     SHORT_HELP = "Fetch logs of SCF function from service."
 
-    NAME = CommonHelp.NAME
+    NAME = MUST + CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
 
     REGION = "Specify the area where the function is located (e.g. ap-guangzhou)."
