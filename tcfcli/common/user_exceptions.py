@@ -9,7 +9,7 @@ class UserException(click.ClickException):
     def show(self):
         try:
             click.secho(
-                click.style(click.style("[", bg="green") + unicode('×', "utf-8"), bg="red") + click.style("]", bg="green") \
+                click.style(click.style("[", bg="red") + unicode('×', "utf-8"), bg="red") + click.style("]", bg="red") \
                 + click.style(u' %s' % self.format_message().decode("utf-8"), fg="red"))
         except:
             click.secho(
