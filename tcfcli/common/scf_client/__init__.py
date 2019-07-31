@@ -33,5 +33,5 @@ class ScfBaseClient(object):
             requestId =  err.get_request_id()
             errmsg = err.get_message()
             if requestId:
-                errmsg = errmsg + "\nRequestId:{}".format(requestId)
+                errmsg = errmsg + " RequestId:{}".format(requestId)
             raise LogsException(errmsg)

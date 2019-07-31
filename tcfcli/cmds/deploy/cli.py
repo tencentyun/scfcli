@@ -186,7 +186,6 @@ class Package(object):
                 Operation("Upload success").success()
 
             else:
-
                 # 获取bucket正常，继续流程
                 Operation("Uploading to COS, bucket_name:" + default_bucket_name).process()
                 cos_client.upload_file2cos(

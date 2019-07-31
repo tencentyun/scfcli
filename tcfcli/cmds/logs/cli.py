@@ -54,7 +54,7 @@ def logs(name, namespace, region, count, start_time, end_time, duration, failed,
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     else:
         if name is None:
-            raise InvalidEnvParameters("Function name is unspecified")
+            raise InvalidEnvParameters("Function name is unspecif")
 
         if duration and (start_time or end_time):
             raise InvalidEnvParameters("Duration is conflict with (start_time, end_time)")

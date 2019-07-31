@@ -36,6 +36,10 @@ class ScfLogClient(ScfBaseClient):
 
     def fetch_log(self, startime, endtime, count, tail=False):
         for logs in self.__fetch_log(startime, endtime, count, tail):
+            if len(logs) == 0 and not tail:
+                Operation("There is no data during this time period.").information()
+                Operation(
+                    "You can try to adjust the start-time, end-time, duration, etc. to view a larger range of logs.").information()
             for log in logs:
                 Operation("Log startTime: %s" % str(log.StartTime)).process()
                 if log.RetCode == 0:

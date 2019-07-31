@@ -32,13 +32,15 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefm
 @click.version_option(version=__version__, prog_name="SCF CLI")
 def cli():
     '''
-    \b
-    If you want to study how to use SCF CLI, you could refer to documentation.
-      * Documentation https://cloud.tencent.com/document/product/583/33445?from=cli
-    \b
-    If you have any questions, you could give us issues on Github.
-      * Github  https://github.com/tencentyun/scfcli
+        \b
+        If you want to study how to use SCF CLI, you could refer to documentation.
+          * Documentation https://cloud.tencent.com/document/product/583/33445?from=cli
+        \b
+        If you have any questions, you could give us issues on Github.
+          * Github  https://github.com/tencentyun/scfcli
+          click.launch('https://click.palletsprojects.com/')
     '''
+
     pass
 
 
