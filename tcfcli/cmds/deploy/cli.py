@@ -297,7 +297,7 @@ class Deploy(object):
             err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
-                err_msg += (u"RequestId: {}".format(err.get_request_id().encode("UTF-8")))
+                err_msg += (u"RequestId: {}".format(err.get_request_id()))
             raise CloudAPIException(err_msg)
 
         Operation("Deploy function '{name}' success".format(name=func_name)).success()
@@ -319,7 +319,7 @@ class Deploy(object):
 
                 Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s)).warning()
                 if err.get_request_id():
-                    click.secho("RequestId: {}".format(err.get_request_id().encode("UTF-8")), fg="red")
+                    click.secho("RequestId: {}".format(err.get_request_id()), fg="red")
                 continue
             Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
         if hasError is not None:
