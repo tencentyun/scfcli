@@ -66,8 +66,8 @@ class StartApiContext(object):
         return fun
 
     def _check_function_type(self, resource):
-        ns = resource.keys()[0]
-        func = resource[ns].keys()[0]
+        ns = list(resource.keys())[0]
+        func = list(resource[ns].keys())[0]
         if resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'HTTP':
             raise InvokeContextException("You must provide a HTTP Type Service")
         runtime = resource[ns][func][tsmacro.Properties][tsmacro.Runtime]
