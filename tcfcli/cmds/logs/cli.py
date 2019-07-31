@@ -2,12 +2,16 @@ import click
 import time
 from datetime import datetime
 from datetime import timedelta
+from tcfcli.common.operation_msg import Operation
 import tcfcli.common.base_infor as infor
+from tcfcli.common import tcsam
 from tcfcli.common.user_exceptions import *
+from tcfcli.common.template import Template
 from tcfcli.cmds.native.common.invoke_context import InvokeContext
 from tcfcli.cmds.local.common.options import invoke_common_options
 from tcfcli.common.user_exceptions import InvalidEnvParameters
 from tcfcli.common.scf_client.scf_log_client import ScfLogClient
+from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.help.message import LogsHelp as help
 
 TM_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -53,6 +57,25 @@ def logs(name, namespace, region, count, start_time, end_time, duration, failed,
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     else:
+        if name is None:
+            try:
+                template_data = tcsam.tcsam_validate(Template.get_template_data("template.yaml"))
+                resource = template_data.get(tsmacro.Resources, {})
+                for ns in resource:
+                    if not resource[ns]:
+                        continue
+                    for func in resource[ns]:
+                        if func == tsmacro.Type:
+                            continue
+                        name = func
+                        if name:
+                            Operation("In this project, default function name is: %s"%func).information()
+                            Operation("If you want to specify the function name, use --name, like: scf logs --name YourFunctionName").information()
+                            break
+
+            except:
+                raise InvalidEnvParameters("Function name is unspecif")
+
         if name is None:
             raise InvalidEnvParameters("Function name is unspecif")
 
