@@ -38,6 +38,19 @@ class Init(object):
         return os.path.join(pwd, Init.TEMPLATES_DIR, runtime_pro)
 
     @staticmethod
+    def _runtime_format_vaild(runtime):
+        if runtime.lower() not in list(Init.RUNTIMES.keys()):
+            raise InitException("runtime {runtime} not support".format(runtime=runtime))
+        return runtime.lower()
+
+    @staticmethod
+    def _type_format_vaild(type):
+        type_map = {"event": "Event", "http": "HTTP"}
+        if type.lower() not in list(type_map.keys()):
+            raise InitException("type {type} not support".format(runtime=type))
+        return type_map[type.lower()]
+
+    @staticmethod
     def do_cli(location, runtime, output_dir, name, namespace, no_input, type):
 
         click.secho('''      _____  ______ ______ ______ __     ____
@@ -84,7 +97,7 @@ class Init(object):
 @click.option('-n', '--name', default="hello_world", help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-N', '--no-input', is_flag=True, help=help.NO_INPUT)
-@click.option('--type', default='Event', type=click.Choice(TYPE), help=help.TYPE)
+@click.option('--type', default='Event', help=help.TYPE)
 def init(location, runtime, output_dir, name, namespace, no_input, type):
     """
         \b
@@ -98,6 +111,8 @@ def init(location, runtime, output_dir, name, namespace, no_input, type):
           * Initializes a new scf project using custom template in a Git repository
             $ scf init --location gh:pass/demo-python
     """
+    runtime = Init._runtime_format_vaild(runtime)
+    type = Init._type_format_vaild(type)
     if runtime not in TYPE_SUPPORT_RUNTIME[type]:
         raise InitException("{type} not support runtime: {runtime}".format(type=type, runtime=runtime))
         # return
