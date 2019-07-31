@@ -51,7 +51,7 @@ class CommonHelp():
     INVOKE_DOCKER_NETWORK = 'Specifies the name or id of an existing docker network which containers should connect to, along with the default bridge network.'
     INVOKE_LOG_FILE = 'Path of logfile where send runtime logs to file.'
     INVOKE_SKIP_PULL_IMAGE = 'Specify whether CLI skip pulling or update docker images.'
-    INVOKE_REGION = "The function region. Including %s" % REGIONS_STR
+    INVOKE_REGION = "The function region. Including %s." % REGIONS_STR
 
 
 class DeleteHelp():
@@ -63,7 +63,7 @@ class DeleteHelp():
     NAMESPACE = CommonHelp.NAMESPACE
 
     FORCED = "Force delete function without ask."
-    REGION = "Region name. Including %s" % REGIONS_STR
+    REGION = "Region name. Including %s." % REGIONS_STR
 
 
 class DeployHelp():
@@ -76,7 +76,7 @@ class DeployHelp():
 
     COS_BUCKET = "COS Bucket name."
     TEMPLATE_FILE = "SCF function template file."
-    REGION = "The function will be deployed in this region. Including %s" % REGIONS_STR
+    REGION = "The function will be deployed in this region. Including %s." % REGIONS_STR
     FORCED = "The function will be forced to update when it already exists. The default is False."
     SKIP_EVENT = "Triggers will continue with the previous setup and won't cover them this time."
     WITHOUT_COS = "Deploy SCF function without COS. If you set cos-bucket in configure."
@@ -85,7 +85,7 @@ class DeployHelp():
 class InitHelp():
     # Init Help Message
 
-    SHORT_HELP = "Initialize a SCF function with the template"
+    SHORT_HELP = "Initialize a SCF function with the template."
 
     NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
@@ -101,10 +101,10 @@ class ConfigureHelp():
 
     SHORT_HELP = "Configure your account parameters."
 
-    SECRET_ID = "TencentCloudAPI  SecretId"
-    SECRET_KEY = "TencentCloudAPI  SecretKey"
-    REGION = "TencentCloudAPI  Region"
-    APPID = "TencentCloudAPI  Region"
+    SECRET_ID = "TencentCloudAPI  SecretId."
+    SECRET_KEY = "TencentCloudAPI  SecretKey."
+    REGION = "TencentCloudAPI  Region."
+    APPID = "TencentCloudAPI  Region."
     USING_COS = "Deploy function by COS. The default is False."
 
     SET_SHORT_HELP = "Set your account parameters."
@@ -134,6 +134,7 @@ class NativeHelp():
     INVOKE_TEMPLATE = "The path or file name of the configuration file. The default is template.yaml."
     INVKOE_DEBUG_PORT = 'The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port.'
     INVOKE_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
+    START_API_SHORT_HElP = "Execute your scf in a environment natively."
     START_API_DEBUG_PORT = 'The port exposed when the function is running. After the port is specified, the local runtime will start in debug mode and expose the specified port.'
     START_API_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
     INVOKE_QUIET = 'Only display what function return.'
