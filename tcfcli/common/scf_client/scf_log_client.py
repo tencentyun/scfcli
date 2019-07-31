@@ -2,11 +2,11 @@ import click
 import json
 import time
 import signal
+import platform
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import InvalidEnvParameters
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.scf.v20180416 import scf_client, models
-
 from . import ScfBaseClient
 
 
@@ -41,11 +41,18 @@ class ScfLogClient(ScfBaseClient):
                 Operation(
                     "You can try to adjust the start-time, end-time, duration, etc. to view a larger range of logs.").information()
             for log in logs:
+                version = platform.python_version()
                 Operation("Log startTime: %s" % str(log.StartTime)).process()
-                if log.RetCode == 0:
-                    click.secho(str(log.Log).replace("\n\n", "\n"))
+                if version >= '3':
+                    if log.RetCode == 0:
+                        click.secho(str(log.Log).replace("\n\n", "\n"))
+                    else:
+                        click.secho(str(log.Log).replace("\n\n", "\n"), fg="red")
                 else:
-                    click.secho(str(log.Log).replace("\n\n", "\n"), fg="red")
+                    if log.RetCode == 0:
+                        click.secho(str(log.Log).decode("utf-8").replace("\n\n", "\n"))
+                    else:
+                        click.secho(str(log.Log).decode("utf-8").replace("\n\n", "\n"), fg="red")
                 click.secho("\n")
 
     def __fetch_log(self, startime, endtime, count, tail, order="asc"):
