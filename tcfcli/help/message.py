@@ -61,7 +61,7 @@ class DeleteHelp():
 
     SHORT_HELP = "Delete a SCF function."
 
-    NAME = CommonHelp.NAME
+    NAME = MUST + CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
 
     FORCED = "Force delete function without ask."
