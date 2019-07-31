@@ -7,7 +7,12 @@ class UserException(click.ClickException):
         return self.message
 
     def show(self):
-        click.secho(click.style(u"[X]", bg="red") + click.style(u' %s' % self.format_message().decode("utf-8"), fg="red"))
+        try:
+            click.secho(
+                click.style(u"[×]", bg="red") + click.style(u' %s' % self.format_message().decode("utf-8"), fg="red"))
+        except:
+            click.secho(
+                click.style(u"[×]", bg="red") + click.style(u' %s' % self.format_message(), fg="red"))
 
     exit_code = 1
 
