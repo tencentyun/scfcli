@@ -56,5 +56,5 @@ print(
   \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  \__\____\/  \____\____\____/ '''
 )
 
-print("\n[*] You could input 'scf inti' and start the first project by SCFCLI.")
+print("\n[*] You could input 'scf init' and start the first project by SCFCLI.")
 print("[*] If you need any help, you could input 'scf --help'.\n")
