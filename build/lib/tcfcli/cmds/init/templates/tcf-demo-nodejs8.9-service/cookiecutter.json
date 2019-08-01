@@ -1,7 +1,0 @@
-{
-    "project_name": "demo-nodejs8.9-service",
-    "runtime": "nodejs8.9-service",
-    "namespace": "default",
-    "type": "Event"
-}
-
