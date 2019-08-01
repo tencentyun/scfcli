@@ -12,11 +12,12 @@ class Operation():
         return self.message
 
     def success(self):
-        if version >= '3':
-            click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % self.format_message(), fg="green"))
-        else:
-            click.secho(click.style(u"[v]", bg="green") + click.style(u' %s' % self.format_message().decode("utf-8"),
-                                                                      fg="green"))
+        click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % str(self.format_message()), fg="green"))
+        # if version >= '3':
+        #     click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % self.format_message(), fg="green"))
+        # else:
+        #     click.secho(click.style(u"[v]", bg="green") + click.style(u' %s' % self.format_message().decode("utf-8"),
+        #                                                               fg="green"))
 
     def warning(self):
         if version >= '3':
