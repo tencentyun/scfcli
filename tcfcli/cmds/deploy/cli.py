@@ -249,8 +249,6 @@ class Package(object):
             for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                 #click.secho(str(current_path))
                 if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
-                    if current_path == _BUILD_DIR:
-                        continue
                     for file in files_name:
                         zip_object.write(os.path.join(current_path, file))
 
