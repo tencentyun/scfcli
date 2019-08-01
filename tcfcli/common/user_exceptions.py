@@ -1,6 +1,5 @@
 import click
-# import platform
-
+from builtins import str as text
 
 class UserException(click.ClickException):
 
@@ -8,15 +7,7 @@ class UserException(click.ClickException):
         return self.message
 
     def show(self):
-
-        # version = platform.python_version()
-        # if version >= '3':
-        #     click.secho(click.style(u"[×]", bg="red") + click.style(u' %s' % self.format_message(), fg="red"))
-        # else:
-        #     click.secho(click.style(u"[x]", bg="red") + click.style(u' %s' % self.format_message().decode("utf-8"),
-        #                                                             fg="red"))
-
-        click.secho(click.style(u"[×]", bg="red") + click.style(u' %s' % str(self.format_message()), fg="red"))
+        click.secho(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"))
 
     exit_code = 1
 
