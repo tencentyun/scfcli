@@ -2,8 +2,8 @@
 
 import click
 from builtins import str as text
-import platform
 
+import platform
 version = platform.python_version()
 if version < '3':
     import sys
