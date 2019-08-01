@@ -22,8 +22,12 @@ class List(object):
                     List.show(region, namespace['Name'])
 
         elif region == 'all' and namespace != 'all':
+            tag = False
             for region in REGIONS:
-                List.show(region, namespace)
+                if List.show(region, namespace) is not False:
+                    tag = True
+            if tag is False:
+                raise NamespaceException("namespace {ns} not exists in all region".format(ns=namespace))
 
         elif region != 'all' and namespace == 'all':
             namespaces = ScfClient(region).list_ns()
@@ -40,8 +44,7 @@ class List(object):
             # return
         rep = ScfClient(region).get_ns(namespace)
         if not rep:
-            raise NamespaceException("namespace {ns} not exists".format(ns=namespace))
-            # return
+            return False
 
         functions = ScfClient(region).list_function(namespace)
         if not functions:
