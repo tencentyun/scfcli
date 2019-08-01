@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import re
+import click
 
 from io import BytesIO
 
@@ -125,6 +126,16 @@ class Package(object):
         if self.cos_bucket and self.cos_bucket.endswith("-" + uc.appid):
             self.cos_bucket = self.cos_bucket.replace("-" + uc.appid, '')
 
+    def file_size_infor(self, size):
+        if size >= 20 * 1024 * 1024:
+            Operation('Your package is too large and needs to be uploaded via COS.').warning()
+            Operation(
+                'You can use --cos-bucket BucketName to specify the bucket, or you can use the "scf configure set" to set the default to open the cos upload.').warning()
+            raise UploadFailed("Upload faild")
+        elif size >= 8 * 1024 * 1024:
+            Operation("Package size is over 8M, it is highly recommended that you upload using COS. ").information()
+            return
+
     def _do_package_core(self, func_path, namespace, func_name, region=None):
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
@@ -137,6 +148,7 @@ class Package(object):
             cos_bucket_status = False
 
         if self.without_cos:
+            self.file_size_infor(os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)))
             Operation("Uploading this package without COS.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
@@ -203,6 +215,9 @@ class Package(object):
             Operation( \
                 "If you want to increase the upload speed, you can configure using-cos with command：scf configure set") \
                 .information()
+
+            self.file_size_infor(os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)))
+
             Operation("Uploading this package.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
