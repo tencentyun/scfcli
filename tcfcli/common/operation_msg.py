@@ -1,5 +1,6 @@
 import click
 import platform
+from builtins import str as text
 
 version = platform.python_version()
 
@@ -12,7 +13,7 @@ class Operation():
         return self.message
 
     def success(self):
-        click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % str(self.format_message()), fg="green"))
+        click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % text(self.format_message()), fg="green"))
         # if version >= '3':
         #     click.secho(click.style(u"[√]", bg="green") + click.style(u' %s' % self.format_message(), fg="green"))
         # else:

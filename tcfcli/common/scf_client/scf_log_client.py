@@ -2,6 +2,7 @@ import click
 import json
 import time
 import signal
+from builtins import str as text
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import InvalidEnvParameters
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
@@ -43,9 +44,9 @@ class ScfLogClient(ScfBaseClient):
                 Operation("Log startTime: %s" % str(log.StartTime)).process()
 
                 if log.RetCode == 0:
-                    click.secho(u"%s" % (str(log.Log)).replace("\n\n", "\n"))
+                    click.secho(u"%s" % (text(log.Log)).replace("\n\n", "\n"))
                 else:
-                    click.secho(u"%s" % (str(log.Log)).replace("\n\n", "\n"), fg="red")
+                    click.secho(u"%s" % (text(log.Log)).replace("\n\n", "\n"), fg="red")
 
                 click.secho("\n")
 
