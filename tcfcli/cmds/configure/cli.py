@@ -45,15 +45,15 @@ def get(**kwargs):
     if not reduce(lambda x, y: bool(x or y), bools):
         list(map(set_true, kwargs))
     attrs = uc.get_attrs(kwargs)
-    msg = "{} config:\n".format(UserConfig.API)
+    msg = "{} config:".format(UserConfig.API)
     for attr in sorted(attrs):
         attr_value = attrs[attr]
         if attr == "secret-id":
             attr_value = "*" * 32 + attr_value[32:]
         elif attr == "secret-key":
             attr_value = "*" * 28 + attr_value[28:]
-        msg += "{} = {}\n".format(attr, attr_value)
-    click.secho(msg.strip())
+        msg += click.style("\n[-] ", fg="cyan") + click.style("{} = {}".format(attr, attr_value), fg="cyan")
+    Operation(msg.strip()).process()
 
 
 @click.command(short_help=help.SET_SHORT_HELP)
