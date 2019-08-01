@@ -127,6 +127,7 @@ class Package(object):
             self.cos_bucket = self.cos_bucket.replace("-" + uc.appid, '')
 
     def file_size_infor(self, size):
+        # click.secho(str(size))
         if size >= 20 * 1024 * 1024:
             Operation('Your package is too large and needs to be uploaded via COS.').warning()
             Operation(
@@ -140,6 +141,9 @@ class Package(object):
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
 
+        file_size = os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name))
+        Operation("Package name: %s, package size: %s kb"%(zip_file_name, str(file_size/1000))).process()
+
         default_bucket_name = ""
         if UserConfig().using_cos.startswith("True"):
             cos_bucket_status = True
@@ -148,7 +152,7 @@ class Package(object):
             cos_bucket_status = False
 
         if self.without_cos:
-            self.file_size_infor(os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)))
+            self.file_size_infor(file_size)
             Operation("Uploading this package without COS.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
@@ -216,11 +220,13 @@ class Package(object):
                 "If you want to increase the upload speed, you can configure using-cos with command：scf configure set") \
                 .information()
 
-            self.file_size_infor(os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)))
+            self.file_size_infor(file_size)
 
             Operation("Uploading this package.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
+
+
 
         return code_url
 
@@ -241,10 +247,12 @@ class Package(object):
 
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
             for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
-                if current_path == _BUILD_DIR:
-                    continue
-                for file in files_name:
-                    zip_object.write(os.path.join(current_path, file))
+                # click.secho(str(current_path))
+                if not str(current_path).startswith("./."):
+                    if current_path == _BUILD_DIR:
+                        continue
+                    for file in files_name:
+                        zip_object.write(os.path.join(current_path, file))
 
         os.chdir(cwd)
         buff.seek(0)
@@ -284,7 +292,7 @@ class Deploy(object):
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
-            Operation("Deploy namespace '{ns}' end".format(ns=ns)).process()
+            Operation("Deploy namespace '{ns}' end".format(ns=ns)).success()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
