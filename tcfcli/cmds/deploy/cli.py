@@ -247,8 +247,8 @@ class Package(object):
 
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
             for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
-                # click.secho(str(current_path))
-                if not str(current_path).startswith("./."):
+                #click.secho(str(current_path))
+                if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
                     if current_path == _BUILD_DIR:
                         continue
                     for file in files_name:
