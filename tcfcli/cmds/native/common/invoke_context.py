@@ -122,7 +122,7 @@ class InvokeContext(object):
         if not self._debug_context.is_debug:
             timer.start()
         else:
-            click.secho("Scf debug port is listening on: localhost:{}".format(str(self._debug_port)))
+            click.secho("Scf debug port is listening on localhost:{}".format(str(self._debug_port)), fg="green")
         ret_code = 0
         try:
             ret_code = child.wait()
