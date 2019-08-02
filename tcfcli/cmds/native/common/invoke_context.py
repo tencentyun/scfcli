@@ -83,7 +83,7 @@ class InvokeContext(object):
     def _check_function_type(self, resource):
         ns = list(resource.keys())[0]
         func = list(resource[ns].keys())[0]
-        if resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'Event':
+        if tsmacro.Type in resource[ns][func][tsmacro.Properties] and resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'Event':
             raise InvokeContextException("You must provide a Event Type Function")
         runtime = resource[ns][func][tsmacro.Properties][tsmacro.Runtime]
         if (runtime[0:].lower()) not in infor.EVENT_RUNTIME:
