@@ -1,5 +1,4 @@
-# check version
-
+# -*- coding: utf-8 -*-
 
 from tcfcli.cmds.cli import __version__
 import re
@@ -28,7 +27,7 @@ def check_version():
             uc = UserConfig()
 
             # this_time = time.strftime("%W") # week
-            this_time = time.strftime("%Y-%m-%d") # day
+            this_time = time.strftime("%Y-%m-%d")  # day
             that_time = uc.version_time
 
             if this_time != that_time:
