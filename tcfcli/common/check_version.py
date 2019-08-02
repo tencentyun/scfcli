@@ -31,7 +31,7 @@ def check_version():
             this_time = time.strftime("%Y-%m-%d") # day
             that_time = uc.version_time
 
-            if this_time == that_time:
+            if this_time != that_time:
                 url = "https://github.com/tencentyun/scfcli/blob/master/tcfcli/cmds/cli/__init__.py"
                 temp_data = urllib.request.urlopen(url) if version >= '3' else urllib2.urlopen(url)
                 temp_data = temp_data.read().decode("utf-8")
