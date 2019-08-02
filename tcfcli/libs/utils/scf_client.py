@@ -166,14 +166,12 @@ class ScfClient(object):
 
     def deploy_func(self, func, func_name, func_ns, forced):
         try:
-            SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
-            if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                # print "create_service"
-                self.create_service(func, func_name, func_ns)
-            else:
-                # print "create_func"
-                self.create_func(func, func_name, func_ns)
+            #SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
+            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+                #self.create_service(func, func_name, func_ns)
+            #else:
+            self.create_func(func, func_name, func_ns)
             return
         except TencentCloudSDKException as err:
             if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"] and forced:
@@ -182,13 +180,13 @@ class ScfClient(object):
                 return err
         Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
         try:
-            if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                self.update_service_config(func, func_name, func_ns)
-                self.update_service_code(func, func_name, func_ns)
-            else:
-                self.update_func_config(func, func_name, func_ns)
-                self.update_func_code(func, func_name, func_ns)
+            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+                #self.update_service_config(func, func_name, func_ns)
+                #self.update_service_code(func, func_name, func_ns)
+            #else:
+            self.update_func_config(func, func_name, func_ns)
+            self.update_func_code(func, func_name, func_ns)
         except TencentCloudSDKException as err:
             return err
         return

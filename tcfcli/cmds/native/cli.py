@@ -28,5 +28,5 @@ def native():
 
 
 native.add_command(invoke)
-native.add_command(startapi)
+#native.add_command(startapi)
 native.add_command(generate_event)
