@@ -1,5 +1,5 @@
 # check version
-
+# -*- coding: utf-8 -*-
 
 from tcfcli.cmds.cli import __version__
 import re
