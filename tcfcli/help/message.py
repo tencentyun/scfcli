@@ -95,7 +95,8 @@ class InitHelp():
     NAMESPACE = CommonHelp.NAMESPACE
     TYPE = "Function Type (Event,HTTP). The default is Event."
     LOCATION = "Template location (git, mercurial, http(s), zip, path)."
-    RUNTIME = "Runtime of this funtion. Event type include %s, HTTP type include %s." % (RUNTIME_STR, HTTP_RUNTIME_STR)
+    #RUNTIME = "Runtime of this funtion. Event type include %s, HTTP type include %s." % (RUNTIME_STR, HTTP_RUNTIME_STR)
+    RUNTIME = "Runtime of this funtion.Include %s." % (RUNTIME_STR)
     OUTPUT_DIR = "The path where will output the initialized app into."
     NO_INPUT = "Disable prompting and accept default values defined template config."
 

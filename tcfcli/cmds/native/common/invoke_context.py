@@ -95,8 +95,7 @@ class InvokeContext(object):
 
         resource = template_dict.get(tsmacro.Resources, {})
         func = self._get_function(self._get_namespace(resource))
-
-        self._check_function_type(resource)
+        #self._check_function_type(resource)
         self._runtime = Runtime(func.get(tsmacro.Properties, {}))
         self._debug_context = DebugContext(self._debug_port, self._debug_argv, self._runtime.runtime)
         return self
