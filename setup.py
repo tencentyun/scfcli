@@ -3,6 +3,7 @@
 import io
 import re
 import os
+# import subprocess
 from setuptools import setup, find_packages
 
 
@@ -49,14 +50,3 @@ setup(
     install_requires=read_requirements('requirements.txt'),
     include_package_data=True,
 )
-
-print(
-    ''' __    __     _                            _          __   ___  ___ ___  __  _____ 
-/ / /\ \ \___| | ___ ___  _ __ ___   ___  | |_ ___   / _\ / __\/ __/ __\/ /  \_  _/
-\ \/  \/ / _ | |/ __/ _ \| '_ ` _ \ / _ \ | __/ _ \  \ \ / /  / _\/ /  / /    / /
- \  /\  |  __| | (_| (_) | | | | | |  __/ | || (_) | _\ / /__/ / / /__/ /__/\/ /_  
-  \/  \/ \___|_|\___\___/|_| |_| |_|\___|  \__\___/  \__\____\/  \____\____\____/ '''
-)
-
-print("\n[*] You could input 'scf init' and start the first project by SCFCLI.")
-print("[*] If you need any help, you could input 'scf --help'.\n")

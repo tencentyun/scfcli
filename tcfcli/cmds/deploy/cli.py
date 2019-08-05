@@ -4,7 +4,7 @@ import os
 import sys
 import time
 import re
-import click
+import json
 
 from io import BytesIO
 
@@ -63,6 +63,52 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
             return
         deploy = Deploy(resource, namespace, region, forced, skip_event)
         deploy.do_deploy()
+        Operation("Deploy success").success()
+
+
+class Function(object):
+    def __init__(self, region, namespace, function):
+        self.region = region if region else UserConfig().region
+        self.namespace = namespace
+        self.function = function
+
+    def recursion_dict(self, information, num):
+        for eveKey, eveValue in information.items():
+            try:
+                eveValue = json.loads(eveValue)
+            except:
+                pass
+            finally:
+                if isinstance(eveValue, dict):
+                    Operation(" " * num + "%s:" % (str(eveKey))).out_infor()
+                    self.recursion_dict(eveValue, num + 2)
+                else:
+                    Operation(" " * num + "%s: %s" % (str(eveKey), str(eveValue))).out_infor()
+
+    def format_information(self, information):
+        click.secho("[+] Function Base Information: ", fg="cyan")
+        Operation("Name: %s" % self.function).out_infor()
+        Operation("Version: %s" % information["FunctionVersion"]).out_infor()
+        Operation("Status: %s" % information["Status"]).out_infor()
+        Operation("FunctionId: %s" % information["FunctionId"]).out_infor()
+        Operation("Region: %s" % self.region).out_infor()
+        Operation("Namespace: %s" % information["Namespace"]).out_infor()
+        Operation("MemorySize: %d" % information["MemorySize"]).out_infor()
+        Operation("Runtime: %s" % information["Runtime"]).out_infor()
+        Operation("Timeout: %d" % information["Timeout"]).out_infor()
+        Operation("Handler: %s" % information["Handler"]).out_infor()
+        if information["Triggers"]:
+            click.secho("[+] Trigger Information: ", fg="cyan")
+            for eve_trigger in information["Triggers"]:
+                click.secho(click.style(u"    > %s - %s:" % (str(eve_trigger["Type"]).upper(),
+                                                              eve_trigger["TriggerName"])), fg="cyan")
+                self.recursion_dict(eve_trigger, 2)
+
+    def get_information(self):
+        scf_client = ScfClient(region=self.region)
+        result = scf_client.get_function(namespace=self.namespace, function_name=self.function)
+        if result:
+            self.format_information(json.loads(result))
 
 
 class Package(object):
@@ -103,9 +149,9 @@ class Package(object):
                         code_url["cos_object_name"]), code_url["cos_bucket_name"])
                     Operation(msg).success()
                 elif "zip_file" in code_url:
-                    if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime][0:].lower() in SERVICE_RUNTIME:
-                        error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
-                        raise UploadFailed(error)
+                    #if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime][0:].lower() in SERVICE_RUNTIME:
+                        #error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
+                        #raise UploadFailed(error)
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
 
         # click.secho("Generate resource '{}' success".format(self.resource), fg="green")
@@ -142,7 +188,7 @@ class Package(object):
         code_url = dict()
 
         file_size = os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name))
-        Operation("Package name: %s, package size: %s kb"%(zip_file_name, str(file_size/1000))).process()
+        Operation("Package name: %s, package size: %s kb" % (zip_file_name, str(file_size / 1000))).process()
 
         default_bucket_name = ""
         if UserConfig().using_cos.startswith("True"):
@@ -226,8 +272,6 @@ class Package(object):
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
 
-
-
         return code_url
 
     def _zip_func(self, func_path, namespace, func_name):
@@ -247,7 +291,7 @@ class Package(object):
 
         with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
             for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
-                #click.secho(str(current_path))
+                # click.secho(str(current_path))
                 if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
                     for file in files_name:
                         zip_object.write(os.path.join(current_path, file))
@@ -291,6 +335,7 @@ class Deploy(object):
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
             Operation("Deploy namespace '{ns}' end".format(ns=ns)).success()
+            Function(self.region, ns, func).get_information()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
@@ -338,11 +383,12 @@ class Deploy(object):
                     s = err.get_message()
                 else:
                     s = err.get_message().encode("UTF-8")
-
-                Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s)).warning()
                 if err.get_request_id():
-                    click.secho("RequestId: {}".format(err.get_request_id()), fg="red")
+                    Operation("Deploy trigger '{name}' failure. Error: {e}. RequestId: {id}".
+                              format(name=trigger, e=s, id=err.get_request_id())).warning()
+                else:
+                    Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )).warning()
                 continue
             Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
-        if hasError is not None:
-            sys.exit(1)
+        # if hasError is not None:
+        #     sys.exit(1)
