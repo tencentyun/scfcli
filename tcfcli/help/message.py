@@ -173,7 +173,7 @@ class LogsHelp():
 class LocalHelp():
     # Local Help Message
 
-    SHORT_HELP = "Run SCF function locally."
+    SHORT_HELP = "Run SCF function locally (Docker is required)."
 
     INVOKE_SHORT_HELP = "Execute SCF function in a docker environment locally."
     INVOKE_EVENT = 'The source of the file for the simulated test event, the file content must be in JSON format.'

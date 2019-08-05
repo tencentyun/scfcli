@@ -68,6 +68,7 @@ def delete(region, namespace, name, force):
         if force:
             Delete.do_cli(region, namespace, name)
         else:
+            Operation("This function's trigger will be deleted too").warning()
             result = click.prompt(click.style('[!] Are you sure delete this remote function? (y/n)', fg="magenta"))
             if result in ["y", "Y"]:
                 Delete.do_cli(region, namespace, name)
