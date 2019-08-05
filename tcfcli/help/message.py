@@ -84,6 +84,7 @@ class DeployHelp():
     FORCED = "The function will be forced to update when it already exists. The default is False."
     SKIP_EVENT = "Triggers will continue with the previous setup and won't cover them this time."
     WITHOUT_COS = "Deploy SCF function without COS. If you set cos-bucket in configure."
+    HISTORY = "The deployment history version code is only valid when using using-cos."
 
 
 class InitHelp():
@@ -95,7 +96,7 @@ class InitHelp():
     NAMESPACE = CommonHelp.NAMESPACE
     TYPE = "Function Type (Event,HTTP). The default is Event."
     LOCATION = "Template location (git, mercurial, http(s), zip, path)."
-    #RUNTIME = "Runtime of this funtion. Event type include %s, HTTP type include %s." % (RUNTIME_STR, HTTP_RUNTIME_STR)
+    # RUNTIME = "Runtime of this funtion. Event type include %s, HTTP type include %s." % (RUNTIME_STR, HTTP_RUNTIME_STR)
     RUNTIME = "Runtime of this funtion.Include %s." % (RUNTIME_STR)
     OUTPUT_DIR = "The path where will output the initialized app into."
     NO_INPUT = "Disable prompting and accept default values defined template config."

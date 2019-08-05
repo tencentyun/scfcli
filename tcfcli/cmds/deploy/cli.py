@@ -38,7 +38,7 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
 @click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
-@click.option('--history', is_flag=True, default=False, help=help.WITHOUT_COS)
+@click.option('--history', is_flag=True, default=False, help=help.HISTORY)
 def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history):
     '''
         \b
@@ -160,7 +160,7 @@ class Package(object):
                                 i = i + 1
                                 click.secho("  [%s] %s" % (i, text(eve_obj["LastModified"])), fg="cyan")
                                 rollback_dict[str(i)] = eve_obj["Key"]
-                            number = click.prompt(click.style("Please input number(Like: 1): ", fg="cyan"))
+                            number = click.prompt(click.style("Please input number(Like: 1)", fg="cyan"))
                             if number not in rollback_dict:
                                 raise RollbackException(
                                     "Please enter the version number correctly, for example the number 1.")
@@ -378,13 +378,16 @@ class Deploy(object):
             if not self.resources[ns]:
                 continue
             Operation("Deploy namespace '{ns}' begin".format(ns=ns)).process()
+            temp_infor_list = []
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
+                temp_infor_list.append((self.region, ns, func))
+            for eve in temp_infor_list:
+                Function(eve[0], eve[1], eve[2]).get_information()
             Operation("Deploy namespace '{ns}' end".format(ns=ns)).success()
-            Function(self.region, ns, func).get_information()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
