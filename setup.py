@@ -3,7 +3,7 @@
 import io
 import re
 import os
-import subprocess
+# import subprocess
 from setuptools import setup, find_packages
 
 

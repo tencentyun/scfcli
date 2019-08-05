@@ -21,3 +21,6 @@ class Operation():
 
     def process(self):
         click.secho(click.style("[>]", bg="cyan") + click.style(u' %s' % text(self.format_message()), fg="cyan"))
+
+    def out_infor(self):
+        click.secho(click.style("    ") + click.style(u' %s' % text(self.format_message()), fg="cyan"))

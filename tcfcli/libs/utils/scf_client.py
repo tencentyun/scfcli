@@ -214,7 +214,7 @@ class ScfClient(object):
         req.Enable = enable
         # click.secho(str(req))
         resp = self._client.CreateTrigger(req)
-        Operation(resp.to_json_string()).process()
+        # Operation(resp.to_json_string()).process()
 
     def get_ns(self, namespace):
         try:
