@@ -378,15 +378,12 @@ class Deploy(object):
             if not self.resources[ns]:
                 continue
             Operation("Deploy namespace '{ns}' begin".format(ns=ns)).process()
-            temp_infor_list = []
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
-                temp_infor_list.append((self.region, ns, func))
-            for eve in temp_infor_list:
-                Function(eve[0], eve[1], eve[2]).get_information()
+                Function(self.region, ns, func).get_information()
             Operation("Deploy namespace '{ns}' end".format(ns=ns)).success()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
