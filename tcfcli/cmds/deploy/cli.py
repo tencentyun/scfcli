@@ -158,6 +158,8 @@ class Package(object):
                             i = 0
                             for eve_obj in reversed(function_list_data):
                                 i = i + 1
+                                if i > 15:
+                                    break
                                 click.secho("  [%s] %s" % (i, text(eve_obj["LastModified"])), fg="cyan")
                                 rollback_dict[str(i)] = eve_obj["Key"]
                             number = click.prompt(click.style("Please input number(Like: 1)", fg="cyan"))
@@ -425,6 +427,8 @@ class Deploy(object):
         events = proper.get(tsmacro.Events, {})
         hasError = None
         for trigger in events:
+            print(str(trigger))
+            print(str(events[trigger]))
             err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
             if err is not None:
                 hasError = err
