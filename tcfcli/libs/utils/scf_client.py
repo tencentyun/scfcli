@@ -66,8 +66,12 @@ class ScfClient(object):
 
     def list_function(self, namespace=None):
         try:
-            resp = self._client_ext.ListFunctions(namespace)
-            functions = resp.get("Functions", [])
+            req = models.ListFunctionsRequest()
+            req.Offset = 0
+            req.Limit = 20
+            req.Namespace = namespace
+            resp = self._client.ListFunctions(req)
+            functions = resp.Functions
             return functions
         except TencentCloudSDKException as err:
             if sys.version_info[0] == 3:
@@ -384,6 +388,7 @@ class ScfClientExt(scf_client.ScfClient):
             # else:
             #     raise TencentCloudSDKException(e.message, e.message)
 
+"""
     def ListFunctions(self, namespace):
         try:
             request = {
@@ -406,3 +411,4 @@ class ScfClientExt(scf_client.ScfClient):
             #     raise
             # else:
             #     raise TencentCloudSDKException(e.message, e.message)
+"""
