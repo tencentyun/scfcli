@@ -323,17 +323,17 @@ class Package(object):
 
                 if is_have == 0:
                     Operation("Uploading to COS, bucket_name:" + default_bucket_name).process()
-                    # cos_client.upload_file2cos(
-                    #     bucket=default_bucket_name,
-                    #     file=file_data,
-                    #     key=zip_file_name_cos
-                    # )
-                    cos_client.upload_file2cos2(
+                    cos_client.upload_file2cos(
                         bucket=default_bucket_name,
-                        file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
-                        key=zip_file_name_cos,
-                        md5=md5,
+                        file=file_data,
+                        key=zip_file_name_cos
                     )
+                    # cos_client.upload_file2cos2(
+                    #     bucket=default_bucket_name,
+                    #     file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
+                    #     key=zip_file_name_cos,
+                    #     md5=md5,
+                    # )
 
                 code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid, '') \
                     if default_bucket_name and default_bucket_name.endswith(
