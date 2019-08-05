@@ -8,6 +8,7 @@ import json
 import click
 from io import BytesIO
 from builtins import str as text
+import hashlib
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
@@ -160,7 +161,8 @@ class Package(object):
                                 i = i + 1
                                 if i > 15:
                                     break
-                                click.secho("  [%s] %s" % (i, text(eve_obj["LastModified"])), fg="cyan")
+                                click.secho("  [%s] %s" % (
+                                    i, text(eve_obj["LastModified"].replace(".000Z", "").replace("T", " "))), fg="cyan")
                                 rollback_dict[str(i)] = eve_obj["Key"]
                             number = click.prompt(click.style("Please input number(Like: 1)", fg="cyan"))
                             if number not in rollback_dict:
@@ -297,12 +299,42 @@ class Package(object):
 
             else:
                 # 获取bucket正常，继续流程
-                Operation("Uploading to COS, bucket_name:" + default_bucket_name).process()
-                cos_client.upload_file2cos(
-                    bucket=default_bucket_name,
-                    file=zipfile.read(),
-                    key=zip_file_name_cos
-                )
+
+                file_data = zipfile.read()
+                md5 = hashlib.md5(file_data).hexdigest()
+                is_have = 0
+
+                try:
+                    object_list = cos_client.get_object_list(
+                        bucket='serverless-cloud-function',
+                        prefix=str(namespace) + "-" + str(func_name)
+                    )
+                    if isinstance(object_list, dict) and 'Contents' in object_list:
+                        for eve_object in object_list["Contents"]:
+                            if md5 in eve_object["ETag"]:
+                                response = cos_client.copy_object(
+                                    default_bucket_name,
+                                    eve_object["Key"],
+                                    zip_file_name_cos, )
+                                is_have = 1
+                                break
+                except Exception as e:
+                    pass
+
+                if is_have == 0:
+                    Operation("Uploading to COS, bucket_name:" + default_bucket_name).process()
+                    # cos_client.upload_file2cos(
+                    #     bucket=default_bucket_name,
+                    #     file=file_data,
+                    #     key=zip_file_name_cos
+                    # )
+                    cos_client.upload_file2cos2(
+                        bucket=default_bucket_name,
+                        file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
+                        key=zip_file_name_cos,
+                        md5=md5,
+                    )
+
                 code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid, '') \
                     if default_bucket_name and default_bucket_name.endswith(
                     "-" + UserConfig().appid) else default_bucket_name
@@ -427,8 +459,8 @@ class Deploy(object):
         events = proper.get(tsmacro.Events, {})
         hasError = None
         for trigger in events:
-            print(str(trigger))
-            print(str(events[trigger]))
+            # print(str(trigger))
+            # print(str(events[trigger]))
             err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
             if err is not None:
                 hasError = err
