@@ -5,8 +5,9 @@ import sys
 import time
 import re
 import json
-
+import click
 from io import BytesIO
+from builtins import str as text
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
@@ -37,7 +38,8 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
 @click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
-def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos):
+@click.option('--history', is_flag=True, default=False, help=help.WITHOUT_COS)
+def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history):
     '''
         \b
         Scf cli completes the function package deployment through the deploy subcommand. The scf command line tool deploys the code package, function configuration, and other information specified in the configuration file to the cloud or updates the functions of the cloud according to the specified function template configuration file.
@@ -57,8 +59,12 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     else:
-        package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
-        resource = package.do_package()
+        if history:
+            package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
+            resource = package.do_package()
+        else:
+            package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
+            resource = package.do_package()
         if resource == None:
             return
         deploy = Deploy(resource, namespace, region, forced, skip_event)
@@ -86,7 +92,7 @@ class Function(object):
                     Operation(" " * num + "%s: %s" % (str(eveKey), str(eveValue))).out_infor()
 
     def format_information(self, information):
-        click.secho("[+] Function Base Information: ", fg="cyan")
+        click.secho(u"[+] Function Base Information: ", fg="cyan")
         Operation("Name: %s" % self.function).out_infor()
         Operation("Version: %s" % information["FunctionVersion"]).out_infor()
         Operation("Status: %s" % information["Status"]).out_infor()
@@ -98,10 +104,10 @@ class Function(object):
         Operation("Timeout: %d" % information["Timeout"]).out_infor()
         Operation("Handler: %s" % information["Handler"]).out_infor()
         if information["Triggers"]:
-            click.secho("[+] Trigger Information: ", fg="cyan")
+            click.secho(u"[+] Trigger Information: ", fg="cyan")
             for eve_trigger in information["Triggers"]:
-                click.secho(click.style(u"    > %s - %s:" % (str(eve_trigger["Type"]).upper(),
-                                                              eve_trigger["TriggerName"])), fg="cyan")
+                click.secho(click.style(u"    > %s - %s:" % (text(str(eve_trigger["Type"]).upper()),
+                                                             text(eve_trigger["TriggerName"]))), fg="cyan")
                 self.recursion_dict(eve_trigger, 2)
 
     def get_information(self):
@@ -113,7 +119,7 @@ class Function(object):
 
 class Package(object):
 
-    def __init__(self, template_file, cos_bucket, function, region, deploy_namespace, without_cos):
+    def __init__(self, template_file, cos_bucket, function, region, deploy_namespace, without_cos, history=None):
         self.template_file = template_file
         self.template_file_dir = ""
         self.cos_bucket = cos_bucket
@@ -124,6 +130,7 @@ class Package(object):
         self.deploy_namespace = deploy_namespace
         self.region = region
         self.without_cos = without_cos
+        self.history = history
 
     def do_package(self):
         for ns in self.resource:
@@ -135,23 +142,59 @@ class Package(object):
                     self.resource[ns].pop(func)
                     continue
 
-                code_url = self._do_package_core(
-                    self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, ""),
-                    ns,
-                    func,
-                    self.region
-                )
+                if self.history:
+                    function_list = CosClient(self.region).get_object_list(
+                        bucket='serverless-cloud-function',
+                        prefix=str(ns) + "-" + str(func)
+                    )
+
+                    if isinstance(function_list, dict) and 'Contents' in function_list:
+                        rollback_dict = {}
+                        function_list_data = function_list['Contents']
+                        if function_list_data:
+                            click.secho(
+                                "[+] Please select a historical deployment Number for the historical version deployment.",
+                                fg="cyan")
+                            i = 0
+                            for eve_obj in reversed(function_list_data):
+                                i = i + 1
+                                click.secho("  [%s] %s" % (i, text(eve_obj["LastModified"])), fg="cyan")
+                                rollback_dict[str(i)] = eve_obj["Key"]
+                            number = click.prompt(click.style("Please input number(Like: 1): ", fg="cyan"))
+                            if number not in rollback_dict:
+                                raise RollbackException(
+                                    "Please enter the version number correctly, for example the number 1.")
+                            else:
+                                code_url = {
+                                    'cos_bucket_name': 'serverless-cloud-function',
+                                    'cos_object_name': rollback_dict[number]
+                                }
+                                msg = "Select function zip file '{}' on COS bucket '{}' success.".format(
+                                    os.path.basename( \
+                                        code_url["cos_object_name"]), code_url["cos_bucket_name"])
+                                Operation(msg).success()
+                        else:
+                            raise RollbackException(
+                                "The historical version is not queried. The deployment history version code only takes effect when you use using-cos.")
+                    else:
+                        raise RollbackException(
+                            "The historical version is not queried. The deployment history version code only takes effect when you use using-cos.")
+
+                else:
+                    code_url = self._do_package_core(
+                        self.resource[ns][func][tsmacro.Properties].get(tsmacro.CodeUri, ""),
+                        ns,
+                        func,
+                        self.region
+                    )
 
                 if "cos_bucket_name" in code_url:
                     self.resource[ns][func][tsmacro.Properties]["CosBucketName"] = code_url["cos_bucket_name"]
                     self.resource[ns][func][tsmacro.Properties]["CosObjectName"] = code_url["cos_object_name"]
-                    msg = "Upload function zip file '{}' to COS bucket '{}' success.".format(os.path.basename( \
-                        code_url["cos_object_name"]), code_url["cos_bucket_name"])
-                    Operation(msg).success()
                 elif "zip_file" in code_url:
-                    #if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime][0:].lower() in SERVICE_RUNTIME:
-                        #error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
-                        #raise UploadFailed(error)
+                    # if self.resource[ns][func][tsmacro.Properties][tsmacro.Runtime][0:].lower() in SERVICE_RUNTIME:
+                    # error = "Service just support cos to deploy, please set using-cos by 'scf configure set --using-cos y'"
+                    # raise UploadFailed(error)
                     self.resource[ns][func][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
 
         # click.secho("Generate resource '{}' success".format(self.resource), fg="green")
@@ -210,7 +253,9 @@ class Package(object):
             Operation("Upload success").success()
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name_cos
-
+            msg = "Upload function zip file '{}' to COS bucket '{}' success.".format(os.path.basename( \
+                code_url["cos_object_name"]), code_url["cos_bucket_name"])
+            Operation(msg).success()
         elif cos_bucket_status:
 
             Operation("By default, this package will be uploaded to COS.").information()
@@ -260,6 +305,10 @@ class Package(object):
                     if default_bucket_name and default_bucket_name.endswith(
                     "-" + UserConfig().appid) else default_bucket_name
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
+
+            msg = "Upload function zip file '{}' to COS bucket '{}' success.".format(os.path.basename( \
+                code_url["cos_object_name"]), code_url["cos_bucket_name"])
+            Operation(msg).success()
 
         else:
             Operation( \
@@ -364,7 +413,7 @@ class Deploy(object):
             err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
 
             if err.get_request_id():
-                err_msg += (u"RequestId: {}".format(err.get_request_id()))
+                err_msg += (u" RequestId: {}".format(err.get_request_id()))
             raise CloudAPIException(err_msg)
 
         Operation("Deploy function '{name}' success".format(name=func_name)).success()

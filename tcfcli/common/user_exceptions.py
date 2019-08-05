@@ -118,6 +118,8 @@ class InitException(UserException):
 class TCSDKException(UserException):
     pass
 
+class RollbackException(UserException):
+    pass
 
 class InvalidDocumentException(Exception):
     def __init__(self, causes):

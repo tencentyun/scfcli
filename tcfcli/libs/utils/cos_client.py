@@ -134,6 +134,72 @@ class CosReset(CosS3Client):
             headers=headers)
         return None
 
+    def list_objects(self, Bucket, Prefix="", Delimiter="", Marker="", MaxKeys=1000, EncodingType="", **kwargs):
+        """获取文件列表
+
+        :param Bucket(string): 存储桶名称.
+        :param Prefix(string): 设置匹配文件的前缀.
+        :param Delimiter(string): 分隔符.
+        :param Marker(string): 从marker开始列出条目.
+        :param MaxKeys(int): 设置单次返回最大的数量,最大为1000.
+        :param EncodingType(string): 设置返回结果编码方式,只能设置为url.
+        :param kwargs(dict): 设置请求headers.
+        :return(dict): 文件的相关信息，包括Etag等信息.
+
+        .. code-block:: python
+
+            config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key, Token=token)  # 获取配置对象
+            client = CosS3Client(config)
+            # 列出bucket
+            response = client.list_objects(
+                Bucket='bucket',
+                MaxKeys=100,
+                Prefix='中文',
+                Delimiter='/'
+            )
+        """
+        decodeflag = True  # 是否需要对结果进行decode
+        headers = mapped(kwargs)
+        url = self._conf.uri(bucket=Bucket)
+
+        params = {
+            'prefix': Prefix,
+            'delimiter': Delimiter,
+            'marker': Marker,
+            'max-keys': MaxKeys
+        }
+        if EncodingType:
+            if EncodingType != 'url':
+                raise CosClientError('EncodingType must be url')
+            decodeflag = False  # 用户自己设置了EncodingType不需要去decode
+            params['encoding-type'] = EncodingType
+        else:
+            params['encoding-type'] = 'url'
+        params = format_values(params)
+        rt = self.send_request(
+            method='GET',
+            url=url,
+            bucket=Bucket,
+            params=params,
+            headers=headers,
+            auth=CosS3Auth(self._conf, params=params))
+        data = xml_to_dict(rt.content)
+        format_dict(data, ['Contents', 'CommonPrefixes'])
+        if decodeflag:
+            decode_result(
+                data,
+                [
+                    'Prefix',
+                    'Marker',
+                    'NextMarker'
+                ],
+                [
+                    ['Contents', 'Key'],
+                    ['CommonPrefixes', 'Prefix']
+                ]
+            )
+        return data
+
 
 class CosClient(object):
 
@@ -225,5 +291,16 @@ class CosClient(object):
                 ACL='private',
             )
             return True
+        except Exception as e:
+            return e
+
+    def get_object_list(self, bucket, prefix):
+        try:
+            response = self._client.list_objects(
+                Bucket=bucket,
+                Prefix=prefix,
+                Delimiter='/',
+            )
+            return response
         except Exception as e:
             return e
