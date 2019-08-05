@@ -144,7 +144,7 @@ class EventHandler(object):
             ret = self.real_handler(event, context)
             if type(ret) == Decimal:
                 ret = str(ret)
-            ret = json.dumps(ret)
+            ret = json.dumps(ret, ensure_ascii=False)
             if len(ret) > max_ret_msg_len:
                 runtime.report_fail(max_ret_msg_len_exceed_error, 0, 1)
             else:
