@@ -60,6 +60,7 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     else:
+        region = region if region else UserConfig().region
         if history:
             package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
             resource = package.do_package()
@@ -137,6 +138,7 @@ class Package(object):
         self.history = history
 
     def do_package(self):
+        region = self.region
         for ns in self.resource:
             for func in list(self.resource[ns]):
                 if func == tsmacro.Type:
@@ -148,7 +150,7 @@ class Package(object):
 
                 if self.history:
                     function_list = CosClient(self.region).get_object_list(
-                        bucket='serverless-cloud-function',
+                        bucket="scf-deploy-" + region,
                         prefix=str(ns) + "-" + str(func)
                     )
 
@@ -173,7 +175,7 @@ class Package(object):
                                     "Please enter the version number correctly, for example the number 1.")
                             else:
                                 code_url = {
-                                    'cos_bucket_name': 'serverless-cloud-function',
+                                    'cos_bucket_name': "scf-deploy-" + region,
                                     'cos_object_name': rollback_dict[number]
                                 }
                                 msg = "Select function zip file '{}' on COS bucket '{}' success.".format(
@@ -234,6 +236,7 @@ class Package(object):
             return
 
     def _do_package_core(self, func_path, namespace, func_name, region=None):
+
         zipfile, zip_file_name, zip_file_name_cos = self._zip_func(func_path, namespace, func_name)
         code_url = dict()
 
@@ -243,7 +246,7 @@ class Package(object):
         default_bucket_name = ""
         if UserConfig().using_cos.startswith("True"):
             cos_bucket_status = True
-            default_bucket_name = "serverless-cloud-function-" + str(UserConfig().appid)
+            default_bucket_name = "scf-deploy-" + region + "-" + str(UserConfig().appid)
         else:
             cos_bucket_status = False
 
@@ -309,7 +312,7 @@ class Package(object):
 
                 try:
                     object_list = cos_client.get_object_list(
-                        bucket='serverless-cloud-function',
+                        bucket=default_bucket_name,
                         prefix=str(namespace) + "-" + str(func_name)
                     )
                     if isinstance(object_list, dict) and 'Contents' in object_list:
