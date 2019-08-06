@@ -6,6 +6,9 @@ from builtins import str as text
 
 class UserException(click.ClickException):
 
+    def __init__(self, message):
+        super(UserException, self).__init__(str(message))
+
     def format_message(self):
         return str(self.message)
 
