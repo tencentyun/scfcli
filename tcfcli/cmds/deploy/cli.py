@@ -411,14 +411,17 @@ class Deploy(object):
         for ns in self.resources:
             if not self.resources[ns]:
                 continue
-            Operation("Deploy namespace '{ns}' begin".format(ns=ns)).process()
+            ns_this = ns
+            if self.namespace and self.namespace != ns:
+                ns_this = self.namespace
+            Operation("Deploy namespace '{ns}' begin".format(ns=ns_this)).process()
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
                 Function(self.region, ns, func).get_information()
-            Operation("Deploy namespace '{ns}' end".format(ns=ns)).success()
+            Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
