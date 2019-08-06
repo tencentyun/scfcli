@@ -7,7 +7,7 @@ from builtins import str as text
 class UserException(click.ClickException):
 
     def format_message(self):
-        return self.message
+        return str(self.message)
 
     def show(self):
         click.secho(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"))

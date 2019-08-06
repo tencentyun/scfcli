@@ -68,13 +68,12 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
             resource = package.do_package()
         if resource == None:
             return
-        if name and "'%s'"%str(name) not in str(resource):
+        if name and "'%s'" % str(name) not in str(resource):
             raise DeployException("Couldn't find the function in YAML, please add this function in YAML.")
         else:
             deploy = Deploy(resource, namespace, region, forced, skip_event)
             deploy.do_deploy()
             Operation("Deploy success").success()
-
 
 
 class Function(object):
