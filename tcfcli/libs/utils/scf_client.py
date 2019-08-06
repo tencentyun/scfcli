@@ -359,7 +359,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
-            raise TCSDKException(e)
+            raise TCSDKException(str(e))
             # if isinstance(e, TencentCloudSDKException):
             #     raise
             # else:
@@ -382,7 +382,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
-            raise TCSDKException(e)
+            raise TCSDKException(str(e))
             # if isinstance(e, TencentCloudSDKException):
             #     raise
             # else:
