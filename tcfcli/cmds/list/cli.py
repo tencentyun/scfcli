@@ -35,7 +35,8 @@ class List(object):
                 List.show(region, namespace['Name'])
 
         elif region != 'all' and namespace != 'all':
-            List.show(region, namespace)
+            if List.show(region, namespace) == False:
+                raise NamespaceException("namespace {ns} not exists".format(ns=namespace))
 
     @staticmethod
     def show(region, namespace):
@@ -56,9 +57,9 @@ class List(object):
         Operation("Namespace:%s " % (namespace)).process()
         click.secho("%-20s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName"))
         for function in functions:
-            click.secho("%-20s %-24s %-20s %-20s %-60s" % (function['Runtime'], List.status(function['Status']),
-                                                           function['AddTime'], function['ModTime'],
-                                                           function['FunctionName']))
+            click.secho("%-20s %-24s %-20s %-20s %-60s" % (function.Runtime, List.status(function.Status),
+                                                           function.AddTime, function.ModTime,
+                                                           function.FunctionName))
         click.secho("\n")
 
     @staticmethod
