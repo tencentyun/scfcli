@@ -41,6 +41,7 @@ Resources:
         #        Type: APIGW
         #        Properties:
         #            StageName: release
+        #            ServiceId:
         #            HttpMethod: ANY
 
 Globals:

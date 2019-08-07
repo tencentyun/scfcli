@@ -124,6 +124,10 @@ class TCSDKException(UserException):
 class RollbackException(UserException):
     pass
 
+
+class PackageException(UserException):
+    pass
+
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
         self._causes = sorted(causes)

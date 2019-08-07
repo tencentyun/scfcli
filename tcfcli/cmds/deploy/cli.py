@@ -7,7 +7,7 @@ import re
 import json
 import click
 from io import BytesIO
-from builtins import str as text
+import shutil
 import hashlib
 
 import tcfcli.common.base_infor as infor
@@ -126,14 +126,15 @@ class Function(object):
         proper = function.get(tsmacro.Properties, {})
         events = proper.get(tsmacro.Events, {})
         temp_list = []
+
         for eve_event in events:
             if "ServiceId" in events[eve_event]['Properties']:
                 temp_list.append(events[eve_event]['Properties']["ServiceId"])
 
         id_list = []
-        for eve in serviceid_list:
-            if eve not in temp_list:
-                id_list.append(eve)
+        for eve_service_id in serviceid_list:
+            if eve_service_id not in temp_list:
+                id_list.append(eve_service_id)
 
         if id_list:
             Operation("If you don't want to create the new gateway next time.").information()
@@ -385,6 +386,11 @@ class Package(object):
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
 
+        try:
+            shutil.rmtree(_BUILD_DIR)
+        except Exception as e:
+            pass
+
         return code_url
 
     def _zip_func(self, func_path, namespace, func_name):
@@ -398,32 +404,59 @@ class Package(object):
         zip_file_name = str(namespace) + '-' + str(func_name) + '-latest.zip'
         zip_file_name_cos = str(namespace) + '-' + str(func_name) + '-latest' + time.strftime(
             "-%Y-%m-%d-%H-%M-%S", time.localtime(int(time.time()))) + '.zip'
+
         cwd = os.getcwd()
         os.chdir(self.template_file_dir)
-        os.chdir(func_path)
 
-        with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
-            for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
-                # click.secho(str(current_path))
-                if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
-                    for file in files_name:
-                        zip_object.write(os.path.join(current_path, file))
-
-        os.chdir(cwd)
-        buff.seek(0)
-        buff.name = zip_file_name
-
-        if not os.path.exists(_BUILD_DIR):
-            os.mkdir(_BUILD_DIR)
         zip_file_path = os.path.join(_BUILD_DIR, zip_file_name)
 
         if os.path.exists(zip_file_path):
             os.remove(zip_file_path)
 
-        # a temporary support for upload func from local zipfile
-        with open(zip_file_path, 'wb') as f:
-            f.write(buff.read())
-            buff.seek(0)
+        try:
+            if os.path.isdir(func_path):
+                os.chdir(func_path)
+                with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
+                    for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
+                        # click.secho(str(current_path))
+                        if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
+                            for file in files_name:
+                                zip_object.write(os.path.join(current_path, file))
+
+                os.chdir(cwd)
+                buff.seek(0)
+                buff.name = zip_file_name
+
+                if not os.path.exists(_BUILD_DIR):
+                    os.mkdir(_BUILD_DIR)
+
+                # a temporary support for upload func from local zipfile
+                with open(zip_file_path, 'wb') as f:
+                    f.write(buff.read())
+                    buff.seek(0)
+
+            else:
+                if str(func_path).endswith(".zip"):
+                    with open(func_path, "rb") as f:
+                        buff.write(f.read())
+
+                    buff.seek(0)
+                    buff.name = zip_file_name
+
+                else:
+                    with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
+                        zip_object.write(func_path)
+
+                    os.chdir(cwd)
+                    buff.seek(0)
+                    buff.name = zip_file_name
+
+            # a temporary support for upload func from local zipfile
+            with open(zip_file_path, 'wb') as f:
+                f.write(buff.read())
+                buff.seek(0)
+        except Exception as e:
+            raise PackageException("Package Error. Please check CodeUri in YAML.")
         Operation("Compress function '{}' to zipfile '{}' success".format(zip_file_path, zip_file_name)).success()
 
         return buff, zip_file_name, zip_file_name_cos
