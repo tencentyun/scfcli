@@ -110,7 +110,7 @@ class InvokeContext(object):
             self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout)
 
         try:
-            click.secho("test:cmd is %s" % self.cmd)
+            click.secho("Run %s's cmd: %s" % (self._runtime.runtime, click.style(self.cmd, fg="green")))
             child = subprocess.Popen(args=[self.cmd] + self.argv, env=self.env)
         except OSError:
             click.secho("Execution Failed.", fg="red")
