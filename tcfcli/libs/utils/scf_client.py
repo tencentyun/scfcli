@@ -15,6 +15,7 @@ from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.tcsam.tcsam_macro import TriggerMacro as trmacro
 import base64
+import click
 
 
 class ScfClient(object):
@@ -170,11 +171,11 @@ class ScfClient(object):
 
     def deploy_func(self, func, func_name, func_ns, forced):
         try:
-            #SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
-            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                #self.create_service(func, func_name, func_ns)
-            #else:
+            # SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
+            # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+            # func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+            # self.create_service(func, func_name, func_ns)
+            # else:
             self.create_func(func, func_name, func_ns)
             return
         except TencentCloudSDKException as err:
@@ -184,11 +185,11 @@ class ScfClient(object):
                 return err
         Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
         try:
-            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                #self.update_service_config(func, func_name, func_ns)
-                #self.update_service_code(func, func_name, func_ns)
-            #else:
+            # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+            # func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+            # self.update_service_config(func, func_name, func_ns)
+            # self.update_service_code(func, func_name, func_ns)
+            # else:
             self.update_func_config(func, func_name, func_ns)
             self.update_func_code(func, func_name, func_ns)
         except TencentCloudSDKException as err:
@@ -261,6 +262,9 @@ class ScfClient(object):
         elif t == tsmacro.TrApiGw:
             ir_flag = proper.get(trmacro.IntegratedResp, False)
             isIntegratedResponse = "TRUE" if ir_flag else "FALSE"
+            service_name = {"serviceName": "SCF_API_SERVICE"}
+            service_id = {"serviceId": proper.get('ServiceId', None)}
+            service_temp = service_id if service_id["serviceId"] else service_name
             desc = {
                 "api": {
                     "authRequired": "FALSE",
@@ -269,9 +273,7 @@ class ScfClient(object):
                     },
                     "isIntegratedResponse": isIntegratedResponse
                 },
-                "service": {
-                    "serviceName": "SCF_API_SERVICE"
-                },
+                "service": service_temp,
                 "release": {
                     "environmentName": proper.get(trmacro.StageName, None)
                 }
@@ -387,6 +389,7 @@ class ScfClientExt(scf_client.ScfClient):
             #     raise
             # else:
             #     raise TencentCloudSDKException(e.message, e.message)
+
 
 """
     def ListFunctions(self, namespace):
