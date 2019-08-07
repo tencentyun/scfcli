@@ -78,10 +78,11 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
 
 
 class Function(object):
-    def __init__(self, region, namespace, function):
+    def __init__(self, region, namespace, function, resources):
         self.region = region if region else UserConfig().region
         self.namespace = namespace
         self.function = function
+        self.resources = resources
 
     def recursion_dict(self, information, num):
         for eveKey, eveValue in information.items():
@@ -108,12 +109,35 @@ class Function(object):
         Operation("Runtime: %s" % information["Runtime"]).out_infor()
         Operation("Timeout: %d" % information["Timeout"]).out_infor()
         Operation("Handler: %s" % information["Handler"]).out_infor()
+        serviceid_list = []
         if information["Triggers"]:
             click.secho(u"[+] Trigger Information: ", fg="cyan")
             for eve_trigger in information["Triggers"]:
+                try:
+                    if eve_trigger['Type'] == 'apigw':
+                        serviceid_list.append(json.loads(eve_trigger['TriggerDesc'])["service"]["serviceId"])
+                except Exception as e:
+                    pass
                 click.secho(click.style(u"    > %s - %s:" % (text(str(eve_trigger["Type"]).upper()),
                                                              text(eve_trigger["TriggerName"]))), fg="cyan")
                 self.recursion_dict(eve_trigger, 2)
+
+        function = self.resources[self.namespace][self.function]
+        proper = function.get(tsmacro.Properties, {})
+        events = proper.get(tsmacro.Events, {})
+        temp_list = []
+        for eve_event in events:
+            if "ServiceId" in events[eve_event]['Properties']:
+                temp_list.append(events[eve_event]['Properties']["ServiceId"])
+
+        id_list = []
+        for eve in serviceid_list:
+            if eve not in temp_list:
+                id_list.append(eve)
+
+        if id_list:
+            Operation("If you don't want to create the new gateway next time.").information()
+            Operation("Please add these ServiceId into the YAML: " + ", ".join(id_list)).information()
 
     def get_information(self):
         scf_client = ScfClient(region=self.region)
@@ -426,7 +450,7 @@ class Deploy(object):
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
                                      self.forced, self.skip_event)
-                Function(self.region, ns, func).get_information()
+                Function(self.region, ns, func, self.resources).get_information()
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
@@ -468,8 +492,6 @@ class Deploy(object):
         events = proper.get(tsmacro.Events, {})
         hasError = None
         for trigger in events:
-            # print(str(trigger))
-            # print(str(events[trigger]))
             err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
             if err is not None:
                 hasError = err
@@ -477,11 +499,12 @@ class Deploy(object):
                     s = err.get_message()
                 else:
                     s = err.get_message().encode("UTF-8")
-                if err.get_request_id():
-                    Operation("Deploy trigger '{name}' failure. Error: {e}. RequestId: {id}".
-                              format(name=trigger, e=s, id=err.get_request_id())).warning()
-                else:
-                    Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )).warning()
+                if "Param error The path+method already exists under the service" not in str(s):
+                    if err.get_request_id():
+                        Operation("Deploy trigger '{name}' failure. Error: {e}. RequestId: {id}".
+                                  format(name=trigger, e=s, id=err.get_request_id())).warning()
+                    else:
+                        Operation("Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )).warning()
                 continue
             Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
         # if hasError is not None:
