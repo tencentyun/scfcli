@@ -33,6 +33,8 @@ class UserConfig(object):
         self.appid = 'None'
         self.using_cos = "False (By default, it isn't deployed by COS.)"
         self.version_time = ""
+        self.python2_path = 'None'
+        self.python3_path = 'None'
         self._load_config()
 
     def set_attrs(self, attrs):

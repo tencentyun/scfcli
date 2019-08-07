@@ -112,6 +112,7 @@ class ConfigureHelp():
     REGION = "TencentCloudAPI  Region."
     APPID = "TencentCloudAPI  Region."
     USING_COS = "Deploy function by COS. The default is False."
+    PATHON_PATH = "Cli native invoke first use this path."
 
     SET_SHORT_HELP = "Set your account parameters."
     SET_SECRET_ID = SECRET_ID
@@ -119,6 +120,7 @@ class ConfigureHelp():
     SET_REGION = REGION
     SET_APPID = APPID
     SET_USING_COS = USING_COS
+    SET_PATHON_PATH = PATHON_PATH
 
     GET_SHORT_HELP = "Get your account parameters."
     GET_SECRET_ID = SECRET_ID
@@ -126,6 +128,7 @@ class ConfigureHelp():
     GET_REGION = REGION
     GET_APPID = APPID
     GET_USING_COS = USING_COS
+    GET_PATHON_PATH = PATHON_PATH
 
 
 class NativeHelp():

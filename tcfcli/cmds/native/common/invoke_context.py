@@ -15,7 +15,7 @@ from tcfcli.common.template import Template
 from tcfcli.common.macro import MacroRuntime
 from tcfcli.common.file_util import FileUtil
 import tcfcli.common.base_infor as infor
-
+from tcfcli.common.user_config import UserConfig
 
 class InvokeContext(object):
     BOOTSTRAP_SUFFIX = {
@@ -110,6 +110,7 @@ class InvokeContext(object):
             self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout)
 
         try:
+            click.secho("test:cmd is %s" % self.cmd)
             child = subprocess.Popen(args=[self.cmd] + self.argv, env=self.env)
         except OSError:
             click.secho("Execution Failed.", fg="red")
@@ -137,9 +138,14 @@ class InvokeContext(object):
 
     @property
     def cmd(self):
-        return self._debug_context.cmd if \
-            self._debug_context.cmd is not None \
-            else self._runtime.cmd
+        if self._debug_context.cmd is not None:
+            return self._debug_context.cmd
+        elif self._runtime.runtime == 'python3.6' and UserConfig().python3_path != 'None':
+            return UserConfig().python3_path
+        elif self._runtime.runtime == 'python2.7' and UserConfig().python2_path != 'None':
+            return UserConfig().python2_path
+        else:
+            return self._runtime.cmd
 
     @property
     def argv(self):

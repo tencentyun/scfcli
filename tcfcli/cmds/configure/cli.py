@@ -26,6 +26,8 @@ REGIONS = infor.REGIONS
 @click.option('--region', is_flag=True, help=help.GET_REGION)
 @click.option('--appid', is_flag=True, help=help.GET_APPID)
 @click.option('--using-cos', is_flag=True, help=help.GET_USING_COS)
+@click.option('--python2-path', help=help.GET_PATHON_PATH)
+@click.option('--python3-path', help=help.GET_PATHON_PATH)
 def get(**kwargs):
     '''
         \b
@@ -62,6 +64,8 @@ def get(**kwargs):
 @click.option('--region', help=help.SET_REGION)
 @click.option('--appid', help=help.SET_APPID)
 @click.option('--using-cos', help=help.SET_USING_COS)
+@click.option('--python2-path', help=help.SET_PATHON_PATH)
+@click.option('--python3-path', help=help.SET_PATHON_PATH)
 def set(**kwargs):
     '''
         \b
