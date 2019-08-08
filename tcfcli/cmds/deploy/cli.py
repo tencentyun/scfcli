@@ -415,8 +415,10 @@ class Package(object):
             os.remove(zip_file_path)
 
         try:
-
-            os.mkdir(_BUILD_DIR)
+            try:
+                os.mkdir(_BUILD_DIR)
+            except:
+                pass
 
             if os.path.isdir(func_path):
                 os.chdir(func_path)
