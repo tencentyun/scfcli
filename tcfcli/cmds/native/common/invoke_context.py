@@ -16,6 +16,7 @@ from tcfcli.common.macro import MacroRuntime
 from tcfcli.common.file_util import FileUtil
 import tcfcli.common.base_infor as infor
 from tcfcli.common.user_config import UserConfig
+from tcfcli.common.operation_msg import Operation
 
 class InvokeContext(object):
     BOOTSTRAP_SUFFIX = {
@@ -153,6 +154,9 @@ class InvokeContext(object):
         runtime_pwd = os.path.dirname(os.path.abspath(__file__))
         bootstrap = os.path.join(runtime_pwd, "runtime", self._runtime.runtime,
                                  self.BOOTSTRAP_SUFFIX[self._runtime.runtime])
+        if not os.path.isdir(self._runtime.codeuri):
+            Operation("The `CodeUri` in yaml must be a dir when your use `scf native invoke`").warning()
+            exit(1)
         code = os.path.normpath(
             os.path.join(os.path.dirname(os.path.abspath(self._template_file)), self._runtime.codeuri))
         return argv + [bootstrap, os.path.join(code, self.get_handler())]
