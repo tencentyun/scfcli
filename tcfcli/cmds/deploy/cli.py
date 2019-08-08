@@ -76,6 +76,11 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
             deploy.do_deploy()
             Operation("Deploy success").success()
 
+        try:
+            shutil.rmtree(_BUILD_DIR)
+        except Exception as e:
+            pass
+
 
 class Function(object):
     def __init__(self, region, namespace, function, resources):
@@ -386,10 +391,6 @@ class Package(object):
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
 
-        try:
-            shutil.rmtree(_BUILD_DIR)
-        except Exception as e:
-            pass
 
         return code_url
 
