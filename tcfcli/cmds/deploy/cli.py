@@ -458,7 +458,7 @@ class Package(object):
                     buff.seek(0)
                     buff.name = zip_file_name
 
-            print(zip_file_path)
+            # print(zip_file_path)
 
             # a temporary support for upload func from local zipfile
             with open(zip_file_path, 'wb') as f:
