@@ -23,7 +23,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from tcfcli.libs.utils.cos_client import CosClient
 
 _CURRENT_DIR = '.'
-_BUILD_DIR = './.tcf_build'
+_BUILD_DIR = os.path.join(os.getcwd(), '.tcf_build')
 DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
@@ -394,6 +394,7 @@ class Package(object):
         return code_url
 
     def _zip_func(self, func_path, namespace, func_name):
+
         buff = BytesIO()
         if not os.path.exists(func_path):
             raise ContextException("Function file or path not found by CodeUri '{}'".format(func_path))
@@ -414,6 +415,9 @@ class Package(object):
             os.remove(zip_file_path)
 
         try:
+
+            os.mkdir(_BUILD_DIR)
+
             if os.path.isdir(func_path):
                 os.chdir(func_path)
                 with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
@@ -444,12 +448,15 @@ class Package(object):
                     buff.name = zip_file_name
 
                 else:
+
                     with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
                         zip_object.write(func_path)
 
                     os.chdir(cwd)
                     buff.seek(0)
                     buff.name = zip_file_name
+
+            print(zip_file_path)
 
             # a temporary support for upload func from local zipfile
             with open(zip_file_path, 'wb') as f:
