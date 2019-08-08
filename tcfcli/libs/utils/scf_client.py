@@ -255,6 +255,39 @@ class ScfClient(object):
             Operation("list namespace failure. Error: {e}.".format(e=s)).warning()
         return None
 
+    def create_testmodel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            self._client_ext.CreateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
+                                                     testModelName=testModelName, namespace=namespace)
+        except TencentCloudSDKException as err:
+            return err
+        return
+
+    def list_func_testmodel(self, functionName, namespace):
+        try:
+            resp = self._client_ext.ListFunctionTestModels(functionName=functionName, namespace=namespace)
+            testmodels = resp.get("TestModels", [])
+            return testmodels
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            Operation("list testmodels failure. Error: {e}.".format(e=s)).warning()
+        return None
+
+    def get_func_testmodel(self, functionName, testModelName, namespace):
+        try:
+            resp = self._client_ext.GetFunctionTestModel(functionName=functionName, testModelName=testModelName, namespace=namespace)
+            return resp
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            Operation("list testmodels failure. Error: {e}.".format(e=s)).warning()
+        return None
+
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
         if t == tsmacro.TrTimer:
@@ -390,6 +423,62 @@ class ScfClientExt(scf_client.ScfClient):
             # else:
             #     raise TencentCloudSDKException(e.message, e.message)
 
+    def CreateFunctionTestModel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelValue': testModelValue,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("CreateFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def ListFunctionTestModels(self, functionName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'Namespace': namespace,
+            }
+            body = self.call("ListFunctionTestModels", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def GetFunctionTestModel(self, functionName,testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("GetFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
 
 """
     def ListFunctions(self, namespace):

@@ -4,7 +4,7 @@ from tcfcli.common.user_config import UserConfig
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import *
 import tcfcli.common.base_infor as infor
-from tcfcli.help.message import DeleteHelp as help
+from tcfcli.help.message import FunctionHelp as help
 from tcfcli.libs.utils.scf_client import ScfClient
 
 REGIONS = infor.REGIONS
@@ -37,10 +37,10 @@ def abort_if_false(ctx, param, value):
         ctx.abort()
 
 
-@click.command(short_help=help.SHORT_HELP)
+@click.command(name='delete', short_help=help.DELETE_SHORT_HELP)
 @click.option('-r', '--region', type=str, help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
-@click.option('-n', '--name', help=help.NAME)
+@click.option('-n', '--name', help=help.DELETE_NAME)
 @click.option('-f', '--force', is_flag=True, help=help.FORCED)
 def delete(region, namespace, name, force):
     '''
@@ -50,7 +50,7 @@ def delete(region, namespace, name, force):
         Common usage:
         \b
             * Delete a SCF function
-              $ scf delete --name functionname --region ap-guangzhou --namespace default
+              $ scf function delete --name functionname --region ap-guangzhou --namespace default
     '''
     if name:
 

@@ -3,8 +3,9 @@
 from tcfcli.common.operation_msg import Operation
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common.user_exceptions import *
-from tcfcli.help.message import ListHelp as help
+from tcfcli.help.message import FunctionHelp as help
 import tcfcli.common.base_infor as infor
+from tcfcli.common.user_config import UserConfig
 
 REGIONS = infor.REGIONS
 
@@ -12,45 +13,22 @@ REGIONS = infor.REGIONS
 class List(object):
     @staticmethod
     def do_cli(region, namespace):
-        if region != 'all' and region not in REGIONS:
-            raise ArgsException("! The region must in all, %s." % (", ".join(REGIONS)))
-
-        if region == 'all' and namespace == 'all':
-            for region in REGIONS:
-                namespaces = ScfClient(region).list_ns()
-                for namespace in namespaces:
-                    List.show(region, namespace['Name'])
-
-        elif region == 'all' and namespace != 'all':
-            tag = False
-            for region in REGIONS:
-                if List.show(region, namespace) is not False:
-                    tag = True
-            if tag is False:
-                raise NamespaceException("namespace {ns} not exists in all region".format(ns=namespace))
-
-        elif region != 'all' and namespace == 'all':
-            namespaces = ScfClient(region).list_ns()
-            for namespace in namespaces:
-                List.show(region, namespace['Name'])
-
-        elif region != 'all' and namespace != 'all':
-            if List.show(region, namespace) == False:
-                raise NamespaceException("namespace {ns} not exists".format(ns=namespace))
+        List.show(region, namespace)
 
     @staticmethod
     def show(region, namespace):
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
-            # return
+        if not region:
+            region = UserConfig().region
+
         rep = ScfClient(region).get_ns(namespace)
         if not rep:
-            return False
+            raise NamespaceException("Region {r} not exist namespace {n}".format(r=region, n=namespace))
 
         functions = ScfClient(region).list_function(namespace)
         if not functions:
-            # click.secho("Region:%s \nNamespace:%s " % (region, namespace), fg="green")
-            # click.secho("no function exists\n", fg="red")
+            Operation("Region {r} namespace {n} not exist function".format(r=region, n=namespace)).warning()
             return
 
         Operation("Region:%s" % (region)).process()
@@ -72,9 +50,9 @@ class List(object):
             return click.style(status_name, fg="blue")
 
 
-@click.command(short_help=help.SHORT_HELP)
-@click.option('--region', default="all", help=help.REGION)
-@click.option('-ns', '--namespace', default="all", help=help.NAMESPACE)
+@click.command(name='list', short_help=help.LIST_SHORT_HELP)
+@click.option('--region', '-r', help=help.REGION)
+@click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 def list(region, namespace):
     """
         \b
@@ -83,6 +61,6 @@ def list(region, namespace):
         Common usage:
         \b
             * All function in ap-guangzhou
-              $ scf list --region ap-guangzhou
+              $ scf function list --region ap-guangzhou
     """
     List.do_cli(region, namespace)

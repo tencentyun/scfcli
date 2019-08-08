@@ -58,18 +58,6 @@ class CommonHelp():
     INVOKE_REGION = "The function region. Including %s." % REGIONS_STR
 
 
-class DeleteHelp():
-    # Delete Help Message
-
-    SHORT_HELP = "Delete a SCF function."
-
-    NAME = MUST + CommonHelp.NAME
-    NAMESPACE = CommonHelp.NAMESPACE
-
-    FORCED = "Force delete function without ask."
-    REGION = "Region name. Including %s." % REGIONS_STR
-
-
 class DeployHelp():
     # Deploy Help Message
 
@@ -185,10 +173,26 @@ class LocalHelp():
     INVOKE_QUIET = 'Only display what function return.'
 
 
-class ListHelp():
-    # List Help Message
-    SHORT_HELP = "Show the SCF function list."
+class FunctionHelp():
+    # Function Help Message
 
+    SHORT_HELP = "Manage SCF remote function resource"
+    LIST_SHORT_HELP = "Show the SCF function list."
+    DELETE_SHORT_HELP = "Delete a SCF function."
+
+    DELETE_NAME = MUST + CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
+    FORCED = "Force delete function without ask."
+    REGION = "Region name. Including %s." % REGIONS_STR
 
-    REGION = "The function region. Including %s" % REGIONS_STR
+
+class EventHelp():
+    # Function Help Message
+
+    SHORT_HELP = "Manage SCF remote event resource"
+    LIST_SHORT_HELP = "Show the SCF event list."
+    GET_SHORT_HELP = "Get SCF event from remote."
+    FUNCTION_NAME_HELP = 'The SCF remote fucntion name'
+    FUNCTION_TESTMODEL_NAME_HELP = 'The SCF remote fucntion event name'
+    NAMESPACE = CommonHelp.NAMESPACE
+    REGION = "Region name. Including %s." % REGIONS_STR
