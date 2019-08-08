@@ -5,6 +5,9 @@ import os
 import sys
 if sys.version_info[0] != 2 or sys.version_info[1] < 7:
     print("The version of python({}) don't match the Runtime version".format(str(sys.version_info)))
+    print("If you install python2.7,please try cmd `scf configure set --python2-path Your_python2.7_path`")
+    print("You can use cmd `which python` to show your python path in Linux OS")
+    print("You can use cmd `where python` to show your python path in Windows Os")
     sys.exit(233)
 import imp
 import json

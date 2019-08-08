@@ -6,6 +6,9 @@ import os
 import sys
 if sys.version_info[0] != 3 or sys.version_info[1] < 6:
     print("The version of python({}) don't match the Runtime version".format(str(sys.version_info)))
+    print("If you install python3.6+,please try cmd `scf configure set --python3-path Your_python3_path`")
+    print("You can use cmd `which python3` to show your python3 path in Linux OS")
+    print("You can use cmd `where python3` to show your python3 path in Windows Os")
     sys.exit(233)
 import json
 import logging
