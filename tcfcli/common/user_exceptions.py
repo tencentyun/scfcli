@@ -2,6 +2,8 @@
 
 import click
 from builtins import str as text
+from click.utils import echo
+from click._compat import get_text_stderr
 
 
 class UserException(click.ClickException):
@@ -12,8 +14,11 @@ class UserException(click.ClickException):
     def format_message(self):
         return str(self.message)
 
-    def show(self):
-        click.secho(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"))
+    def show(self, file=None):
+        if file is None:
+            file = get_text_stderr()
+        echo(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"),
+             file=file)
 
     exit_code = 1
 
@@ -121,12 +126,14 @@ class InitException(UserException):
 class TCSDKException(UserException):
     pass
 
+
 class RollbackException(UserException):
     pass
 
 
 class PackageException(UserException):
     pass
+
 
 class InvalidDocumentException(Exception):
     def __init__(self, causes):

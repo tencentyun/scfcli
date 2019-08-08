@@ -391,7 +391,6 @@ class Package(object):
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
             Operation("Upload success").success()
 
-
         return code_url
 
     def _zip_func(self, func_path, namespace, func_name):
