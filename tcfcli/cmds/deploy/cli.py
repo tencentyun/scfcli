@@ -40,7 +40,9 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--skip-event', is_flag=True, default=False, help=help.SKIP_EVENT)
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
 @click.option('--history', is_flag=True, default=False, help=help.HISTORY)
-def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history):
+@click.option('--event', '-e', type=str, help=help.EVENT)
+@click.option('--event-name', '-en', type=str, help=help.EVENT_NAME)
+def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, event, event_name):
     '''
         \b
         Scf cli completes the function package deployment through the deploy subcommand. The scf command line tool deploys the code package, function configuration, and other information specified in the configuration file to the cloud or updates the functions of the cloud according to the specified function template configuration file.
@@ -59,27 +61,43 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
 
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
-    else:
-        region = region if region else UserConfig().region
-        if history:
-            package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
-            resource = package.do_package()
-        else:
-            package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
-            resource = package.do_package()
-        if resource == None:
-            return
-        if name and "'%s'" % str(name) not in str(resource):
-            raise DeployException("Couldn't find the function in YAML, please add this function in YAML.")
-        else:
-            deploy = Deploy(resource, namespace, region, forced, skip_event)
-            deploy.do_deploy()
-            Operation("Deploy success").success()
+    event_data = None
+    if event:
+        if not event_name:
+            raise DeployException('You must give an event name by --event-name or -en')
+        try:
+            with click.open_file(event, 'r', encoding="utf-8") as f:
+                event_data = f.read()
+        except IOError as err1:
+            raise DeployException(str(err1)+'\nPlease check your json file exist.')
+        except Exception as err2:
+            raise DeployException(str(err2)+'\nPlease check your json file coding is `utf-8`.')
 
         try:
-            shutil.rmtree(_BUILD_DIR)
-        except Exception as e:
-            pass
+            json.loads(event_data)
+        except Exception as err3:
+            raise DeployException(str(err3)+'\nPlease check your json file format.')
+
+    region = region if region else UserConfig().region
+    if history:
+        package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
+        resource = package.do_package()
+    else:
+        package = Package(template_file, cos_bucket, name, region, namespace, without_cos)
+        resource = package.do_package()
+    if resource == None:
+        return
+    if name and "'%s'" % str(name) not in str(resource):
+        raise DeployException("Couldn't find the function in YAML, please add this function in YAML.")
+    else:
+        deploy = Deploy(resource, namespace, region, forced, skip_event)
+        deploy.do_deploy(event_data, event_name)
+        Operation("Deploy success").success()
+
+    try:
+        shutil.rmtree(_BUILD_DIR)
+    except Exception as e:
+        pass
 
 
 class Function(object):
@@ -482,7 +500,7 @@ class Deploy(object):
         self.forced = forced
         self.skip_event = skip_event
 
-    def do_deploy(self):
+    def do_deploy(self, event, event_name):
         for ns in self.resources:
             if not self.resources[ns]:
                 continue
@@ -494,11 +512,11 @@ class Deploy(object):
                 if func == tsmacro.Type:
                     continue
                 self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
-                                     self.forced, self.skip_event)
+                                     self.forced, self.skip_event, event, event_name)
                 Function(self.region, ns, func, self.resources).get_information()
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
-    def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
+    def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False, event=None, event_name=None):
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
             func_ns = self.namespace
@@ -538,6 +556,11 @@ class Deploy(object):
         if not skip_event:
             self._do_deploy_trigger(func, func_name, func_ns, region)
 
+        if event:
+            self._do_deploy_testmodel(functionName=func_name, event=event, event_name=event_name,
+                                      namespace=func_ns, region=region)
+
+
     def _do_deploy_trigger(self, func, func_name, func_ns, region=None):
         proper = func.get(tsmacro.Properties, {})
         events = proper.get(tsmacro.Events, {})
@@ -560,3 +583,19 @@ class Deploy(object):
             Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
         # if hasError is not None:
         #     sys.exit(1)
+
+    def _do_deploy_testmodel(self, functionName, event, event_name, namespace, region):
+        try:
+            #获取失败会抛出异常则直接创建新模版
+            #获取成功代表已有模版，需要询问是否覆盖
+            ScfClient(region).get_func_testmodel(functionName=functionName, testModelName=event_name, namespace=namespace)
+        except:
+            ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
+                                                    testModelName=event_name, namespace=namespace)
+            return
+
+        v = click.prompt(text="Do you want to cover remote event? (y/n)",
+                         default="n", show_default=False)
+        if v:
+            ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
+                                                    testModelName=event_name, namespace=namespace)

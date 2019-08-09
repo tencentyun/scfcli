@@ -102,8 +102,9 @@ def set(**kwargs):
         list(map(set_true, kwargs))
         attrs = uc.get_attrs(kwargs)
         config = {}
+        skip_attr = {'using-cos', 'python2-path', 'python3-path'}
         for attr in sorted(attrs):
-            if attr != "using-cos":
+            if attr not in skip_attr:
                 while True:
                     attr_value = attrs[attr]
                     if attr == "secret-id":

@@ -255,9 +255,17 @@ class ScfClient(object):
             Operation("list namespace failure. Error: {e}.".format(e=s)).warning()
         return None
 
-    def create_testmodel(self, functionName, testModelValue, testModelName, namespace):
+    def create_func_testmodel(self, functionName, testModelValue, testModelName, namespace):
         try:
             self._client_ext.CreateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
+                                                     testModelName=testModelName, namespace=namespace)
+        except TencentCloudSDKException as err:
+            return err
+        return
+
+    def update_func_testmodel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            self._client_ext.UpdateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
                                                      testModelName=testModelName, namespace=namespace)
         except TencentCloudSDKException as err:
             return err
@@ -432,6 +440,26 @@ class ScfClientExt(scf_client.ScfClient):
                 'Namespace': namespace,
             }
             body = self.call("CreateFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def UpdateFunctionTestModel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelValue': testModelValue,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("UpdateFunctionTestModel", request)
             response = json.loads(body)
             if "Error" not in response["Response"]:
                 return response["Response"]

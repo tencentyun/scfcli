@@ -73,6 +73,8 @@ class DeployHelp():
     SKIP_EVENT = "Triggers will continue with the previous setup and won't cover them this time."
     WITHOUT_COS = "Deploy SCF function without COS. If you set cos-bucket in configure."
     HISTORY = "The deployment history version code is only valid when using using-cos."
+    EVENT = "The function event file name.Please set json file name,such as `event.json`"
+    EVENT_NAME = "The function event name.Such as `event`"
 
 
 class InitHelp():
