@@ -593,9 +593,10 @@ class Deploy(object):
             ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
                                                     testModelName=event_name, namespace=namespace)
             return
-
+        Operation("This event name exist in remote").warning()
         v = click.prompt(text="Do you want to cover remote event? (y/n)",
                          default="n", show_default=False)
-        if v:
+        if v and v in['y', 'Y']:
+            Operation('Covering event...').process()
             ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
                                                     testModelName=event_name, namespace=namespace)
