@@ -39,7 +39,7 @@ def check_version():
                 version_list = __version__.split(".")
                 r_version_list = r_version.split(".")
                 for i in range(0, len(version_list)):
-                    if r_version_list[i] > version_list[i]:
+                    if int(r_version_list[i]) > int(version_list[i]):
                         uc.set_attrs({'version_time': this_time})
                         uc.flush()
                         click.secho(click.style("""    ----------------------------------------------------
