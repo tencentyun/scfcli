@@ -450,9 +450,12 @@ class Package(object):
                     buff.name = zip_file_name
 
                 else:
+                    (filepath, filename) = os.path.split(func_path)
+                    if filepath:
+                        os.chdir(filepath)
 
                     with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
-                        zip_object.write(func_path)
+                        zip_object.write(filename)
 
                     os.chdir(cwd)
                     buff.seek(0)
@@ -523,6 +526,12 @@ class Deploy(object):
 
             if err.get_request_id():
                 err_msg += (u" RequestId: {}".format(err.get_request_id()))
+
+            if "函数已经存在" in s:
+                Operation("The function already exists.").warning()
+
+                Operation("You can be forced to deploy with the -f parameter (Upgrade) : scf deploy %s -f" % func_name) \
+                    .warning()
             raise CloudAPIException(err_msg)
 
         Operation("Deploy function '{name}' success".format(name=func_name)).success()
