@@ -44,7 +44,7 @@ def check_version():
                         uc.flush()
                         click.secho(click.style("""    ----------------------------------------------------
     |                  Upgrade reminder                |
-    | Latest version：%s   ,  Your version:   %s |
+    | Latest version：%s   ,  Your version:  %s |
     | If you want to upgrade, you can use the command: |
     |""" % (r_version, __version__), fg="green") +
                                     click.style("                 pip install -U scf               ", fg="yellow") +
