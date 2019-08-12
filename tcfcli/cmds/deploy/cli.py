@@ -632,15 +632,13 @@ class Deploy(object):
                 else:
                     Operation(" " * num + "%s: %s" % (str(eveKey), str(eveValue))).out_infor()
 
-    def trigger_upgrade_message(self, temp_trigger, eve_timer, input_data_status=1):
+    def trigger_upgrade_message(self, temp_trigger, eve_event):
 
-        if input_data_status == 1:
-            click.secho("[!] Do you want to update this Timer trigger?", fg="cyan")
-        elif input_data_status == 2:
+        if not self.update_event:
             msg = "The %s Event %s in the Yaml file is inconsistent with Release. Please check it." % (
                 str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
             Operation(msg).warning()
-        elif input_data_status == 3:
+        else:
             msg = "The %s Event %s in the Yaml file is inconsistent with Release." % (
                 str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
             Operation(msg).warning()
@@ -648,20 +646,13 @@ class Deploy(object):
         click.secho("[+] This Information: ", fg="cyan")
         self.recursion_dict(temp_trigger, 0)
         click.secho("[+] Release Information: ", fg="cyan")
-        self.recursion_dict(eve_timer, 0)
+        self.recursion_dict(eve_event, 0)
 
-        if input_data_status == 1:
-            click.secho("[1] Skip this upgrade; ", fg="cyan")
-            click.secho("[2] Modify this trigger; ", fg="cyan")
-        elif input_data_status == 2:
+        if not self.update_event:
             msg = "This time will skip the modification of the departure."
             msg = msg + " If you want to upgrade all changed events by default,"
             msg = msg + " you can add the parameter --update-event. Like: scf deeploy --update-event"
             Operation(msg).information()
-
-        if input_data_status == 1:
-            input_data = click.prompt(click.style("Please enter your choice (1/2, default: 1)", fg="cyan"))
-            return input_data
 
     def do_deploy(self, event, event_name):
         for ns in self.resources:
@@ -746,62 +737,59 @@ class Deploy(object):
                 try:
                     event_type = str(events[trigger]['Type']).lower()
                     temp_trigger = events[trigger].copy()
+
                     if event_type == "timer":
                         temp_trigger['TriggerName'] = trigger
+
                     for eve_event in trigger_release[str(events[trigger]['Type']).lower()]:
                         eve_event_infor = eve_event.copy()
                         eve_event_infor.pop("TriggerDesc", eve_event_infor)
                         change_infor = False
+                        tproperty = temp_trigger['Properties']
+                        eproperty = eve_event['Properties']
+
                         if event_type == "timer":
                             if temp_trigger['TriggerName'] == eve_event['TriggerName']:
                                 change_infor = True
                         elif event_type == "apigw":
-                            if temp_trigger['Properties']['ServiceId'] == eve_event['Properties']['ServiceId']:
+                            if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty['StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "ckafka":
-                            temp = temp_trigger['Properties']['Name'] + "-" + temp_trigger['Properties']['Topic']
-                            eve = eve_event['Properties']['Name'] + "-" + eve_event['Properties']['Topic']
-                            if temp == eve:
+                            if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty['Topic']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cmq":
-                            if temp_trigger['Properties']['Name'] == eve_event['Properties']['Name']:
+                            if tproperty['Name'] == eproperty['Name']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cos":
-                            if temp_trigger['Properties']['Bucket'] == eve_event['Properties']['Bucket'] and \
-                                    temp_trigger['Properties']['Events'] == eve_event['Properties']['Events']:
+                            if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty['Events']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
+
                         if change_infor:
                             if temp_trigger == eve_event_infor:
                                 trigger_status = False
                                 Operation(msg).warning()
+
                             else:
-
-                                # input_data = "2" if self.update_event else self.trigger_upgrade_message(
-                                #     temp_trigger, eve_event)
                                 if self.update_event:
-                                    self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=3)
-                                else:
-                                    self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=2)
-
-                                input_data = "2" if self.update_event else "1"
-
-                                if input_data != "2":
-                                    trigger_status = False
-                                else:
+                                    self.trigger_upgrade_message(temp_trigger, eve_event_infor)
                                     eve_event["Properties"].pop("Enable", eve_event["Properties"])
                                     err = ScfClient(region).remove_trigger(eve_event, func_name, func_ns)
                                     if not err:
                                         Operation("The trigger is being redeployed.").warning()
                                     else:
+                                        trigger_status = False
                                         err_msg = "The redeployment trigger failed. Please manually delete the trigger and redeploy."
                                         Operation(err_msg).warning()
-                                        trigger_status = False
+                                else:
+                                    trigger_status = False
+                                    self.trigger_upgrade_message(temp_trigger, eve_event_infor)
                             break
-                except:
+                except Exception as e:
+                    print(e)
                     pass
 
                 # if temp_trigger in trigger_release[str(events[trigger]['Type']).lower()]:
@@ -824,8 +812,6 @@ class Deploy(object):
                         msg = "Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )
                         Operation(msg).warning()
                 Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
-        # if hasError is not None:
-        #     sys.exit(1)
 
     def _do_deploy_testmodel(self, functionName, event, event_name, namespace, region):
         try:
