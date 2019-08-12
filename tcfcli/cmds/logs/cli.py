@@ -91,8 +91,7 @@ def logs(name, namespace, region, count, start_time, end_time, duration, failed,
             start, end = _align_time(start_time, end_time, duration)
         client = ScfLogClient(name, namespace, region, failed)
         if tail and count:
-            client.fetch_log_tail_c(start.strftime(TM_FORMAT),
-                                    end.strftime(TM_FORMAT), count, tail)
+            client.fetch_log_tail_c(start.strftime(TM_FORMAT), end.strftime(TM_FORMAT), count, tail)
             return
         if not count:
             count = 10000  # cloudapi limit
