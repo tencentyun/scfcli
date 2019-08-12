@@ -219,6 +219,26 @@ class ScfClient(object):
         resp = self._client.CreateTrigger(req)
         # Operation(resp.to_json_string()).process()
 
+    def delete_trigger(self, trigger, name, func_name, func_ns):
+        req = models.CreateTriggerRequest()
+        req.Namespace = func_ns
+        req.FunctionName = func_name
+        req.TriggerName = name
+        trigger_type = trigger.get(tsmacro.Type, "")
+        req.Type = trigger_type.lower()
+        proper = trigger.get(tsmacro.Properties, {})
+        if trigger_type == tsmacro.TrCOS and trmacro.Bucket in proper:
+            req.TriggerName = proper[trmacro.Bucket]
+        if trigger_type in [tsmacro.TrCMQ] and trmacro.Name in proper:
+            req.TriggerName = proper[trmacro.Name]
+        if trigger_type in [tsmacro.TrCKafka] and trmacro.Name in proper:
+            req.TriggerName = proper[trmacro.Name] + "-" + proper.get(trmacro.Topic)
+        self._fill_trigger_req_desc(req, trigger_type, proper)
+        print(req)
+        # click.secho(str(req))
+        resp = self._client.DeleteTrigger(req)
+        # Operation(resp.to_json_string()).process()
+
     def get_ns(self, namespace):
         try:
             resp = self._client_ext.ListNamespaces()
@@ -339,6 +359,13 @@ class ScfClient(object):
             self.create_trigger(trigger, name, func_name, func_ns)
         except TencentCloudSDKException as err:
             return err
+
+    def remove_trigger(self, trigger, name, func_name, func_ns):
+        try:
+            self.delete_trigger(trigger, name, func_name, func_ns)
+        except TencentCloudSDKException as err:
+            return err
+
 
     def deploy(self, func, func_name, func_ns, forced):
         err = self.deploy_func(func, func_name, func_ns, forced)

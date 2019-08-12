@@ -646,7 +646,7 @@ class CosClient(object):
             这里可以考虑使用head_bucket(Bucket)，但是目前这个方法异常：qcloud_cos.cos_exception.CosServiceError / 2019-07-28
             后期这个方法恢复，可以作为一个优化点，对该部分进行优化。
         :param bucket: str  bucket名称
-        :return: 0表示找到了指定Region的Bucket，-1表示没找到，error表示错误
+        :return: 1表示找到了指定Region的Bucket，0表示没找到，error表示错误
         '''
         try:
             temp_data = self.get_bucket_list()
@@ -654,8 +654,8 @@ class CosClient(object):
                 bucket_list = temp_data[1]
                 for eve_bucket in bucket_list:
                     if eve_bucket["Location"] == self._region and eve_bucket["Name"] == bucket:
-                        return 0
-                return -1
+                        return 1
+                return 0
             else:
                 error = temp_data[1]
                 return error
