@@ -773,7 +773,7 @@ class Deploy(object):
                                 change_infor = True
                         elif event_type == "cos":
                             if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty[
-                                'Events']:
+                                'Events'] and tproperty['Filter'] == eproperty['Filter']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
 
