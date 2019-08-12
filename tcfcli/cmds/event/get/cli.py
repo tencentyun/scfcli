@@ -43,12 +43,12 @@ class Get(object):
 def get(region, namespace, name, event):
     '''
     \b
-    Execute your scf in a environment natively.
+    Get a SCF function event.
     \b
     Common usage:
         \b
-        * Startup function runs locally
-          $ scf event get -n test  --event event
+        * Get a function event
+          $ scf event get --name test  --event event
     '''
     Get.do_cli(region, namespace, name, event)
 

@@ -17,7 +17,7 @@ class List(object):
         List.show(region, namespace, name)
 
     @staticmethod
-    def show(region, namespace,name):
+    def show(region, namespace, name):
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
         if not region:
@@ -53,12 +53,12 @@ class List(object):
 def list(region, namespace, name):
     """
         \b
-        Show the SCF event list.
+        Show the SCF function event list.
         \b
         Common usage:
         \b
-            * All function in ap-guangzhou
-              $ scf event list --region ap-guangzhou --name test
+            * All function Events of Function1
+              $ scf event list --name Function1
     """
     List.do_cli(region, namespace, name)
 

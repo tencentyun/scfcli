@@ -65,7 +65,7 @@ def list(region, namespace):
         \b
         Common usage:
         \b
-            * All function in ap-guangzhou
-              $ scf function list --region ap-guangzhou
+            * All function in ap-guangzhou and in namespace default
+              $ scf function list --region ap-guangzhou --namespace default
     """
     List.do_cli(region, namespace)

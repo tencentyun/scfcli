@@ -8,6 +8,18 @@ from tcfcli.help.message import FunctionHelp as help
 
 @click.group(name='function', short_help=help.SHORT_HELP)
 def function():
+    '''
+        \b
+        Scf remote function manage.
+        \b
+        Common usage:
+            \b
+            * Show the SCF function list
+              $ scf function list
+            \b
+            * Delete a function
+              $ scf function delete --name functionname --region ap-guangzhou --namespace default
+    '''
     pass
 
 
