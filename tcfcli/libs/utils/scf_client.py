@@ -220,7 +220,6 @@ class ScfClient(object):
         # Operation(resp.to_json_string()).process()
 
     def delete_trigger(self, trigger, func_name, func_ns):
-        print(trigger)
         req = models.DeleteTriggerRequest()
         req.Namespace = func_ns
         req.FunctionName = func_name

@@ -632,26 +632,34 @@ class Deploy(object):
                 else:
                     Operation(" " * num + "%s: %s" % (str(eveKey), str(eveValue))).out_infor()
 
-    def trigger_upgrade_message(self, temp_trigger, eve_timer, input_data_status=True):
-        if input_data_status:
+    def trigger_upgrade_message(self, temp_trigger, eve_timer, input_data_status=1):
+
+        if input_data_status == 1:
             click.secho("[!] Do you want to update this Timer trigger?", fg="cyan")
-        else:
+        elif input_data_status == 2:
             msg = "The %s Event %s in the Yaml file is inconsistent with Release. Please check it." % (
                 str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
             Operation(msg).warning()
+        elif input_data_status == 3:
+            msg = "The %s Event %s in the Yaml file is inconsistent with Release." % (
+                str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
+            Operation(msg).warning()
+
         click.secho("[+] This Information: ", fg="cyan")
         self.recursion_dict(temp_trigger, 0)
         click.secho("[+] Release Information: ", fg="cyan")
         self.recursion_dict(eve_timer, 0)
-        if input_data_status:
+
+        if input_data_status == 1:
             click.secho("[1] Skip this upgrade; ", fg="cyan")
             click.secho("[2] Modify this trigger; ", fg="cyan")
-        else:
+        elif input_data_status == 2:
             msg = "This time will skip the modification of the departure."
             msg = msg + " If you want to upgrade all changed events by default,"
             msg = msg + " you can add the parameter --update-event. Like: scf deeploy --update-event"
             Operation(msg).information()
-        if input_data_status:
+
+        if input_data_status == 1:
             input_data = click.prompt(click.style("Please enter your choice (1/2, default: 1)", fg="cyan"))
             return input_data
 
@@ -774,8 +782,13 @@ class Deploy(object):
 
                                 # input_data = "2" if self.update_event else self.trigger_upgrade_message(
                                 #     temp_trigger, eve_event)
-                                self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=False)
+                                if self.update_event:
+                                    self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=3)
+                                else:
+                                    self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=2)
+
                                 input_data = "2" if self.update_event else "1"
+
                                 if input_data != "2":
                                     trigger_status = False
                                 else:
