@@ -42,7 +42,7 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--history', is_flag=True, default=False, help=help.HISTORY)
 @click.option('--event', '-e', type=str, help=help.EVENT)
 @click.option('--event-name', '-en', type=str, help=help.EVENT_NAME)
-@click.option('--update-event', is_flag=True, default=False, help=help.UPDATE_EVENT)
+@click.option('--update-event', '-ue', is_flag=True, default=False, help=help.UPDATE_EVENT)
 def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, event,
            event_name, update_event):
     '''
@@ -59,6 +59,12 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
             \b
             * Package the configuration file, and specify the COS bucket as "temp-code-1253970226"
               $ scf deploy --cos-bucket temp-code-1253970226
+            \b
+            * Deploy history package
+              $ scf deploy --history
+            \b
+            * Upgrade the function and urgrade events
+              $ scf deploy -f -ue
     '''
 
     if region and region not in REGIONS:
@@ -752,11 +758,13 @@ class Deploy(object):
                             if temp_trigger['TriggerName'] == eve_event['TriggerName']:
                                 change_infor = True
                         elif event_type == "apigw":
-                            if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty['StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
+                            if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty[
+                                'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "ckafka":
-                            if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty['Topic']:
+                            if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty[
+                                'Topic']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cmq":
@@ -764,7 +772,8 @@ class Deploy(object):
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cos":
-                            if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty['Events']:
+                            if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty[
+                                'Events']:
                                 eve_event_infor.pop("TriggerName")
                                 change_infor = True
 
