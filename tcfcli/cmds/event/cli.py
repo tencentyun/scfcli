@@ -8,9 +8,18 @@ from tcfcli.help.message import EventHelp as help
 
 @click.group(name='event', short_help=help.SHORT_HELP)
 def event():
-    """
-
-    """
+    '''
+        \b
+        Scf remote function event manage.
+        \b
+        Common usage:
+            \b
+            * Show the SCF function event list
+              $ scf event list --name Function1
+            \b
+            * Get a function event
+              $ scf event get --name test  --event event
+    '''
     pass
 
 
