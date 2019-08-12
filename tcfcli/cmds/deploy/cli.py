@@ -718,7 +718,7 @@ class Deploy(object):
             if "函数已经存在" in s:
                 Operation("The function already exists.").warning()
                 Operation(
-                    "you can add -f, --force to update the function when it already exists. Example : scf deploy -f").warning()
+                    "You can add -f, --force to update the function when it already exists. Example : scf deploy -f").warning()
             raise CloudAPIException(err_msg)
 
         Operation("Deploy function '{name}' success".format(name=func_name)).success()
