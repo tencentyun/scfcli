@@ -198,16 +198,18 @@ class Function(object):
                                     'Enable': True if eve_trigger['Enable'] == 1 else False
                                 },
                                 'TriggerName': eve_trigger['TriggerName'],
+                                "TriggerDesc": trigger_desc,
                             })
                         elif eve_trigger['Type'] == "apigw":
                             trigger[eve_trigger['Type']].append({
-                                # 'TriggerName': eve_trigger['TriggerName'],
+                                'TriggerName': eve_trigger['TriggerName'],
                                 'Type': 'APIGW',
                                 'Properties': {
                                     'StageName': trigger_desc["release"]["environmentName"],
                                     'ServiceId': trigger_desc['service']['serviceId'],
                                     'HttpMethod': trigger_desc["api"]["requestConfig"]["method"],
-                                }
+                                },
+                                "TriggerDesc": trigger_desc
                             })
                         elif eve_trigger['Type'] == "ckafka":
                             temp_list = str(eve_trigger['TriggerName']).split("-")
@@ -215,7 +217,7 @@ class Function(object):
                             topic = "-".join(temp_list[2:])
                             trigger_desc = json.loads(trigger_desc)
                             trigger[eve_trigger['Type']].append({
-                                # 'TriggerName': eve_trigger['TriggerName'],
+                                'TriggerName': eve_trigger['TriggerName'],
                                 'Type': 'APIGW',
                                 'Properties': {
                                     'Name': name,
@@ -223,11 +225,12 @@ class Function(object):
                                     'MaxMsgNum': trigger_desc["maxMsgNum"],
                                     'Offset': trigger_desc["offset"],
                                     'Enable': True if eve_trigger['Enable'] == 1 else False,
-                                }
+                                },
+                                "TriggerDesc": trigger_desc
                             })
                         elif eve_trigger['Type'] == "cos":
                             trigger[eve_trigger['Type']].append({
-                                # 'TriggerName': eve_trigger['TriggerName'],
+                                'TriggerName': eve_trigger['TriggerName'],
                                 'Type': 'COS',
                                 'Properties': {
                                     'Bucket': eve_trigger['TriggerName'],
@@ -237,15 +240,17 @@ class Function(object):
                                         'Suffix': trigger_desc["filter"]["Suffix"],
                                     },
                                     'Enable': True if eve_trigger['Enable'] == 1 else False,
-                                }
+                                },
+                                "TriggerDesc": trigger_desc
                             })
                         elif eve_trigger['Type'] == "cmq":
                             trigger[eve_trigger['Type']].append({
-                                # 'TriggerName': eve_trigger['TriggerName'],
+                                'TriggerName': eve_trigger['TriggerName'],
                                 'Type': 'CMQ',
                                 'Properties': {
                                     'Name': eve_trigger['TriggerName'],
-                                }
+                                },
+                                "TriggerDesc": trigger_desc
                             })
 
                     except Exception as e:
@@ -627,16 +632,28 @@ class Deploy(object):
                 else:
                     Operation(" " * num + "%s: %s" % (str(eveKey), str(eveValue))).out_infor()
 
-    def trigger_upgrade_message(self, temp_trigger, eve_timer):
-        click.secho("[>] Do you want to update this Timer trigger?", fg="cyan")
+    def trigger_upgrade_message(self, temp_trigger, eve_timer, input_data_status=True):
+        if input_data_status:
+            click.secho("[!] Do you want to update this Timer trigger?", fg="cyan")
+        else:
+            msg = "The %s Event %s in the Yaml file is inconsistent with Release. Please check it." % (
+                str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
+            Operation(msg).warning()
         click.secho("[+] This Information: ", fg="cyan")
         self.recursion_dict(temp_trigger, 0)
         click.secho("[+] Release Information: ", fg="cyan")
         self.recursion_dict(eve_timer, 0)
-        click.secho("[1] Skip this upgrade; ", fg="cyan")
-        click.secho("[2] Modify this trigger; ", fg="cyan")
-        input_data = click.prompt(click.style("Please enter your choice (1/2, default: 1)", fg="cyan"))
-        return input_data
+        if input_data_status:
+            click.secho("[1] Skip this upgrade; ", fg="cyan")
+            click.secho("[2] Modify this trigger; ", fg="cyan")
+        else:
+            msg = "This time will skip the modification of the departure."
+            msg = msg + " If you want to upgrade all changed events by default,"
+            msg = msg + " you can add the parameter --update-event. Like: scf deeploy --update-event"
+            Operation(msg).information()
+        if input_data_status:
+            input_data = click.prompt(click.style("Please enter your choice (1/2, default: 1)", fg="cyan"))
+            return input_data
 
     def do_deploy(self, event, event_name):
         for ns in self.resources:
@@ -720,43 +737,50 @@ class Deploy(object):
             if trigger_release:
                 try:
                     event_type = str(events[trigger]['Type']).lower()
-                    temp_trigger = events[trigger]
+                    temp_trigger = events[trigger].copy()
                     if event_type == "timer":
                         temp_trigger['TriggerName'] = trigger
                     for eve_event in trigger_release[str(events[trigger]['Type']).lower()]:
+                        eve_event_infor = eve_event.copy()
+                        eve_event_infor.pop("TriggerDesc", eve_event_infor)
                         change_infor = False
                         if event_type == "timer":
                             if temp_trigger['TriggerName'] == eve_event['TriggerName']:
                                 change_infor = True
                         elif event_type == "apigw":
                             if temp_trigger['Properties']['ServiceId'] == eve_event['Properties']['ServiceId']:
+                                eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "ckafka":
                             temp = temp_trigger['Properties']['Name'] + "-" + temp_trigger['Properties']['Topic']
                             eve = eve_event['Properties']['Name'] + "-" + eve_event['Properties']['Topic']
                             if temp == eve:
+                                eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cmq":
                             if temp_trigger['Properties']['Name'] == eve_event['Properties']['Name']:
+                                eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         elif event_type == "cos":
                             if temp_trigger['Properties']['Bucket'] == eve_event['Properties']['Bucket'] and \
                                     temp_trigger['Properties']['Events'] == eve_event['Properties']['Events']:
+                                eve_event_infor.pop("TriggerName")
                                 change_infor = True
                         if change_infor:
-                            if temp_trigger == eve_event:
+                            if temp_trigger == eve_event_infor:
                                 trigger_status = False
                                 Operation(msg).warning()
                             else:
-                                input_data = "2" if self.update_event else self.trigger_upgrade_message(
-                                    temp_trigger, eve_event)
+
+                                # input_data = "2" if self.update_event else self.trigger_upgrade_message(
+                                #     temp_trigger, eve_event)
+                                self.trigger_upgrade_message(temp_trigger, eve_event, input_data_status=False)
+                                input_data = "2" if self.update_event else "1"
                                 if input_data != "2":
                                     trigger_status = False
-                                    Operation("You have skipped the modification of the departure.").warning()
                                 else:
-                                    eve_event["Properties"] = eve_event["Properties"].pop("Enable",
-                                                                                          eve_event["Properties"])
-                                    err = ScfClient(region).remove_trigger(eve_event, trigger, func_name, func_ns)
+                                    eve_event["Properties"].pop("Enable", eve_event["Properties"])
+                                    err = ScfClient(region).remove_trigger(eve_event, func_name, func_ns)
                                     if not err:
                                         Operation("The trigger is being redeployed.").warning()
                                     else:

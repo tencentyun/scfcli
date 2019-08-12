@@ -219,22 +219,15 @@ class ScfClient(object):
         resp = self._client.CreateTrigger(req)
         # Operation(resp.to_json_string()).process()
 
-    def delete_trigger(self, trigger, name, func_name, func_ns):
-        req = models.CreateTriggerRequest()
+    def delete_trigger(self, trigger, func_name, func_ns):
+        print(trigger)
+        req = models.DeleteTriggerRequest()
         req.Namespace = func_ns
         req.FunctionName = func_name
-        req.TriggerName = name
-        trigger_type = trigger.get(tsmacro.Type, "")
-        req.Type = trigger_type.lower()
-        proper = trigger.get(tsmacro.Properties, {})
-        if trigger_type == tsmacro.TrCOS and trmacro.Bucket in proper:
-            req.TriggerName = proper[trmacro.Bucket]
-        if trigger_type in [tsmacro.TrCMQ] and trmacro.Name in proper:
-            req.TriggerName = proper[trmacro.Name]
-        if trigger_type in [tsmacro.TrCKafka] and trmacro.Name in proper:
-            req.TriggerName = proper[trmacro.Name] + "-" + proper.get(trmacro.Topic)
-        self._fill_trigger_req_desc(req, trigger_type, proper)
-        print(req)
+        req.TriggerName = trigger["TriggerName"]
+        req.Type = str(trigger["Type"]).lower()
+        req.Qualifier = "$LATEST"
+        req.TriggerDesc = json.dumps(trigger["TriggerDesc"])
         # click.secho(str(req))
         resp = self._client.DeleteTrigger(req)
         # Operation(resp.to_json_string()).process()
@@ -306,7 +299,8 @@ class ScfClient(object):
 
     def get_func_testmodel(self, functionName, testModelName, namespace):
         try:
-            resp = self._client_ext.GetFunctionTestModel(functionName=functionName, testModelName=testModelName, namespace=namespace)
+            resp = self._client_ext.GetFunctionTestModel(functionName=functionName, testModelName=testModelName,
+                                                         namespace=namespace)
             return resp
         except TencentCloudSDKException as err:
             if sys.version_info[0] == 3:
@@ -360,12 +354,11 @@ class ScfClient(object):
         except TencentCloudSDKException as err:
             return err
 
-    def remove_trigger(self, trigger, name, func_name, func_ns):
+    def remove_trigger(self, trigger, func_name, func_ns):
         try:
-            self.delete_trigger(trigger, name, func_name, func_ns)
+            self.delete_trigger(trigger, func_name, func_ns)
         except TencentCloudSDKException as err:
             return err
-
 
     def deploy(self, func, func_name, func_ns, forced):
         err = self.deploy_func(func, func_name, func_ns, forced)
@@ -516,7 +509,7 @@ class ScfClientExt(scf_client.ScfClient):
         except Exception as e:
             raise TCSDKException(str(e))
 
-    def GetFunctionTestModel(self, functionName,testModelName, namespace):
+    def GetFunctionTestModel(self, functionName, testModelName, namespace):
         try:
             request = {
                 'FunctionName': functionName,
@@ -534,6 +527,7 @@ class ScfClientExt(scf_client.ScfClient):
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
             raise TCSDKException(str(e))
+
 
 """
     def ListFunctions(self, namespace):
