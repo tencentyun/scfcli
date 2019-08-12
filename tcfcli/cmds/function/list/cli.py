@@ -17,10 +17,12 @@ class List(object):
 
     @staticmethod
     def show(region, namespace):
+        status = False
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
         if not region:
             region = UserConfig().region
+            status = True
 
         rep = ScfClient(region).get_ns(namespace)
         if not rep:
@@ -38,7 +40,10 @@ class List(object):
             click.secho("%-20s %-24s %-20s %-20s %-60s" % (function.Runtime, List.status(function.Status),
                                                            function.AddTime, function.ModTime,
                                                            function.FunctionName))
-        click.secho("\n")
+        # click.secho("\n")
+        if status:
+            msg = "If you want to get a list of more functions, you can specify the region and namespace. Like: scf function list --region ap-shanghai --namespace default"
+            Operation(msg).information()
 
     @staticmethod
     def status(status_name):
