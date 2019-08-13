@@ -6,11 +6,10 @@ from . import ScfBaseClient
 
 
 class ScfReportClient(ScfBaseClient):
-
     CLOUD_API_REQ_TIMEOUT = 3
+
     def __init__(self):
         super(ScfReportClient, self).__init__("ap-guangzhou")    
-
 
     def report(self):
         try:
