@@ -135,6 +135,14 @@ class PackageException(UserException):
     pass
 
 
+class EventFileNotFoundException(UserException):
+    pass
+
+
+class LoadEventFileException(UserException):
+    pass
+
+
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
         self._causes = sorted(causes)

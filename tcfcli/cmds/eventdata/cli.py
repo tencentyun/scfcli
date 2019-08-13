@@ -3,11 +3,12 @@
 import click
 from .list.cli import list
 from .get.cli import get
-from tcfcli.help.message import EventHelp as help
+from .update.cli import update
+from tcfcli.help.message import EventdataHelp as help
 
 
-@click.group(name='event', short_help=help.SHORT_HELP)
-def event():
+@click.group(name='eventdata', short_help=help.SHORT_HELP)
+def eventdata():
     '''
         \b
         Scf remote function event manage.
@@ -23,5 +24,6 @@ def event():
     pass
 
 
-event.add_command(list)
-event.add_command(get)
+eventdata.add_command(list)
+eventdata.add_command(get)
+eventdata.add_command(update)

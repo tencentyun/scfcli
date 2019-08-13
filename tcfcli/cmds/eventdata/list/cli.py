@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import click
-from tcfcli.help.message import EventHelp as help
+from tcfcli.help.message import EventdataHelp as help
 from tcfcli.common.operation_msg import Operation
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common.user_exceptions import *

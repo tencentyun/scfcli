@@ -25,7 +25,7 @@ from tcfcli.cmds.configure.cli import configure
 from tcfcli.cmds.native.cli import native
 from tcfcli.cmds.logs.cli import logs
 from tcfcli.cmds.function.cli import function
-from tcfcli.cmds.event.cli import event
+from tcfcli.cmds.eventdata.cli import eventdata
 
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
@@ -57,7 +57,7 @@ cli.add_command(validate)
 cli.add_command(logs)
 cli.add_command(local)
 cli.add_command(function)
-cli.add_command(event)
+cli.add_command(eventdata)
 
 if __name__ == "__main__":
     cli()
