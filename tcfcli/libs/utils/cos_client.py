@@ -572,7 +572,7 @@ class CosClient(object):
                                                    'Content-Type': 'application/x-zip-compressed',
                                                })
             if not response['ETag']:
-                Operation(str(response)).warning()
+                # Operation(str(response)).warning()
                 raise UploadToCosFailed("Upload func package failed")
         except Exception as e:
             # error_msg = ""

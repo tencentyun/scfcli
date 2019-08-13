@@ -5,7 +5,6 @@ import sys
 import time
 import re
 import json
-import click
 from io import BytesIO
 import shutil
 import hashlib
