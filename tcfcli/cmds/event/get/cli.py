@@ -27,7 +27,6 @@ class Get(object):
         if not functions:
             raise FunctionNotFound("Region {r} namespace {n} not exist function {f}".format(r=region, n=namespace, f=name))
 
-
         testmodelvalue = ScfClient(region).get_func_testmodel(functionName=name, namespace=namespace, testModelName=event)
         if not testmodelvalue:
             raise NamespaceException("This function {f} not exist event {e} ".format(f=name, e=event))

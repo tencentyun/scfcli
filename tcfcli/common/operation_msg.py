@@ -3,7 +3,8 @@
 import click
 from builtins import str as text
 
-class Operation():
+
+class Operation(object):
     def __init__(self, message):
         self.message = message
 
