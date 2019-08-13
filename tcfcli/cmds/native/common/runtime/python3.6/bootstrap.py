@@ -63,6 +63,13 @@ def main():
     while True:
         invoke_info = runtime.wait_for_invoke()
         mode, sockfd, event, context = invoke_info.cmd, invoke_info.sockfd, invoke_info.event, invoke_info.context
+        #将用户的项目目录放入sys.path,防止用户引用目录下自定义的包模块报错
+        try:
+            file_path = (context.rsplit(':', 1)[0]+'.py')
+            file_dir_path = os.path.dirname(file_path)
+            sys.path.append(file_dir_path)
+        except Exception as e:
+            print (e)
         if mode == 'RELOAD':
             runtime.log('get reload request: %s' % context)
             http_handler, event_handler = init_handler(*(context.split(":")[-2:]))
