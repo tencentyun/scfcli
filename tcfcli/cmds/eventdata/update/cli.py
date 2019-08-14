@@ -86,28 +86,25 @@ class Update(object):
                                                     namespace=namespace)
         except:
             Operation("Updateing event {%s}..." % event_name).process()
-            #progress = ProgressBar()
-            #for i in progress(range(1)):
             ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
                                                         testModelName=event_name, namespace=namespace)
-
+            Operation("Event {%s} update success!" % event_name).success()
             return
 
-        Operation("This event {%s} exist in remote，Covering event..." % event_name).process()
+        Operation("Event {%s} exist in remote,updating event..." % event_name).process()
         # v = click.prompt(text="Do you want to cover remote event? (y/n)",
         #                  default="n", show_default=False)
         # if v and v in ['y', 'Y']:
-        #progress = ProgressBar()
-        #for i in progress(range(1)):
         ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
                                                 testModelName=event_name, namespace=namespace)
+        Operation("Event {%s} update success!" % event_name).success()
 
 
 @click.command(name='update', short_help=help.LIST_SHORT_HELP)
-@click.option('--region', '-r', help=help.REGION)
+@click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
-@click.option('--dir', '-d', type=str, default='.', help=help.DIR)
+@click.option('-d', '--dir', type=str, default='.', help=help.DIR)
 def update(region, namespace, name, dir):
     """
         \b

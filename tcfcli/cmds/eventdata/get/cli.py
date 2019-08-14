@@ -16,6 +16,7 @@ REGIONS = infor.REGIONS
 class Get(object):
     @staticmethod
     def do_cli(region, namespace, name, event, output_dir):
+        Get.checkpath(output_dir)
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
         if not region:
@@ -46,9 +47,19 @@ class Get(object):
             testmodelfilepath = os.path.join(output_dir, testmodelfilename)
              #(testmodelvaluelist[testmodel]['TestModelValue'])
             with open(testmodelfilepath, 'w') as f:
-                f.write(testmodelvaluelist[testmodel]['TestModelValue'])
                 Operation('Downloading event-data: {%s} ...' % (testmodel)).process()
+                f.write(testmodelvaluelist[testmodel]['TestModelValue'])
+                Operation('Download event-data: {%s} success' % (testmodel)).success()
             #     json.dump(testmodelvaluelist[testmodel], f)
+
+    @staticmethod
+    def checkpath(path):
+        if os.path.exists(path) and not os.path.isdir(path):
+            raise OutputDirNotFound("{%s} is not a dir" % path)
+
+        elif not os.path.exists(path):
+            os.makedirs(path)
+
 
 
 @click.command(name='get', short_help=help.GET_SHORT_HELP)

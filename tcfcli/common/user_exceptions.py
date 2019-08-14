@@ -143,6 +143,10 @@ class LoadEventFileException(UserException):
     pass
 
 
+class OutputDirNotFound(UserException):
+    pass
+
+
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
         self._causes = sorted(causes)
