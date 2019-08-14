@@ -40,8 +40,7 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
 @click.option('--history', is_flag=True, default=False, help=help.HISTORY)
 @click.option('--update-event', '-ue', is_flag=True, default=False, help=help.UPDATE_EVENT)
-def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, event,
-           event_name, update_event):
+def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, update_event):
     '''
         \b
         Scf cli completes the function package deployment through the deploy subcommand. The scf command line tool deploys the code package, function configuration, and other information specified in the configuration file to the cloud or updates the functions of the cloud according to the specified function template configuration file.
@@ -794,4 +793,3 @@ class Deploy(object):
                         msg = "Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )
                         Operation(msg).warning()
                 Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
-
