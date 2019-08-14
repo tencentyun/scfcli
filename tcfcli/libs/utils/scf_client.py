@@ -183,6 +183,7 @@ class ScfClient(object):
                 pass
             else:
                 return err
+        Operation(str(err)).warning()
         Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
         try:
             # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
@@ -190,9 +191,11 @@ class ScfClient(object):
             # self.update_service_config(func, func_name, func_ns)
             # self.update_service_code(func, func_name, func_ns)
             # else:
-            self.update_func_config(func, func_name, func_ns)
+            res = self.update_func_config(func, func_name, func_ns)
+            Operation(str(res))
             Operation("Update funcion config success.").process()
-            self.update_func_code(func, func_name, func_ns)
+            res = self.update_func_code(func, func_name, func_ns)
+            Operation(str(res))
             Operation("Update funcion code success.").process()
         except TencentCloudSDKException as err:
             return err
