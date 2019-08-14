@@ -191,7 +191,9 @@ class ScfClient(object):
             # self.update_service_code(func, func_name, func_ns)
             # else:
             self.update_func_config(func, func_name, func_ns)
+            Operation("Update funcion config success.").process()
             self.update_func_code(func, func_name, func_ns)
+            Operation("Update funcion code success.").process()
         except TencentCloudSDKException as err:
             return err
         return
