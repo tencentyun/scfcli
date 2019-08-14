@@ -104,6 +104,7 @@ class ScfClient(object):
         req.Timeout = proper.get(tsmacro.Timeout)
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
         req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
+        print(req)
         resp = self._client.UpdateFunctionConfiguration(req)
         return resp.to_json_string()
 
@@ -183,6 +184,8 @@ class ScfClient(object):
                 pass
             else:
                 return err
+        import time
+        time.sleep(2)
         Operation(str(err)).warning()
         Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
         try:
