@@ -95,17 +95,27 @@ class ScfClient(object):
         return resp.to_json_string()
 
     def update_func_config(self, func, func_name, func_ns):
+        print(1)
         req = models.UpdateFunctionConfigurationRequest()
+        print(2)
         req.Namespace = func_ns
+        print(3)
         req.FunctionName = func_name
+        print(4)
         proper = func.get(tsmacro.Properties, {})
+        print(5)
         req.Description = proper.get(tsmacro.Desc)
+        print(6)
         req.MemorySize = proper.get(tsmacro.MemSize)
+        print(7)
         req.Timeout = proper.get(tsmacro.Timeout)
+        print(8)
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
+        print(9)
         req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
         print(req)
         resp = self._client.UpdateFunctionConfiguration(req)
+        print(resp)
         return resp.to_json_string()
 
     def update_service_code(self, func, func_name, func_ns):
