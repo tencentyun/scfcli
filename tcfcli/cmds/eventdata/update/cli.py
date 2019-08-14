@@ -17,14 +17,14 @@ class Update(object):
     @staticmethod
     def get_event_from_file(path):
         if not path.endswith('.json'):
-            Operation(' Please check your json file name must endwith `.json`.')
+            Operation(' Please check your json file name must endwith `.json`.').warning()
             return None
         try:
             with click.open_file(path, 'r', encoding="utf-8") as f:
                 event = f.read()
                 json.loads(event)
         except Exception as e:
-            Operation(str(e) + ' Please check your json file format.')
+            Operation(str(e) + '\nPlease check your json file {%s} format.' % path ).warning()
             return None
 
         filefullname = os.path.split(path)[1]
@@ -36,24 +36,22 @@ class Update(object):
         eventdatalist = []
         if not os.path.exists(dir):
             raise EventFileNotFoundException("Event Dir Not Exists")
+
         elif os.path.isfile(dir):
             eventdata = Update.get_event_from_file(dir)
-            if not eventdata:
-                Operation("The file must be a json file,your file is %s." % dir).warning()
-                return
-            eventdatalist.append(eventdata)
+            if  eventdata:
+                eventdatalist.append(eventdata)
 
         elif os.path.isdir(dir):
             for path in os.listdir(dir):
-                if os.path.isdir(path):
-                    continue
-                elif os.path.isfile(path):
+                if os.path.isfile(path) and path.endswith('.json'):
                     eventdata = Update.get_event_from_file(path)
-                    if not eventdata:
-                        continue
-                    eventdatalist.append(eventdata)
-        Update.update_event_data(region=region, namespace=namespace, name=name,
-                                 eventdatalist=eventdatalist)
+                    if eventdata:
+                        eventdatalist.append(eventdata)
+
+        if len(eventdatalist):
+            Update.update_event_data(region=region, namespace=namespace, name=name,
+                                    eventdatalist=eventdatalist)
 
     @staticmethod
     def update_event_data(region, namespace, name, eventdatalist):
@@ -74,7 +72,6 @@ class Update(object):
         Operation("Region:%s" % (region)).process()
         Operation("Namespace:%s " % (namespace)).process()
         Operation("Function:%s " % (name)).process()
-        print (eventdatalist)
         for eventdata in eventdatalist:
             #eventdata = json.dumps(eventdata)
             Update.do_deploy_testmodel(functionName=name, event=list(eventdata.values())[0],
@@ -88,15 +85,20 @@ class Update(object):
             ScfClient(region).get_func_testmodel(functionName=functionName, testModelName=event_name,
                                                     namespace=namespace)
         except:
-            ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
-                                                    testModelName=event_name, namespace=namespace)
             Operation("Updateing event {%s}..." % event_name).process()
+            #progress = ProgressBar()
+            #for i in progress(range(1)):
+            ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
+                                                        testModelName=event_name, namespace=namespace)
+
             return
+
         Operation("This event {%s} exist in remote，Covering event..." % event_name).process()
         # v = click.prompt(text="Do you want to cover remote event? (y/n)",
         #                  default="n", show_default=False)
         # if v and v in ['y', 'Y']:
-
+        #progress = ProgressBar()
+        #for i in progress(range(1)):
         ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
                                                 testModelName=event_name, namespace=namespace)
 
