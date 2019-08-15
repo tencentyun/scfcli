@@ -191,7 +191,7 @@ class FunctionHelp():
 
 class EventdataHelp():
     # Function Help Message
-    DIR ="The eventdata dir."
+    DIR ="The local eventdata dir."
     SHORT_HELP = "Manage SCF remote event resource."
     LIST_SHORT_HELP = "Show the SCF event list."
     GET_SHORT_HELP = "Get SCF event from remote."
