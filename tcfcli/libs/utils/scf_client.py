@@ -170,6 +170,17 @@ class ScfClient(object):
         return resp.to_json_string()
 
     def deploy_func(self, func, func_name, func_ns, forced):
+        '''
+
+        :param func:
+        :param func_name:
+        :param func_ns:
+        :param forced:
+        :return: 0 : success
+                 1 : error in-use
+                 2 : only in-use
+                 e : error
+        '''
         try:
             # SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
             # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
@@ -177,31 +188,28 @@ class ScfClient(object):
             # self.create_service(func, func_name, func_ns)
             # else:
             self.create_func(func, func_name, func_ns)
-            return
+            return 0
         except TencentCloudSDKException as err:
-            if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"] and forced:
-                pass
+            if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
+                return 1 if forced else 2
             else:
                 return err
-        # import time
-        # time.sleep(2)
-        # Operation(str(err)).warning()
-        Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
+
+    def update_config(self, func, func_name, func_ns):
         try:
-            # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-            # func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-            # self.update_service_config(func, func_name, func_ns)
-            # self.update_service_code(func, func_name, func_ns)
-            # else:
-            res = self.update_func_config(func, func_name, func_ns)
-            # Operation(str(res))
-            Operation("Update funcion config success.").process()
-            res = self.update_func_code(func, func_name, func_ns)
-            # Operation(str(res))
-            Operation("Update funcion code success.").process()
+            self.update_func_config(func, func_name, func_ns)
+            Operation("Update funcion config success.").success()
+            return True
         except TencentCloudSDKException as err:
             return err
-        return
+
+    def update_code(self, func, func_name, func_ns):
+        try:
+            self.update_func_code(func, func_name, func_ns)
+            Operation("Update funcion code success.").success()
+            return True
+        except TencentCloudSDKException as err:
+            return err
 
     def create_trigger(self, trigger, name, func_name, func_ns):
         req = models.CreateTriggerRequest()

@@ -481,6 +481,8 @@ class Package(object):
                 except Exception as e:
                     cos_bucket_status = e
 
+            # cos_bucket_status = 2
+
             if cos_bucket_status not in (0, 1):
                 size_infor = self.file_size_infor(file_size)
                 if size_infor == -1:
@@ -678,12 +680,28 @@ class Deploy(object):
                     s = err.get_message().encode("UTF-8")
                 raise NamespaceException("Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s))
 
-        err = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
-        if err is not None:
-            # if sys.version_info[0] == 3:
+        deploy_result = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
+
+        if deploy_result == 1:
+            Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
+            deploy_result = ScfClient(region).update_config(func, func_name, func_ns)
+            if deploy_result == True:
+                deploy_result = ScfClient(region).update_code(func, func_name, func_ns)
+                deploy_result = 0 if deploy_result == True else deploy_result
+
+        if deploy_result == 0:
+            Operation("Deploy function '{name}' success".format(name=func_name)).success()
+            if not skip_event:
+                self._do_deploy_trigger(func, func_name, func_ns, region, trigger_release)
+            return
+
+        elif deploy_result == 2:
+            Operation("You can add -f to update the function when it already exists. Example : scf deploy -f").warning()
+            raise CloudAPIException("The function already exists.")
+
+        if deploy_result != None:
+            err = deploy_result
             s = err.get_message()
-            # else:
-            #    s = err.get_message().encode("UTF-8")
             if sys.version_info[0] == 2 and isinstance(s, str):
                 s = s.encode("utf8")
             err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
@@ -691,16 +709,7 @@ class Deploy(object):
             if err.get_request_id():
                 err_msg += (u" RequestId: {}".format(err.get_request_id()))
 
-            if "函数已经存在" in s:
-                Operation("The function already exists.").warning()
-                Operation(
-                    "You can add -f, --force to update the function when it already exists. Example : scf deploy -f").warning()
             raise CloudAPIException(err_msg)
-
-        Operation("Deploy function '{name}' success".format(name=func_name)).success()
-
-        if not skip_event:
-            self._do_deploy_trigger(func, func_name, func_ns, region, trigger_release)
 
     def _do_deploy_trigger(self, func, func_name, func_ns, region=None, trigger_release=None):
 

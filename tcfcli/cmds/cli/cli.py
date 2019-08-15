@@ -40,7 +40,7 @@ def cli():
           * Documentation https://cloud.tencent.com/document/product/583/33445?from=cli
         \b
         If you have any questions, you could give us issues on Github.
-          * Github  https://github.com/tencentyun/scfcl
+          * Github  https://github.com/tencentyun/scfcli
     '''
     pass
 
