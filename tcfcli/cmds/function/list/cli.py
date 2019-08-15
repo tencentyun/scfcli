@@ -56,7 +56,7 @@ class List(object):
 
 
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
-@click.option('--region', '-r', help=help.REGION)
+@click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 def list(region, namespace):
     """

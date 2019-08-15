@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import click
 from tcfcli.help.message import EventdataHelp as help
 from tcfcli.common.operation_msg import Operation
 from tcfcli.libs.utils.scf_client import ScfClient
@@ -8,7 +7,6 @@ from tcfcli.common.user_exceptions import *
 from tcfcli.common.user_config import UserConfig
 import tcfcli.common.base_infor as infor
 import os
-import json
 
 REGIONS = infor.REGIONS
 
@@ -75,7 +73,7 @@ class Get(object):
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
 @click.option('-d', '--output-dir', default='scf_event_data', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
-@click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
+@click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED)
 def get(region, namespace, name, event, output_dir, forced):
     '''
     \b

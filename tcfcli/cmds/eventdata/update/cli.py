@@ -38,7 +38,7 @@ class Update(object):
 
         elif os.path.isfile(dir):
             eventdata = Update.get_event_from_file(dir)
-            if  eventdata:
+            if eventdata:
                 eventdatalist.append(eventdata)
 
         elif os.path.isdir(dir):
