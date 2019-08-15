@@ -15,7 +15,7 @@ REGIONS = infor.REGIONS
 
 class Get(object):
     @staticmethod
-    def do_cli(region, namespace, name, event, output_dir):
+    def do_cli(region, namespace, name, event, output_dir, forced):
         Get.checkpath(output_dir)
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
@@ -42,15 +42,23 @@ class Get(object):
                                                                       testModelName=testmodel)
                 testmodelvaluelist[testmodel] = testmodelvalue
 
+        flag = False
         for testmodel in testmodelvaluelist:
             testmodelfilename = testmodel+'.json'
             testmodelfilepath = os.path.join(output_dir, testmodelfilename)
-             #(testmodelvaluelist[testmodel]['TestModelValue'])
-            with open(testmodelfilepath, 'w') as f:
-                Operation('Downloading event-data: {%s} ...' % (testmodel)).process()
-                f.write(testmodelvaluelist[testmodel]['TestModelValue'])
-                Operation('Download event-data: {%s} success' % (testmodel)).success()
-            #     json.dump(testmodelvaluelist[testmodel], f)
+            if os.path.exists(testmodelfilepath) and os.path.isfile(testmodelfilepath) and not forced:
+                Operation('Event-data: {%s} exists in local.' % (testmodelfilename)).process()
+                flag = True
+                continue
+            try:
+                with open(testmodelfilepath, 'w') as f:
+                    Operation('Downloading event-data: {%s} ...' % (testmodel)).process()
+                    f.write(testmodelvaluelist[testmodel]['TestModelValue'])
+                    Operation('Download event-data: {%s} success' % (testmodel)).success()
+            except:
+                    Operation('Download event-data: {%s} failed' % (testmodel)).exception()
+        if flag:
+            Operation('If you want to cover local eventdata.Please use by option -f').warning()
 
     @staticmethod
     def checkpath(path):
@@ -67,7 +75,8 @@ class Get(object):
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
 @click.option('-d', '--output-dir', default='scf_event_data', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
-def get(region, namespace, name, event, output_dir):
+@click.option('--forced', '-f', is_flag=True, default=False, help=help.FORCED)
+def get(region, namespace, name, event, output_dir, forced):
     '''
     \b
     Get a SCF function event.
@@ -77,6 +86,6 @@ def get(region, namespace, name, event, output_dir):
         * Get a function event
           $ scf eventdata get --name test  --event event
     '''
-    Get.do_cli(region, namespace, name, event, output_dir)
+    Get.do_cli(region, namespace, name, event, output_dir, forced)
 
 

@@ -25,3 +25,6 @@ class Operation(object):
 
     def out_infor(self):
         click.secho(click.style("    ") + click.style(u' %s' % text(self.format_message()), fg="cyan"))
+
+    def exception(self):
+        click.secho(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"))
