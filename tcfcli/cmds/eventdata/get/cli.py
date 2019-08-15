@@ -45,7 +45,7 @@ class Get(object):
             testmodelfilename = testmodel+'.json'
             testmodelfilepath = os.path.join(output_dir, testmodelfilename)
             if os.path.exists(testmodelfilepath) and os.path.isfile(testmodelfilepath) and not forced:
-                Operation('Event-data: {%s} exists in local.' % (testmodelfilepath)).process()
+                Operation('Event-data: {%s} exists in local.' % (testmodelfilepath)).exception()
                 flag = True
                 continue
             try:
@@ -56,7 +56,7 @@ class Get(object):
             except:
                     Operation('Download event-data: {%s} failed' % (testmodel)).exception()
         if flag:
-            Operation('If you want to cover local eventdata.You can use commond with option -f').warning()
+            Operation('If you want to cover local eventdata.You can use commond with option -f').exception()
 
     @staticmethod
     def checkpath(path):
