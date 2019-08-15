@@ -16,10 +16,13 @@ def eventdata():
         Common usage:
             \b
             * Show the SCF function event list
-              $ scf event list --name Function1
+              $ scf eventdata list --name Function1
             \b
             * Get a function event
-              $ scf event get --name test  --event event
+              $ scf eventdata get --name test  --event event
+            \b
+            * Update eventdata to remote function
+              $ scf eventdata update --name test  --dir .
     '''
     pass
 

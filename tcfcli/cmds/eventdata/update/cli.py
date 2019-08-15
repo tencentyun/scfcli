@@ -100,7 +100,7 @@ class Update(object):
         Operation("Event {%s} update success!" % event_name).success()
 
 
-@click.command(name='update', short_help=help.LIST_SHORT_HELP)
+@click.command(name='update', short_help=help.UPDATE_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)

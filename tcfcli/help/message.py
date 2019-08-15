@@ -195,6 +195,7 @@ class EventdataHelp():
     SHORT_HELP = "Manage SCF remote event resource."
     LIST_SHORT_HELP = "Show the SCF event list."
     GET_SHORT_HELP = "Get SCF event from remote."
+    UPDATE_SHORT_HELP = "Update local event to remote."
     FUNCTION_NAME_HELP = 'The SCF remote fucntion name.'
     FUNCTION_TESTMODEL_NAME_HELP = 'The SCF remote fucntion event name.'
     FUNCTION_TESTMODEL_OUTPUTDIR = 'The remote function event get to which dir.'

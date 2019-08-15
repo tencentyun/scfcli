@@ -66,7 +66,7 @@ class Get(object):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
-@click.option('-d', '--output-dir', default='.', help=help.FUNCTION_TESTMODEL_NAME_HELP)
+@click.option('-d', '--output-dir', default='.', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
 def get(region, namespace, name, event, output_dir):
     '''
     \b
@@ -75,7 +75,7 @@ def get(region, namespace, name, event, output_dir):
     Common usage:
         \b
         * Get a function event
-          $ scf event get --name test  --event event
+          $ scf eventdata get --name test  --event event
     '''
     Get.do_cli(region, namespace, name, event, output_dir)
 

@@ -58,7 +58,7 @@ def list(region, namespace, name):
         Common usage:
         \b
             * All function Events of Function1
-              $ scf event list --name Function1
+              $ scf eventdata list --name Function1
     """
     List.do_cli(region, namespace, name)
 
