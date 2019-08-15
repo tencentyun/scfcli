@@ -61,7 +61,6 @@ class Get(object):
             os.makedirs(path)
 
 
-
 @click.command(name='get', short_help=help.GET_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
