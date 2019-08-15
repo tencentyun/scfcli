@@ -56,7 +56,7 @@ class Get(object):
             except:
                     Operation('Download event-data: {%s} failed' % (testmodel)).exception()
         if flag:
-            Operation('If you want to cover local eventdata.Please use commond with option -f').warning()
+            Operation('If you want to cover local eventdata.You can use commond with option -f').warning()
 
     @staticmethod
     def checkpath(path):
@@ -73,7 +73,7 @@ class Get(object):
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
 @click.option('-d', '--output-dir', default='scf_event_data', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
-@click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED)
+@click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED_GET)
 def get(region, namespace, name, event, output_dir, forced):
     '''
     \b

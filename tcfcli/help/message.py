@@ -199,6 +199,7 @@ class EventdataHelp():
     FUNCTION_NAME_HELP = 'The SCF remote fucntion name.'
     FUNCTION_TESTMODEL_NAME_HELP = 'The SCF remote fucntion event name.'
     FUNCTION_TESTMODEL_OUTPUTDIR = 'The remote function event get to which dir.'
-    FORCED = "The eventdata will be forced to update when it already exists. The default is False."
+    FORCED_GET = "The local eventdata will be forced to get when it already exists. The default is False."
+    FORCED_UPDATE = "The remote eventdata will be forced to update when it already exists. The default is False."
     NAMESPACE = CommonHelp.NAMESPACE
     REGION = "Region name. Including %s." % REGIONS_STR

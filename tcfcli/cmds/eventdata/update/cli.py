@@ -31,7 +31,7 @@ class Update(object):
         return {filename: event}
 
     @staticmethod
-    def do_cli(region, namespace, name, dir):
+    def do_cli(region, namespace, name, dir, forced):
         eventdatalist = []
         if not os.path.exists(dir):
             raise EventFileNotFoundException("Event Dir Not Exists")
@@ -50,53 +50,52 @@ class Update(object):
 
         if len(eventdatalist):
             Update.update_event_data(region=region, namespace=namespace, name=name,
-                                    eventdatalist=eventdatalist)
+                                     eventdatalist=eventdatalist, forced=forced)
 
     @staticmethod
-    def update_event_data(region, namespace, name, eventdatalist):
-        if region and region not in REGIONS:
-            raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
-        if not region:
-            region = UserConfig().region
+    def update_event_data(region, namespace, name, eventdatalist, forced):
+        region = region if region else UserConfig().region
 
-        rep = ScfClient(region).get_ns(namespace)
-        if not rep:
+        if region not in REGIONS:
+            raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
+
+        if not ScfClient(region).get_ns(namespace):
             raise NamespaceException("Region {r} not exist namespace {n}".format(r=region, n=namespace))
 
-        functions = ScfClient(region).get_function(function_name=name, namespace=namespace)
-        if not functions:
-            raise FunctionNotFound("Region {r} namespace {n} not exist function {f}".format(r=region, n=namespace, f=name))
-            return
+        if not ScfClient(region).get_function(function_name=name, namespace=namespace):
+            raise FunctionNotFound("Region {r} namespace {n} not exists function {f}".format(r=region, n=namespace, f=name))
 
         Operation("Region:%s" % (region)).process()
         Operation("Namespace:%s " % (namespace)).process()
         Operation("Function:%s " % (name)).process()
+        flag = False
         for eventdata in eventdatalist:
-            #eventdata = json.dumps(eventdata)
-            Update.do_deploy_testmodel(functionName=name, event=list(eventdata.values())[0],
-            event_name=list(eventdata.keys())[0], namespace=namespace, region=region)
+            if Update.do_deploy_testmodel(functionName=name, namespace=namespace, region=region, forced=forced,
+                                          event=list(eventdata.values())[0], event_name=list(eventdata.keys())[0]):
+                flag = True
+        if flag:
+            Operation("If you want to cover remote eventdata.You can use command with option -f").exception()
 
     @staticmethod
-    def do_deploy_testmodel(functionName, event, event_name, namespace, region):
-            # 获取失败会直接创建新模版
-            # 获取成功代表已有模版，直接覆盖
+    def do_deploy_testmodel(functionName, namespace, region, forced, event, event_name):
+            # 获取失败抛出异常会直接创建新模版
+            # 获取成功代表已有模版，根据force是否覆盖
         try:
             ScfClient(region).get_func_testmodel(functionName=functionName, testModelName=event_name,
-                                                    namespace=namespace)
-        except:
-            Operation("Updateing event {%s}..." % event_name).process()
-            ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
+                                                 namespace=namespace)
+            if not forced:
+                Operation("Eventdata {%s} exist in remote" % event_name).exception()
+                return True
+            else:
+                Operation("Eventdata {%s} exist in remote,updating event..." % event_name).process()
+                ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
                                                         testModelName=event_name, namespace=namespace)
-            Operation("Event {%s} update success!" % event_name).success()
-            return
-
-        Operation("Event {%s} exist in remote,updating event..." % event_name).process()
-        # v = click.prompt(text="Do you want to cover remote event? (y/n)",
-        #                  default="n", show_default=False)
-        # if v and v in ['y', 'Y']:
-        ScfClient(region).update_func_testmodel(functionName=functionName, testModelValue=event,
-                                                testModelName=event_name, namespace=namespace)
-        Operation("Event {%s} update success!" % event_name).success()
+                Operation("Eventdata {%s} update success!" % event_name).success()
+        except:
+            Operation("Updateing eventdata {%s}..." % event_name).process()
+            ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
+                                                    testModelName=event_name, namespace=namespace)
+            Operation("Eventdata {%s} update success!" % event_name).success()
 
 
 @click.command(name='update', short_help=help.UPDATE_SHORT_HELP)
@@ -104,7 +103,8 @@ class Update(object):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-d', '--dir', type=str, default='.', help=help.DIR)
-def update(region, namespace, name, dir):
+@click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED_UPDATE)
+def update(region, namespace, name, dir, forced):
     """
         \b
         Update Events to Function1.
@@ -114,4 +114,4 @@ def update(region, namespace, name, dir):
             * Update Events to Function1
               $ scf eventdata update --name Function1
     """
-    Update.do_cli(region, namespace, name, dir)
+    Update.do_cli(region, namespace, name, dir, forced)
