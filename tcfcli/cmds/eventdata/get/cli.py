@@ -66,7 +66,7 @@ class Get(object):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
-@click.option('-d', '--output-dir', default='.', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
+@click.option('-d', '--output-dir', default='scf_event_data', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
 def get(region, namespace, name, event, output_dir):
     '''
     \b
