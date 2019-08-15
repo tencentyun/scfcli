@@ -139,6 +139,10 @@ class EventFileNotFoundException(UserException):
     pass
 
 
+class EventFileNameFormatException(UserException):
+    pass
+
+
 class LoadEventFileException(UserException):
     pass
 

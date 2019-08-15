@@ -15,42 +15,17 @@ REGIONS = infor.REGIONS
 class Update(object):
     @staticmethod
     def get_event_from_file(path):
-        if not path.endswith('.json'):
-            Operation(' Please check your json file name must endwith `.json`.').warning()
-            return None
         try:
             with click.open_file(path, 'r', encoding="utf-8") as f:
                 event = f.read()
                 json.loads(event)
         except Exception as e:
-            Operation(str(e) + '\nPlease check your json file {%s} format.' % path ).warning()
+            Operation(str(e) + '\nPlease check your json file {%s} format.' % path).warning()
             return None
 
         filefullname = os.path.split(path)[1]
         filename = os.path.splitext(filefullname)[0]
         return {filename: event}
-
-    @staticmethod
-    def do_cli(region, namespace, name, dir, forced):
-        eventdatalist = []
-        if not os.path.exists(dir):
-            raise EventFileNotFoundException("Event Dir Not Exists")
-
-        elif os.path.isfile(dir):
-            eventdata = Update.get_event_from_file(dir)
-            if eventdata:
-                eventdatalist.append(eventdata)
-
-        elif os.path.isdir(dir):
-            for path in os.listdir(dir):
-                if os.path.isfile(path) and path.endswith('.json'):
-                    eventdata = Update.get_event_from_file(path)
-                    if eventdata:
-                        eventdatalist.append(eventdata)
-
-        if len(eventdatalist):
-            Update.update_event_data(region=region, namespace=namespace, name=name,
-                                     eventdatalist=eventdatalist, forced=forced)
 
     @staticmethod
     def update_event_data(region, namespace, name, eventdatalist, forced):
@@ -96,6 +71,33 @@ class Update(object):
             ScfClient(region).create_func_testmodel(functionName=functionName, testModelValue=event,
                                                     testModelName=event_name, namespace=namespace)
             Operation("Eventdata {%s} update success!" % event_name).success()
+
+    @staticmethod
+    def do_cli(region, namespace, name, dir, forced):
+        eventdatalist = []
+        if not os.path.exists(dir):
+            raise EventFileNotFoundException("Event Dir Not Exists")
+
+        elif os.path.isfile(dir):
+            if not dir.endswith('.json'):
+                raise EventFileNameFormatException('Please check your json file name endwith `.json`.')
+            eventdata = Update.get_event_from_file(dir)
+            if eventdata:
+                eventdatalist.append(eventdata)
+
+        elif os.path.isdir(dir):
+            for path in os.listdir(dir):
+                filepath = os.path.join(dir, path)
+                if os.path.isfile(filepath) and filepath.endswith('.json'):
+                    eventdata = Update.get_event_from_file(filepath)
+                    if eventdata:
+                        eventdatalist.append(eventdata)
+
+        if len(eventdatalist):
+            Update.update_event_data(region=region, namespace=namespace, name=name,
+                                     eventdatalist=eventdatalist, forced=forced)
+        else:
+            Operation("Eventdata file not found").exception()
 
 
 @click.command(name='update', short_help=help.UPDATE_SHORT_HELP)
