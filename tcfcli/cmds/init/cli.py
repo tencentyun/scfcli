@@ -99,7 +99,7 @@ class Init(object):
 @click.option('-n', '--name', default="hello_world", help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-N', '--no-input', is_flag=True, help=help.NO_INPUT)
-#@click.option('--type', default='Event', help=help.TYPE)
+# @click.option('--type', default='Event', help=help.TYPE)
 def init(location, runtime, output_dir, name, namespace, no_input, type='Event'):
     """
         \b
@@ -113,10 +113,11 @@ def init(location, runtime, output_dir, name, namespace, no_input, type='Event')
           * Initializes a new scf project using custom template in a Git repository
             $ scf init --location gh:pass/demo-python
     """
+
     runtime = Init._runtime_format_vaild(runtime)
     type = Init._type_format_vaild(type)
     if runtime not in TYPE_SUPPORT_RUNTIME[type]:
-        #raise InitException("{type} not support runtime: {runtime}".format(type=type, runtime=runtime))
+        # raise InitException("{type} not support runtime: {runtime}".format(type=type, runtime=runtime))
         raise InitException("not support runtime: {runtime}".format(runtime=runtime))
         # return
     Init.do_cli(location, runtime, output_dir, name, namespace, no_input, type)
