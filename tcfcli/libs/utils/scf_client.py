@@ -230,9 +230,7 @@ class ScfClient(object):
         if isinstance(enable, bool):
             enable = ["CLOSE", "OPEN"][int(enable)]
         req.Enable = enable
-        # click.secho(str(req))
-        resp = self._client.CreateTrigger(req)
-        # Operation(resp.to_json_string()).process()
+        self._client.CreateTrigger(req)
 
     def delete_trigger(self, trigger, func_name, func_ns):
         req = models.DeleteTriggerRequest()
@@ -242,9 +240,7 @@ class ScfClient(object):
         req.Type = str(trigger["Type"]).lower()
         req.Qualifier = "$LATEST"
         req.TriggerDesc = json.dumps(trigger["TriggerDesc"])
-        # click.secho(str(req))
-        resp = self._client.DeleteTrigger(req)
-        # Operation(resp.to_json_string()).process()
+        self._client.DeleteTrigger(req)
 
     def get_ns(self, namespace):
         try:
