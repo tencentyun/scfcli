@@ -43,6 +43,7 @@ class Update(object):
         Operation("Region:%s" % (region)).process()
         Operation("Namespace:%s " % (namespace)).process()
         Operation("Function:%s " % (name)).process()
+
         flag = False
         for eventdata in eventdatalist:
             if Update.do_deploy_testmodel(functionName=name, namespace=namespace, region=region, forced=forced,

@@ -179,7 +179,7 @@ class LocalHelp():
 class FunctionHelp():
     # Function Help Message
 
-    SHORT_HELP = "Manage SCF remote function resource"
+    SHORT_HELP = "Manage SCF remote function resource."
     LIST_SHORT_HELP = "Show the SCF function list."
     DELETE_SHORT_HELP = "Delete a SCF function."
 
