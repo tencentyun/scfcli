@@ -21,8 +21,9 @@ STD_IN = '-'
               envvar="TCF_TEMPLATE_FILE", show_default=True, help=help.INVOKE_TEMPLATE)
 @click.argument('namespace_identifier', required=False)
 @click.argument('function_identifier', required=False)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def invoke(template, namespace_identifier, function_identifier, env_vars, event, no_event, debug_port, debug_args,
-           quiet):
+           quiet, no_color):
     '''
     \b
     Execute your scf in a environment natively.

@@ -5,7 +5,8 @@ from tcfcli.cmds.local.generate_event.generate_event_service import GenerateEven
 
 
 @click.command(name="generate-event", cls=GenerateEventService, short_help="Simulate a service generation event.")
-def generate_event():
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def generate_event(no_color):
     """
     \b
     Simulate a service generation event.

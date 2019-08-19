@@ -99,7 +99,8 @@ class Init(object):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-N', '--no-input', is_flag=True, help=help.NO_INPUT)
 # @click.option('--type', default='Event', help=help.TYPE)
-def init(location, runtime, output_dir, name, namespace, no_input, type='Event'):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def init(location, runtime, output_dir, name, namespace, no_input, no_color, type='Event'):
     """
         \b
         The project initialization operation is performed by the scf init command.

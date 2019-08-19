@@ -57,7 +57,8 @@ class List(object):
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
-def list(region, namespace):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def list(region, namespace, no_color):
     """
         \b
         Show the SCF function list.

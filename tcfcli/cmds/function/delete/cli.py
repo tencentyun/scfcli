@@ -42,7 +42,9 @@ def abort_if_false(ctx, param, value):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', help=help.DELETE_NAME)
 @click.option('-f', '--force', is_flag=True, help=help.FORCED)
-def delete(region, namespace, name, force):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+
+def delete(region, namespace, name, force,no_color):
     '''
         \b
         Delete a SCF function.

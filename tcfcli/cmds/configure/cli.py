@@ -28,6 +28,7 @@ REGIONS = infor.REGIONS
 @click.option('--using-cos', is_flag=True, help=help.GET_USING_COS)
 @click.option('--python2-path', help=help.GET_PATHON_PATH)
 @click.option('--python3-path', help=help.GET_PATHON_PATH)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def get(**kwargs):
     '''
         \b
@@ -67,6 +68,7 @@ def get(**kwargs):
 @click.option('--using-cos', help=help.SET_USING_COS)
 @click.option('--python2-path', help=help.SET_PATHON_PATH)
 @click.option('--python3-path', help=help.SET_PATHON_PATH)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def set(**kwargs):
     '''
         \b

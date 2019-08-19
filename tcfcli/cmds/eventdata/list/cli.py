@@ -50,7 +50,8 @@ class List(object):
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
-def list(region, namespace, name):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def list(region, namespace, name, no_color):
     """
         \b
         Show the SCF function event list.
