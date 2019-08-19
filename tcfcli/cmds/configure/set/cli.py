@@ -94,7 +94,7 @@ def set(**kwargs):
                          default="y" if str(attrs["using-cos"]).startswith("True") else "n",
                          show_default=False)
         if v1:
-            config["no-color"] = using_cos_true if v1 not in ["y", "Y"] else using_cos_false
+            config["no-color"] = "False" if v1 not in ["y", "Y"] else "True"
         else:
             config["no-color"] = attrs["no-color"]
 

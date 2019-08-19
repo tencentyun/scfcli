@@ -32,7 +32,6 @@ class UserConfig(object):
     OTHERS = "OTHERS"
     SECTION_LIST = [USER_QCLOUD_CONFIG, GIT_CONFIG, ENV, OTHERS]
     COMMON_SECTION_LIST = [GIT_CONFIG, ENV, OTHERS]
-    API_LIST = ['secret_id', 'secret_key', 'region', 'appid', 'using_cos', 'version_time', 'python2_path', 'python3_path']
 
     def __init__(self):
         self.secret_id = "None"
