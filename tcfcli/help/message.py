@@ -125,6 +125,9 @@ class ConfigureHelp():
     GET_USING_COS = USING_COS
     GET_PATHON_PATH = PATHON_PATH
 
+    ADD_SHORT_HELP = "Add a user"
+    CHANGE_SHORT_HELP ="Configure change your user"
+
     NOCOLOR = "Suppress colored output"
 
 

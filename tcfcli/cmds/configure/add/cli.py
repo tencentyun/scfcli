@@ -20,7 +20,7 @@ def report_info():
 REGIONS = infor.REGIONS
 
 
-@click.command(short_help=help.SET_SHORT_HELP)
+@click.command(short_help=help.ADD_SHORT_HELP)
 @click.option('--secret-id', help=help.SET_SECRET_ID)
 @click.option('--secret-key', help=help.SET_SECRET_KEY)
 @click.option('--region', help=help.SET_REGION)
@@ -29,15 +29,12 @@ REGIONS = infor.REGIONS
 def add(**kwargs):
     '''
         \b
-        Configure your account parameters.
+        Add a user.
         \b
         Common usage:
             \b
-            * Configure your account parameters
-              $ scf configure set
-            \b
-            * Modify a configuration item
-              $ scf configure set --region ap-shanghai
+            * Add a user.
+              $ scf configure add
     '''
 
     def set_true(k):

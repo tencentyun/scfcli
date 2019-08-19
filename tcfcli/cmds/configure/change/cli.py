@@ -20,19 +20,16 @@ def report_info():
 REGIONS = infor.REGIONS
 
 
-@click.command(short_help=help.SET_SHORT_HELP)
+@click.command(short_help=help.CHANGE_SHORT_HELP)
 def change(**kwargs):
     '''
         \b
-        Configure your account parameters.
+        Change your user.
         \b
         Common usage:
             \b
-            * Configure your account parameters
-              $ scf configure set
-            \b
-            * Modify a configuration item
-              $ scf configure set --region ap-shanghai
+            * Configure change your user
+              $ scf configure change
     '''
 
     uc = UserConfig()

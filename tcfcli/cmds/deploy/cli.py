@@ -70,6 +70,11 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     region = region if region else UserConfig().region
+    uc = UserConfig()
+    Operation(uc.region).process()
+    Operation(uc.secret_key).process()
+    Operation(uc.appid).process()
+    Operation(uc.secret_id).process()
     package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
     resource = package.do_package()
 

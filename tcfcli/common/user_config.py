@@ -91,12 +91,14 @@ class UserConfig(object):
         self._dump_config()
 
     def _dumpattr(self):
-        for section in self.section_map:
-            if section not in UserConfig.SECTION_LIST:
-                break
-            for key in list(self.section_map[section].keys()):
-                if key in vars(self):
-                    setattr(self, key, self.section_map[section][key])
+        self.secret_id = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['secret_id']
+        self.secret_key = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['secret_key']
+        self.region = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['region']
+        self.appid = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['appid']
+        self.using_cos = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['using_cos']
+        self.python2_path = self.section_map[UserConfig.ENV]['python2_path']
+        self.python3_path = self.section_map[UserConfig.ENV]['python3_path']
+        self.version_time = self.section_map[UserConfig.OTHERS]['version_time']
 
     def set_attrs(self, attrs):
         for attr_key in attrs:

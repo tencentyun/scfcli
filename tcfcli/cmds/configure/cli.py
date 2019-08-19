@@ -24,6 +24,12 @@ def configure():
             \b
             * Get the configured information
               $ scf configure get
+            \b
+            * Configure change your user
+              $ scf configure change
+            \b
+            * Add a user.
+              $ scf configure add
     """
 
 
