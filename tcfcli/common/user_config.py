@@ -2,7 +2,8 @@
 
 import os
 import platform
-import operation_msg
+from tcfcli.common.operation_msg import Operation
+
 
 home = os.path.expanduser('~')
 _USER_CONFIG_FILE = home + '/.tcli_config.ini'
