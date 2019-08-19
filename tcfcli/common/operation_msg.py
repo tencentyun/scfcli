@@ -25,41 +25,29 @@ class Operation(object):
     def format_message(self):
         return text(self.message)
 
-    def success(self):
+    def new_style(self, msg, bg=None, fg=None):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("[o]") + click.style(u' %s' % self.format_message()))
+            return click.style(u'%s' % msg)
         else:
-            click.secho(click.style("[o]", bg="green") + click.style(u' %s' % self.format_message()), fg="green")
+            return click.style(u'%s' % msg, bg=bg, fg=fg)
+
+    def success(self):
+        click.secho(self.new_style("[o]", bg="green") + self.new_style(u' %s' % self.format_message(), fg="green"))
 
     def warning(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("[!]") + click.style(u' %s' % self.format_message()))
-        else:
-            click.secho(click.style("[!]", bg="magenta") + click.style(u' %s' % self.format_message()), fg="magenta")
+        click.secho(self.new_style("[!]", bg="magenta") + self.new_style(u' %s' % self.format_message(), fg="magenta"))
 
     def information(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("[*]") + click.style(u' %s' % self.format_message()))
-        else:
-            click.secho(click.style("[*]", bg="yellow") + click.style(u' %s' % self.format_message()), fg="yellow")
+        click.secho(self.new_style("[*]", bg="yellow") + self.new_style(u' %s' % self.format_message(), fg="yellow"))
 
     def process(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("[>]") + click.style(u' %s' % self.format_message()))
-        else:
-            click.secho(click.style("[>]", bg="cyan") + click.style(u' %s' % self.format_message()), fg="cyan")
+        click.secho(self.new_style("[>]", bg="cyan") + self.new_style(u' %s' % self.format_message(), fg="cyan"))
 
     def out_infor(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("    ") + click.style(u' %s' % self.format_message()))
-        else:
-            click.secho(click.style("    ") + click.style(u' %s' % self.format_message()), fg="cyan")
+        click.secho(self.new_style("    ") + self.new_style(u' %s' % self.format_message(), fg="cyan"))
 
     def exception(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(click.style("[x]") + click.style(u' %s' % self.format_message()))
-        else:
-            click.secho(click.style("[x]", bg="red") + click.style(u' %s' % self.format_message()), fg="red")
+        click.secho(self.new_style("[x]", bg="red") + self.new_style(u' %s' % self.format_message(), fg="red"))
 
     def echo(self):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
@@ -74,7 +62,7 @@ class Operation(object):
     def style(self):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
             return click.style(u'%s' % self.format_message(), bold=self.bold, dim=self.dim,
-                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,)
+                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset, )
         else:
             return click.style(u'%s' % self.format_message(), fg=self.fg, bg=self.bg, bold=self.bold, dim=self.dim,
-                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,)
+                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset, )
