@@ -84,6 +84,7 @@ def get(region, namespace, name, event, output_dir, forced):
         * Get a function event
           $ scf eventdata get --name test  --event event
     '''
+
     Get.do_cli(region, namespace, name, event, output_dir, forced)
 
 

@@ -13,6 +13,7 @@ from tcfcli.cmds.native.common.debug_context import DebugContext
 from tcfcli.common.template import Template
 from tcfcli.common.file_util import FileUtil
 import tcfcli.common.base_infor as infor
+from tcfcli.common.operation_msg import Operation
 
 
 class StartApiContext(object):
@@ -98,7 +99,7 @@ class StartApiContext(object):
         try:
             child = subprocess.Popen(args=[self.cmd]+self.argv, env=self.env)
         except OSError:
-            click.secho("Execution Failed.", fg="red")
+            Operation("Execution Failed.", fg="red").echo()
             raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
 
         ret_code = 0
@@ -106,7 +107,7 @@ class StartApiContext(object):
             ret_code = child.wait()
         except KeyboardInterrupt:
             child.kill()
-            click.secho("Recv a SIGINT, exit.")
+            Operation("Recv a SIGINT, exit.").echo()
 
         if ret_code == 233:  # runtime not match
             raise UserException("Execution failed,confirm whether the program({}) is installed".format(self._runtime.runtime))

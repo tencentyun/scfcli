@@ -12,4 +12,5 @@ def validate(template_file):
     '''
     Validate a SCF template.
     '''
+
     tcsam.tcsam_validate(Template.get_template_data(template_file))

@@ -39,11 +39,11 @@ class List(object):
         if not testmodels:
             raise NamespaceException("This function not exist event".format(f=name))
 
-        click.secho("%-20s %-20s %-20s" % ("TestmodelsName", "AddTime", "ModTime"))
+        Operation("%-20s %-20s %-20s" % ("TestmodelsName", "AddTime", "ModTime")).echo()
         for testmodel in testmodels:
             res = ScfClient(region).get_func_testmodel(functionName=name, namespace=namespace, testModelName=testmodel)
-            click.secho("%-20s %-20s %-20s" % (testmodel, res['CreatedTime'], res['ModifiedTime']))
-        click.secho("\n")
+            Operation("%-20s %-20s %-20s" % (testmodel, res['CreatedTime'], res['ModifiedTime'])).echo()
+        Operation("\n").echo()
 
 
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
@@ -60,6 +60,7 @@ def list(region, namespace, name):
             * All function Events of Function1
               $ scf eventdata list --name Function1
     """
+
     List.do_cli(region, namespace, name)
 
 

@@ -54,13 +54,13 @@ class Init(object):
     @staticmethod
     def do_cli(location, runtime, output_dir, name, namespace, no_input, type):
 
-        click.secho('''      _____  ______ ______ ______ __     ____
+        Operation('''      _____  ______ ______ ______ __     ____
      / ___/ / ____// ____// ____// /    /  _/
      \__ \ / /    / /_   / /    / /     / /  
     ___/ // /___ / __/  / /___ / /___ _/ /   
-   /____/ \____//_/     \____//_____//___/ ''')
+   /____/ \____//_/     \____//_____//___/ ''').echo()
 
-        click.secho("[+] Initializing project...", fg="green")
+        Operation("[+] Initializing project...", fg="green").echo()
         params = {
             "template": location if location else Init._runtime_path(runtime),
             "output_dir": output_dir,
@@ -77,17 +77,16 @@ class Init(object):
         try:
             cookiecutter(**params)
         except exceptions.CookiecutterException as e:
-            # click.secho(str(e), fg="red")
             # raise click.Abort()
             raise InitException(e)
         if runtime in infor.SERVICE_RUNTIME:
-            click.secho("[*] Project initing,please wait.....", fg="green")
+            Operation("[*] Project initing,please wait.....", fg="green").echo()
             zipfile_path = os.path.join(os.path.abspath(output_dir), name, 'node_modules.zip')
             zipobj = zipfile.ZipFile(zipfile_path, mode="r")
             zipobj.extractall(os.path.join(os.path.abspath(output_dir), name))
             zipobj.close()
             os.remove(zipfile_path)
-        click.secho("[*] Project initialization is complete", fg="green")
+        Operation("[*] Project initialization is complete", fg="green").echo()
         Operation(
             "You could 'cd %s', and start this project." % (params['extra_context']["project_name"])).information()
 
@@ -113,6 +112,7 @@ def init(location, runtime, output_dir, name, namespace, no_input, type='Event')
           * Initializes a new scf project using custom template in a Git repository
             $ scf init --location gh:pass/demo-python
     """
+
 
     runtime = Init._runtime_format_vaild(runtime)
     type = Init._type_format_vaild(type)

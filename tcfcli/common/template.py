@@ -16,7 +16,6 @@ class Template(object):
 
         with io.open(template_file, mode='r', encoding='utf-8') as f:
             try:
-                # click.secho(str(yaml_parse(f.read())))
                 return yaml_parse(f.read())
             except (ValueError, yaml.YAMLError) as ex:
                 raise ContextException("Parse template failed: {}".format(str(ex)))

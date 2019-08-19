@@ -38,6 +38,7 @@ def get(**kwargs):
             * Get the configured information
               $ scf configure get
         '''
+
     uc = UserConfig()
 
     def set_true(k):
@@ -54,7 +55,7 @@ def get(**kwargs):
             attr_value = "*" * 32 + attr_value[32:]
         elif attr == "secret-key":
             attr_value = "*" * 28 + attr_value[28:]
-        msg += click.style("\n[-] ", fg="cyan") + click.style("{} = {}".format(attr, attr_value), fg="cyan")
+        msg += Operation("\n[-] ", fg="cyan").style() + Operation("{} = {}".format(attr, attr_value), fg="cyan").style()
     Operation(msg.strip()).process()
 
 

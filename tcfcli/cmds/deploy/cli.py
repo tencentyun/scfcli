@@ -8,18 +8,20 @@ import json
 from io import BytesIO
 import shutil
 import hashlib
+import threading
+from multiprocessing import Pool
+from zipfile import ZipFile, ZIP_DEFLATED
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
-from tcfcli.common.operation_msg import Operation
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import *
 from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.common import tcsam
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
-from zipfile import ZipFile, ZIP_DEFLATED
 from tcfcli.libs.utils.cos_client import CosClient
+from tcfcli.common.operation_msg import Operation
 
 _CURRENT_DIR = '.'
 _BUILD_DIR = os.path.join(os.getcwd(), '.tcf_build')
@@ -40,7 +42,9 @@ SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 @click.option('--without-cos', is_flag=True, default=False, help=help.WITHOUT_COS)
 @click.option('--history', is_flag=True, default=False, help=help.HISTORY)
 @click.option('--update-event', '-ue', is_flag=True, default=False, help=help.UPDATE_EVENT)
-def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, update_event):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos, history, update_event,
+           no_color):
     '''
         \b
         Scf cli completes the function package deployment through the deploy subcommand. The scf command line tool deploys the code package, function configuration, and other information specified in the configuration file to the cloud or updates the functions of the cloud according to the specified function template configuration file.
@@ -115,7 +119,7 @@ class Function(object):
         result = self.get_information()
         if result:
             information = json.loads(result)
-            click.secho(u"[+] Function Base Information: ", fg="cyan")
+            Operation(u"[+] Function Base Information: ", fg="cyan").echo()
             Operation("Name: %s" % self.function).out_infor()
             Operation("Version: %s" % information["FunctionVersion"]).out_infor()
             Operation("Status: %s" % information["Status"]).out_infor()
@@ -126,7 +130,7 @@ class Function(object):
 
             release_serviceid_list = []
             if information["Triggers"]:
-                click.secho(u"[+] Trigger Information: ", fg="cyan")
+                Operation(u"[+] Trigger Information: ", fg="cyan").echo()
                 for eve_trigger in information["Triggers"]:
                     trigger_type = eve_trigger['Type']
 
@@ -139,7 +143,7 @@ class Function(object):
                         pass
 
                     msg = u"    > %s - %s:" % (text(trigger_type).upper(), text(eve_trigger["TriggerName"]))
-                    click.secho(click.style(msg), fg="cyan")
+                    Operation(msg, fg="cyan").echo()
                     self.recursion_dict(eve_trigger, 2)
 
             # yaml apigateway service_id list
@@ -261,6 +265,7 @@ class Package(object):
         self.bucket_name = "scf-deploy-" + self.region
 
     def do_package(self):
+
         for namespace in self.resource:
             for function in list(self.resource[namespace]):
 
@@ -282,8 +287,9 @@ class Package(object):
                         rollback_dict = {}
                         cos_function_list = cos_function['Contents']
                         if cos_function_list:
-                            msg = "[+] Please select a historical deployment Number for the historical version deployment."
-                            click.secho(msg, fg="cyan")
+                            msg = "[+] %s %s :Please select a historical deployment Number for the historical version deployment." % (
+                                namespace, function)
+                            Operation(msg, fg="cyan").echo()
                             function_number = 0
                             for eve_function in reversed(cos_function_list):
                                 function_number = function_number + 1
@@ -292,10 +298,10 @@ class Package(object):
                                 else:
                                     function_name = eve_function["LastModified"].replace(".000Z", "").replace("T", " ")
                                     msg = "  [%s] %s" % (function_number, text(function_name))
-                                    click.secho(msg, fg="cyan")
+                                    Operation(msg, fg="cyan").echo()
                                     rollback_dict[str(function_number)] = eve_function["Key"]
 
-                            number = click.prompt(click.style("Please input number(Like: 1)", fg="cyan"))
+                            number = click.prompt(Operation("Please input number(Like: 1)", fg="cyan").style())
                             if number not in rollback_dict:
                                 err_msg = "Please enter the version number correctly, for example the number 1."
                                 raise RollbackException(err_msg)
@@ -627,9 +633,9 @@ class Deploy(object):
                 str(temp_trigger["Type"]).upper(), temp_trigger["TriggerName"])
             Operation(msg).warning()
 
-        click.secho("[+] This Information: ", fg="cyan")
+        Operation("[+] This Information: ", fg="cyan").echo()
         self.recursion_dict(temp_trigger, 0)
-        click.secho("[+] Release Information: ", fg="cyan")
+        Operation("[+] Release Information: ", fg="cyan").echo()
         self.recursion_dict(eve_event, 0)
 
         if not self.update_event:
@@ -639,6 +645,11 @@ class Deploy(object):
             Operation(msg).information()
 
     def do_deploy(self):
+
+        deploy_pool = Pool(8)
+
+        function_list = []
+
         for ns in self.resources:
             if not self.resources[ns]:
                 continue
@@ -649,10 +660,16 @@ class Deploy(object):
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
-                self._do_deploy_core(self.resources[ns][func], func, ns, self.region,
-                                     self.forced, self.skip_event)
-                Function(self.region, ns, func, self.resources).format_information()
+                deploy_pool.apply_async(self._do_deploy_core, args=(
+                    self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,))
+                function_list.append((self.region, ns, func, self.resources))
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
+
+        deploy_pool.close()
+        deploy_pool.join()
+
+        for eve_function in function_list:
+            Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check namespace exit, create namespace
@@ -715,7 +732,8 @@ class Deploy(object):
 
         proper = func.get(tsmacro.Properties, {})
         events = proper.get(tsmacro.Events, {})
-        hasError = None
+
+        trigger_threads = []
 
         for trigger in events:
             trigger_status = True
@@ -779,26 +797,33 @@ class Deploy(object):
                                     self.trigger_upgrade_message(temp_trigger, eve_event_infor)
                             break
                 except Exception as e:
-                    print(e)
                     pass
 
-                # if temp_trigger in trigger_release[str(events[trigger]['Type']).lower()]:
-                #     trigger_status = False
-                #     Operation(msg).warning()
-
             if trigger_status == True:
-                err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
-                if err is not None:
-                    hasError = err
-                    if sys.version_info[0] == 3:
-                        s = err.get_message()
-                    else:
-                        s = err.get_message().encode("UTF-8")
+                # self.do_eve_trigger(region, events, trigger, func_name, func_ns, )
+                t = threading.Thread(target=self.do_eve_trigger, args=(region, events, trigger, func_name, func_ns,))
+                trigger_threads.append(t)
+                t.start()
 
-                    if err.get_request_id():
-                        Operation("Deploy trigger '{name}' failure. Error: {e}. RequestId: {id}".
-                                  format(name=trigger, e=s, id=err.get_request_id())).warning()
-                    else:
-                        msg = "Deploy trigger '{name}' failure. Error: {e}.".format(name=trigger, e=s, )
-                        Operation(msg).warning()
-                Operation("Deploy trigger '{name}' success".format(name=trigger)).success()
+        for t in trigger_threads:
+            t.join()
+
+    def do_eve_trigger(self, region, events, trigger, func_name, func_ns):
+        err = ScfClient(region).deploy_trigger(events[trigger], trigger, func_name, func_ns)
+        if err is not None:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+
+            if err.get_request_id():
+                Operation("Deploy {namespace} {function} trigger '{name}' failure. Error: {e}. RequestId: {id}".
+                          format(namespace=func_ns, function=func_name, name=trigger, e=s,
+                                 id=err.get_request_id())).warning()
+            else:
+                msg = "Deploy {namespace} {function} trigger '{name}' failure. Error: {e}.".format(namespace=func_ns,
+                                                                                                   function=func_name,
+                                                                                                   name=trigger, e=s, )
+                Operation(msg).warning()
+        Operation("Deploy {namespace} {function} trigger '{name}' success".format(namespace=func_ns, function=func_name,
+                                                                                  name=trigger)).success()

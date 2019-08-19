@@ -116,4 +116,5 @@ def update(region, namespace, name, dir, forced):
             * Update Events to Function1
               $ scf eventdata update --name Function1
     """
+
     Update.do_cli(region, namespace, name, dir, forced)

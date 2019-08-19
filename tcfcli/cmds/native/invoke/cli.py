@@ -3,6 +3,7 @@
 import click
 from tcfcli.cmds.native.common.invoke_context import InvokeContext
 from tcfcli.help.message import NativeHelp as help
+from tcfcli.common.operation_msg import Operation
 
 DEF_TMP_FILENAME = "template.yaml"
 
@@ -39,7 +40,7 @@ def do_invoke(template, namespace, function, env_vars, event, no_event, debug_po
     if no_event:
         event_data = "{}"
     else:
-        click.secho('Enter an event:', color="green")
+        Operation('Enter an event:', color="green").echo()
         with click.open_file(event, 'r', encoding="utf-8") as f:
             event_data = f.read()
     try:
@@ -60,7 +61,7 @@ def do_invoke(template, namespace, function, env_vars, event, no_event, debug_po
 
 def _get_event(event_file):
     if event_file == STD_IN:
-        click.secho('read event from stdin')
+        Operation('read event from stdin').echo()
 
     with click.open_file(event_file, 'r') as f:
         return f.read()

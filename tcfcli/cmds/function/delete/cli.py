@@ -52,6 +52,7 @@ def delete(region, namespace, name, force):
             * Delete a SCF function
               $ scf function delete --name functionname --region ap-guangzhou --namespace default
     '''
+
     if name:
 
         if not region:
@@ -69,7 +70,8 @@ def delete(region, namespace, name, force):
             Delete.do_cli(region, namespace, name)
         else:
             Operation("This function's trigger will be deleted too").warning()
-            result = click.prompt(click.style('[!] Are you sure delete this remote function? (y/n)', fg="magenta"))
+            result = click.prompt(
+                Operation('[!] Are you sure delete this remote function? (y/n)', fg="magenta").style())
             if result in ["y", "Y"]:
                 Delete.do_cli(region, namespace, name)
             else:

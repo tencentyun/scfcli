@@ -4,10 +4,10 @@
 Entry point for the CLI
 """
 
-import click
 import os
-import sys
 import logging
+
+from tcfcli.__init__ import *
 
 work_dir = os.getcwd()
 dir_name, file_name = os.path.split(os.path.abspath(sys.argv[0]))
@@ -27,12 +27,11 @@ from tcfcli.cmds.logs.cli import logs
 from tcfcli.cmds.function.cli import function
 from tcfcli.cmds.eventdata.cli import eventdata
 
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 @click.group(context_settings=dict(help_option_names=['--help']))
-@click.version_option(version=__version__, prog_name="SCF CLI")
+@click.version_option(version=__version__, prog_name="SCF CLI",)
 def cli():
     '''
         \b
