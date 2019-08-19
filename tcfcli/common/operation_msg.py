@@ -63,20 +63,18 @@ class Operation(object):
 
     def echo(self):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
-            click.secho(u' %s' % self.format_message(), bold=self.bold, dim=self.dim,
+            click.secho(u'%s' % self.format_message(), bold=self.bold, dim=self.dim,
                         underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,
                         file=self.file, nl=self.nl, err=self.err, color=self.color, )
         else:
-            click.secho(u' %s' % self.format_message(), fg=self.fg, bg=self.bg, bold=self.bold, dim=self.dim,
+            click.secho(u'%s' % self.format_message(), fg=self.fg, bg=self.bg, bold=self.bold, dim=self.dim,
                         underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,
                         file=self.file, nl=self.nl, err=self.err, color=self.color, )
 
     def style(self):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
-            return click.style(u' %s' % self.format_message(), bold=self.bold, dim=self.dim,
-                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,
-                               file=self.file, nl=self.nl, err=self.err, color=self.color, )
+            return click.style(u'%s' % self.format_message(), bold=self.bold, dim=self.dim,
+                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,)
         else:
-            return click.style(u' %s' % self.format_message(), fg=self.fg, bg=self.bg, bold=self.bold, dim=self.dim,
-                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,
-                               file=self.file, nl=self.nl, err=self.err, color=self.color, )
+            return click.style(u'%s' % self.format_message(), fg=self.fg, bg=self.bg, bold=self.bold, dim=self.dim,
+                               underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,)

@@ -94,6 +94,8 @@ class InitHelp():
     OUTPUT_DIR = "The path where will output the initialized app into."
     NO_INPUT = "Disable prompting and accept default values defined template config."
 
+    NOCOLOR = "Suppress colored output"
+
 
 class ConfigureHelp():
     # Configure Help Message
@@ -123,6 +125,8 @@ class ConfigureHelp():
     GET_USING_COS = USING_COS
     GET_PATHON_PATH = PATHON_PATH
 
+    NOCOLOR = "Suppress colored output"
+
 
 class NativeHelp():
     # Native Help Message
@@ -141,6 +145,8 @@ class NativeHelp():
     START_API_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
     INVOKE_QUIET = 'Only display what function return.'
 
+    NOCOLOR = "Suppress colored output"
+
 
 class ValidateHelp():
     # Validate Help Message
@@ -148,6 +154,8 @@ class ValidateHelp():
     SHORT_HELP = "Validate a SCF template."
 
     TEMPLATE_FILE = "The SCF template file for Deploy."
+
+    NOCOLOR = "Suppress colored output"
 
 
 class LogsHelp():
@@ -166,6 +174,8 @@ class LogsHelp():
     FAILED = "Get the log of the failed call."
     TAIL = "Get the latest real-time logs."
 
+    NOCOLOR = "Suppress colored output"
+
 
 class LocalHelp():
     # Local Help Message
@@ -176,6 +186,8 @@ class LocalHelp():
     INVOKE_EVENT = 'The source of the file for the simulated test event, the file content must be in JSON format.'
     INVOKE_NO_ENENT = "Without the source of the file for the simulated test. The default is False."
     INVOKE_QUIET = 'Only display what function return.'
+
+    NOCOLOR = "Suppress colored output"
 
 
 class FunctionHelp():
@@ -189,6 +201,8 @@ class FunctionHelp():
     NAMESPACE = CommonHelp.NAMESPACE
     FORCED = "Force delete function without ask."
     REGION = "Region name. Including %s." % REGIONS_STR
+
+    NOCOLOR = "Suppress colored output"
 
 
 class EventdataHelp():
@@ -205,3 +219,5 @@ class EventdataHelp():
     FORCED_UPDATE = "The remote eventdata will be forced to update when it already exists. The default is False."
     NAMESPACE = CommonHelp.NAMESPACE
     REGION = "Region name. Including %s." % REGIONS_STR
+
+    NOCOLOR = "Suppress colored output"

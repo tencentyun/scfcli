@@ -17,7 +17,6 @@ class UserException(ClickException):
         return str(self.message)
 
     def show(self, file=None):
-        print(sys.argv)
         if file is None:
             file = get_text_stderr()
         if "--no-color" in sys.argv or "-nc" in sys.argv:
