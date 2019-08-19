@@ -28,6 +28,7 @@ REGIONS = infor.REGIONS
 @click.option('--using-cos', is_flag=True, help=help.GET_USING_COS)
 @click.option('--python2-path', help=help.GET_PATHON_PATH)
 @click.option('--python3-path', help=help.GET_PATHON_PATH)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def get(**kwargs):
     '''
         \b
@@ -38,6 +39,7 @@ def get(**kwargs):
             * Get the configured information
               $ scf configure get
         '''
+
     uc = UserConfig()
 
     def set_true(k):
@@ -54,7 +56,7 @@ def get(**kwargs):
             attr_value = "*" * 32 + attr_value[32:]
         elif attr == "secret-key":
             attr_value = "*" * 28 + attr_value[28:]
-        msg += click.style("\n[-] ", fg="cyan") + click.style("{} = {}".format(attr, attr_value), fg="cyan")
+        msg += Operation("\n[-] ", fg="cyan").style() + Operation("{} = {}".format(attr, attr_value), fg="cyan").style()
     Operation(msg.strip()).process()
 
 
@@ -66,6 +68,7 @@ def get(**kwargs):
 @click.option('--using-cos', help=help.SET_USING_COS)
 @click.option('--python2-path', help=help.SET_PATHON_PATH)
 @click.option('--python3-path', help=help.SET_PATHON_PATH)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def set(**kwargs):
     '''
         \b

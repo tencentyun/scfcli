@@ -35,12 +35,11 @@ class List(object):
 
         Operation("Region:%s" % (region)).process()
         Operation("Namespace:%s " % (namespace)).process()
-        click.secho("%-20s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName"))
+        Operation("%-20s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName")).echo()
         for function in functions:
-            click.secho("%-20s %-24s %-20s %-20s %-60s" % (function.Runtime, List.status(function.Status),
+            Operation("%-20s %-24s %-20s %-20s %-60s" % (function.Runtime, List.status(function.Status),
                                                            function.AddTime, function.ModTime,
-                                                           function.FunctionName))
-        # click.secho("\n")
+                                                           function.FunctionName)).echo()
         if status:
             msg = "If you want to get a list of more functions, you can specify the region and namespace. Like: scf function list --region ap-shanghai --namespace default"
             Operation(msg).information()
@@ -48,17 +47,18 @@ class List(object):
     @staticmethod
     def status(status_name):
         if status_name == "Active":
-            return click.style(status_name, fg="green")
+            return Operation(status_name, fg="green").style()
         elif "Failed" in status_name:
-            return click.style(status_name, fg="red")
+            return Operation(status_name, fg="red").style()
         else:
-            return click.style(status_name, fg="blue")
+            return Operation(status_name, fg="blue").style()
 
 
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
-def list(region, namespace):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def list(region, namespace, no_color):
     """
         \b
         Show the SCF function list.
@@ -68,4 +68,5 @@ def list(region, namespace):
             * All function in ap-guangzhou and in namespace default
               $ scf function list --region ap-guangzhou --namespace default
     """
+
     List.do_cli(region, namespace)

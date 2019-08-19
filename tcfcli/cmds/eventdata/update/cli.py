@@ -107,7 +107,8 @@ class Update(object):
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
 @click.option('-d', '--dir', type=str, default='.', help=help.DIR)
 @click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED_UPDATE)
-def update(region, namespace, name, dir, forced):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def update(region, namespace, name, dir, forced, no_color):
     """
         \b
         Update Events to Function1.
@@ -117,4 +118,5 @@ def update(region, namespace, name, dir, forced):
             * Update Events to Function1
               $ scf eventdata update --name Function1
     """
+
     Update.do_cli(region, namespace, name, dir, forced)

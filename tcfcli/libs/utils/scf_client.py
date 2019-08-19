@@ -15,7 +15,6 @@ from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.tcsam.tcsam_macro import TriggerMacro as trmacro
 import base64
-import click
 
 
 class ScfClient(object):
@@ -47,7 +46,6 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def delete_function(self, function_name=None, namespace='default'):
@@ -62,7 +60,6 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def list_function(self, namespace=None):
@@ -198,7 +195,6 @@ class ScfClient(object):
     def update_config(self, func, func_name, func_ns):
         try:
             self.update_func_config(func, func_name, func_ns)
-            Operation("Update funcion config success.").success()
             return True
         except TencentCloudSDKException as err:
             return err
@@ -206,7 +202,6 @@ class ScfClient(object):
     def update_code(self, func, func_name, func_ns):
         try:
             self.update_func_code(func, func_name, func_ns)
-            Operation("Update funcion code success.").success()
             return True
         except TencentCloudSDKException as err:
             return err

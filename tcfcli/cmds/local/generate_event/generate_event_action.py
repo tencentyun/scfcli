@@ -7,6 +7,7 @@ import json
 import io
 from tcfcli.libs.utils import py_version
 from chevron import renderer
+from tcfcli.common.operation_msg import Operation
 
 
 class GenerateEventAction(click.MultiCommand):
@@ -59,7 +60,7 @@ class GenerateEventAction(click.MultiCommand):
             data = f.read().strip()
 
         data = renderer.render(data, params)
-        click.secho(json.dumps(json.loads(data), indent=2))
+        Operation(json.dumps(json.loads(data), indent=2)).echo()
 
     def _param_encode(self, params, param_tmp):
         for p in params:

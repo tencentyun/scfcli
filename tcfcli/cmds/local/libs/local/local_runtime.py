@@ -11,6 +11,7 @@ import signal
 import threading
 from contextlib import contextmanager
 
+from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import InvokeException, TimeoutException
 from tcfcli.cmds.local.libs.docker.container import Container
 from tcfcli.common.user_exceptions import InvalidEnvParameters
@@ -83,9 +84,9 @@ class LocalRuntime(object):
                 self._container.get_logs(stdout=stdout, stderr=stderr)
 
             except KeyboardInterrupt:
-                click.secho('Abort function execution')
+                Operation('Abort function execution').echo()
             except Exception as err:
-                click.secho('Invoke Failed.', fg="red")
+                Operation('Invoke Failed.', fg="red").echo()
                 raise InvokeException('Invoke error:%s' % str(err))
 
             finally:
@@ -277,7 +278,7 @@ class LocalRuntime(object):
             container.delete()
 
         def stop_container():
-            click.secho('Function Timeout.', fg="red")
+            Operation('Function Timeout.', fg="red").echo()
             self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self.get_func_name(), timeout)
             container.delete()
 

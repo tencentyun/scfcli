@@ -10,17 +10,16 @@
 
 import click
 import tcfcli.common.base_infor as infor
-
-MUST = click.style("[Required]", bg="red") + " "
+from tcfcli.common.operation_msg import Operation
 
 REGIONS = infor.REGIONS
-REGIONS_STR = click.style("%s" % (", ".join(REGIONS)), fg='green')
+REGIONS_STR = Operation("%s" % (", ".join(REGIONS)), fg='green').style()
 
 RUNTIME = infor.EVENT_RUNTIME
-RUNTIME_STR = click.style("%s" % (", ".join(RUNTIME)), fg='green')
+RUNTIME_STR = Operation("%s" % (", ".join(RUNTIME)), fg='green').style()
 
 HTTP_RUNTIME = infor.HTTP_RUNTIME
-HTTP_RUNTIME_STR = click.style("%s" % (", ".join(HTTP_RUNTIME)), fg='green')
+HTTP_RUNTIME_STR = Operation("%s" % (", ".join(HTTP_RUNTIME)), fg='green').style()
 
 
 class CommonHelp():
@@ -57,6 +56,8 @@ class CommonHelp():
     INVOKE_SKIP_PULL_IMAGE = 'Specify whether CLI skip pulling or update docker images.'
     INVOKE_REGION = "The function region. Including %s." % REGIONS_STR
 
+    NOCOLOR = "Suppress colored output"
+
 
 class DeployHelp():
     # Deploy Help Message
@@ -65,6 +66,7 @@ class DeployHelp():
 
     NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
+    NOCOLOR = CommonHelp.NOCOLOR
 
     COS_BUCKET = "COS Bucket name."
     TEMPLATE_FILE = "SCF function template file."
@@ -91,6 +93,8 @@ class InitHelp():
     RUNTIME = "Runtime of this funtion.Include %s." % (RUNTIME_STR)
     OUTPUT_DIR = "The path where will output the initialized app into."
     NO_INPUT = "Disable prompting and accept default values defined template config."
+
+    NOCOLOR = "Suppress colored output"
 
 
 class ConfigureHelp():
@@ -121,6 +125,8 @@ class ConfigureHelp():
     GET_USING_COS = USING_COS
     GET_PATHON_PATH = PATHON_PATH
 
+    NOCOLOR = "Suppress colored output"
+
 
 class NativeHelp():
     # Native Help Message
@@ -139,6 +145,8 @@ class NativeHelp():
     START_API_DEBUG_ARGS = 'The debugger startup parameters in this machine. After the parameter is specified, the specified parameters will be passed when the debugger starts.'
     INVOKE_QUIET = 'Only display what function return.'
 
+    NOCOLOR = "Suppress colored output"
+
 
 class ValidateHelp():
     # Validate Help Message
@@ -147,13 +155,15 @@ class ValidateHelp():
 
     TEMPLATE_FILE = "The SCF template file for Deploy."
 
+    NOCOLOR = "Suppress colored output"
+
 
 class LogsHelp():
     # Logs Help Message
 
     SHORT_HELP = "Fetch logs of SCF function from service."
 
-    NAME = MUST + CommonHelp.NAME
+    NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
 
     REGION = "Specify the area where the function is located (e.g. ap-guangzhou)."
@@ -163,6 +173,8 @@ class LogsHelp():
     DURATION = "The duration between starttime and current time (unit:second)."
     FAILED = "Get the log of the failed call."
     TAIL = "Get the latest real-time logs."
+
+    NOCOLOR = "Suppress colored output"
 
 
 class LocalHelp():
@@ -175,6 +187,8 @@ class LocalHelp():
     INVOKE_NO_ENENT = "Without the source of the file for the simulated test. The default is False."
     INVOKE_QUIET = 'Only display what function return.'
 
+    NOCOLOR = "Suppress colored output"
+
 
 class FunctionHelp():
     # Function Help Message
@@ -183,15 +197,17 @@ class FunctionHelp():
     LIST_SHORT_HELP = "Show the SCF function list."
     DELETE_SHORT_HELP = "Delete a SCF function."
 
-    DELETE_NAME = MUST + CommonHelp.NAME
+    DELETE_NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
     FORCED = "Force delete function without ask."
     REGION = "Region name. Including %s." % REGIONS_STR
 
+    NOCOLOR = "Suppress colored output"
+
 
 class EventdataHelp():
     # Function Help Message
-    DIR ="The local eventdata dir."
+    DIR = "The local eventdata dir."
     SHORT_HELP = "Manage SCF remote event resource."
     LIST_SHORT_HELP = "Show the SCF event list."
     GET_SHORT_HELP = "Get SCF event from remote."
@@ -203,3 +219,5 @@ class EventdataHelp():
     FORCED_UPDATE = "The remote eventdata will be forced to update when it already exists. The default is False."
     NAMESPACE = CommonHelp.NAMESPACE
     REGION = "Region name. Including %s." % REGIONS_STR
+
+    NOCOLOR = "Suppress colored output"

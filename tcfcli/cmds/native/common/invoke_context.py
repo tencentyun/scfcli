@@ -19,6 +19,7 @@ from tcfcli.common.user_config import UserConfig
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import *
 
+
 class InvokeContext(object):
     BOOTSTRAP_SUFFIX = {
         MacroRuntime.node610: "bootstrap.js",
@@ -85,7 +86,8 @@ class InvokeContext(object):
     def _check_function_type(self, resource):
         ns = list(resource.keys())[0]
         func = list(resource[ns].keys())[0]
-        if tsmacro.Type in resource[ns][func][tsmacro.Properties] and resource[ns][func][tsmacro.Properties][tsmacro.Type] != 'Event':
+        if tsmacro.Type in resource[ns][func][tsmacro.Properties] and resource[ns][func][tsmacro.Properties][
+            tsmacro.Type] != 'Event':
             raise InvokeContextException("You must provide a Event Type Function")
         runtime = resource[ns][func][tsmacro.Properties][tsmacro.Runtime]
         if (runtime[0:].lower()) not in infor.EVENT_RUNTIME:
@@ -97,7 +99,7 @@ class InvokeContext(object):
 
         resource = template_dict.get(tsmacro.Resources, {})
         func = self._get_function(self._get_namespace(resource))
-        #self._check_function_type(resource)
+        # self._check_function_type(resource)
         self._runtime = Runtime(func.get(tsmacro.Properties, {}))
         self._debug_context = DebugContext(self._debug_port, self._debug_argv, self._runtime.runtime)
         return self
@@ -107,15 +109,15 @@ class InvokeContext(object):
 
     def invoke(self):
         def timeout_handle(child):
-            click.secho('Function Timeout.', fg="red")
+            Operation('Function Timeout.', fg="red").echo()
             child.kill()
             self._thread_err_msg = 'Function "%s" timeout after %d seconds' % (self._function, self._runtime.timeout)
 
         try:
-            click.secho("Run %s's cmd: %s" % (self._runtime.runtime, click.style(self.cmd, fg="green")))
+            Operation("Run %s's cmd: %s" % (self._runtime.runtime, Operation(self.cmd, fg="green").style())).echo()
             child = subprocess.Popen(args=[self.cmd] + self.argv, env=self.env)
         except OSError:
-            click.secho("Execution Failed.", fg="red")
+            Operation("Execution Failed.", fg="red").echo()
             raise UserException(
                 "Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
 
@@ -124,13 +126,13 @@ class InvokeContext(object):
         if not self._debug_context.is_debug:
             timer.start()
         else:
-            click.secho("Scf debug port is listening on localhost:{}".format(str(self._debug_port)), fg="green")
+            Operation("Scf debug port is listening on localhost:{}".format(str(self._debug_port)), fg="green").echo()
         ret_code = 0
         try:
             ret_code = child.wait()
         except KeyboardInterrupt:
             child.kill()
-            click.secho("Recv a SIGINT, exit.")
+            Operation("Recv a SIGINT, exit.").echo()
         timer.cancel()
         if self._thread_err_msg != "":
             raise TimeoutException(self._thread_err_msg)

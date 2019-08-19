@@ -39,18 +39,19 @@ class List(object):
         if not testmodels:
             raise NamespaceException("This function not exist event".format(f=name))
 
-        click.secho("%-20s %-20s %-20s" % ("TestmodelsName", "AddTime", "ModTime"))
+        Operation("%-20s %-20s %-20s" % ("TestmodelsName", "AddTime", "ModTime")).echo()
         for testmodel in testmodels:
             res = ScfClient(region).get_func_testmodel(functionName=name, namespace=namespace, testModelName=testmodel)
-            click.secho("%-20s %-20s %-20s" % (testmodel, res['CreatedTime'], res['ModifiedTime']))
-        click.secho("\n")
+            Operation("%-20s %-20s %-20s" % (testmodel, res['CreatedTime'], res['ModifiedTime'])).echo()
+        Operation("\n").echo()
 
 
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name', required=True, help=help.FUNCTION_NAME_HELP)
-def list(region, namespace, name):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def list(region, namespace, name, no_color):
     """
         \b
         Show the SCF function event list.
@@ -60,6 +61,7 @@ def list(region, namespace, name):
             * All function Events of Function1
               $ scf eventdata list --name Function1
     """
+
     List.do_cli(region, namespace, name)
 
 

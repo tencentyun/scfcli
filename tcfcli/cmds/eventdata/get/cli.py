@@ -74,7 +74,8 @@ class Get(object):
 @click.option('-e', '--event', help=help.FUNCTION_TESTMODEL_NAME_HELP)
 @click.option('-d', '--output-dir', default='scf_event_data', help=help.FUNCTION_TESTMODEL_OUTPUTDIR)
 @click.option('-f', '--forced', is_flag=True, default=False, help=help.FORCED_GET)
-def get(region, namespace, name, event, output_dir, forced):
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
+def get(region, namespace, name, event, output_dir, forced, no_color):
     '''
     \b
     Get a SCF function event.
@@ -84,6 +85,7 @@ def get(region, namespace, name, event, output_dir, forced):
         * Get a function event
           $ scf eventdata get --name test  --event event
     '''
+
     Get.do_cli(region, namespace, name, event, output_dir, forced)
 
 
