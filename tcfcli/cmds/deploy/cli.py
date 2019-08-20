@@ -9,8 +9,9 @@ from io import BytesIO
 import shutil
 import hashlib
 import threading
-from multiprocessing import Pool
+from multiprocessing import Pool, Process
 from zipfile import ZipFile, ZIP_DEFLATED
+import platform
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
@@ -29,6 +30,11 @@ DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
+
+if platform.python_version() < '3':
+    version = 2
+else:
+    version = 3
 
 
 @click.command(short_help=help.SHORT_HELP)
@@ -651,7 +657,7 @@ class Deploy(object):
 
     def do_deploy(self):
 
-        deploy_pool = Pool(8)
+        deploy_pool = Pool(processes=8)
 
         function_list = []
 
@@ -665,18 +671,34 @@ class Deploy(object):
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
-                deploy_pool.apply_async(self._do_deploy_core, args=(
-                    self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,))
+
+                if version == 3:
+                    deploy_pool.apply_async(
+                        self._do_deploy_core,
+                        args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
+                    )
+                else:
+                    deploy_pool = Process(
+                        target=self._do_deploy_core,
+                        args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
+                    )
+                    deploy_pool.start()
+
+                # self._do_deploy_core(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event)
+
                 function_list.append((self.region, ns, func, self.resources))
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
-        deploy_pool.close()
+        if version == 3:
+            deploy_pool.close()
+
         deploy_pool.join()
 
         for eve_function in function_list:
             Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
+
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
             func_ns = self.namespace
