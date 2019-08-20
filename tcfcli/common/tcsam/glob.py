@@ -10,6 +10,7 @@ glob_schema = {
             "properties": {
                 macro.CodeUri: {"type": "string"},
                 macro.Desc: {"type": "string"},
+                macro.Role: {"type": "string"},
                 macro.Envi: {
                     "type": "object",
                     "properties": {

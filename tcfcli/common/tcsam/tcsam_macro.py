@@ -19,9 +19,7 @@ class TcSamMacro(object):
     LocalZipFile = "LocalZipFile"
     CosBucketName = "CosBucketName"
     CosObjectName = "CosObjectName"
-
-
-
+    Role = "Role"
 
     TrApiGw = "APIGW"
     TrCMQ = "CMQ"

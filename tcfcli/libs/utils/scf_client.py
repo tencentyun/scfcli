@@ -99,6 +99,7 @@ class ScfClient(object):
         req.Description = proper.get(tsmacro.Desc)
         req.MemorySize = proper.get(tsmacro.MemSize)
         req.Timeout = proper.get(tsmacro.Timeout)
+        req.Role = proper.get(tsmacro.Role)
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
         req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
         resp = self._client.UpdateFunctionConfiguration(req)
@@ -136,6 +137,7 @@ class ScfClient(object):
         req.MemorySize = proper.get(tsmacro.MemSize)
         req.Timeout = proper.get(tsmacro.Timeout)
         req.Runtime = proper.get(tsmacro.Runtime)
+        req.Role = proper.get(tsmacro.Role)
         if req.Runtime:
             req.Runtime = req.Runtime[0].upper() + req.Runtime[1:].lower()
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))

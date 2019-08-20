@@ -23,6 +23,7 @@ from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.libs.utils.cos_client import CosClient
 from tcfcli.common.operation_msg import Operation
+from tcfcli.common.cam_role import list_scf_role
 
 _CURRENT_DIR = '.'
 _BUILD_DIR = os.path.join(os.getcwd(), '.tcf_build')
@@ -698,7 +699,18 @@ class Deploy(object):
             Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
-
+        # check role exit
+        role = func.get(tsmacro.Properties, {}).get(tsmacro.Role)
+        if role:
+            rolelist = list_scf_role(region)
+            if rolelist == None:
+                Operation("Get Role list error").warning()
+                func[tsmacro.Properties][tsmacro.Role] = None
+            elif role not in rolelist:
+                Operation("%s not exists in remote scf role list" % (role)).warning()
+                if len(rolelist):
+                    Operation("You can choose from %s " % (str(rolelist))).warning()
+                func[tsmacro.Properties][tsmacro.Role] = None
         # check namespace exit, create namespace
         if self.namespace and self.namespace != func_ns:
             func_ns = self.namespace
