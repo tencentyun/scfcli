@@ -82,7 +82,7 @@ class UserConfig(object):
         for section in cf.sections():#若有新版本用户标志section,不迁移
             if section.startswith('USER_'):
                 return
-        #读取旧的section数据
+        # 读取旧的section数据
         attrs = {}
         for attrs_keys in cf.options(UserConfig.API):
             attrs[attrs_keys] = cf.get(UserConfig.API, attrs_keys)
@@ -148,8 +148,16 @@ class UserConfig(object):
                 break
 
         self.section_map[user_section] = {}
+        format_data = {}
+        for k in data:
+            format_data[self._name_attr2obj(k)] = data[k]
         for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
-            self.section_map[user_section][key] = data[self._name_obj2attr(key)]
+            if key in format_data and format_data[key]:
+                self.section_map[user_section][key] = format_data[key]
+            elif key == 'using_cos':
+                self.section_map[user_section][key] = "False (By default, it isn't deployed by COS.)"
+            else:
+                self.section_map[user_section][key] = "None"
 
     def changeuser(self, user):
         self.section_map[UserConfig.OTHERS]['curr_user'] = user
@@ -181,9 +189,11 @@ class UserConfig(object):
             # 获取所有用户配置到对象，包括当前用户
             if section.startswith('USER_'):
                 self.section_map[section] = {}
-                for attr in attrs:
-                    if self._name_attr2obj(attr) in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
-                        self.section_map[section][self._name_attr2obj(attr)] = cf.get(section, attr)
+                for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
+                    if self._name_obj2attr(key) in attrs:
+                        self.section_map[section][key] = cf.get(section, self._name_obj2attr(key))
+                    else:
+                        self.section_map[section][key] = 'None'
             # 获取共有配置到对象
             else:
                 for attr in attrs:
@@ -193,20 +203,20 @@ class UserConfig(object):
     def _dump_config(self):
         cf = CliConfigParser()
         for section in list(self.section_map.keys()):
-            #当前用户的配置
+            # 当前用户的配置
             if section == UserConfig.USER_QCLOUD_CONFIG:
                 curr_user = self.section_map[UserConfig.OTHERS]['curr_user']
                 cf.add_section(curr_user)
                 for key in list(self.section_map[section].keys()):
                     if self.section_map[section][key]:
                         cf.set(curr_user, self._name_obj2attr(key), self.section_map[section][key])
-            #其他用户列表的配置
+            # 其他用户列表的配置,防止重复add_section
             elif section.startswith('USER_') and section != self.section_map[UserConfig.OTHERS]['curr_user']:
                 cf.add_section(section)
                 for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
                     if self.section_map[section][key]:
                         cf.set(section, self._name_obj2attr(key), self.section_map[section][key])
-            #公用配置
+            # 公用配置
             elif section in UserConfig.COMMON_SECTION_LIST:
                 cf.add_section(section)
                 for key in list(self.section_map[section].keys()):

@@ -50,9 +50,6 @@ def add(**kwargs):
             Operation("The region must in %s." % (", ".join(REGIONS))).warning()
             kwargs["region"] = uc.section_map[UserConfig.USER_QCLOUD_CONFIG]['region']
             return
-    # if ('USER_'+ str(kwargs['appid'])) in userlist:
-    #     Operation("The appid %s exists in config file." % (str(kwargs['appid']))).warning()
-    #     return
     if "using_cos" in kwargs and kwargs["using_cos"]:
         kwargs["using_cos"] = using_cos_true if kwargs["using_cos"] not in ["y", "Y"] else using_cos_false
 
@@ -67,12 +64,8 @@ def add(**kwargs):
                 while True:
                     v = click.prompt(
                         text="TencentCloud {}".format(attr),
-                        default=attrs[attr],
+                        default=None,
                         show_default=False)
-                    # if attr == 'appid':
-                    #     # if ('USER_' + str(v)) in userlist:
-                    #     #     Operation("The appid %s exists in config file." % (str(kwargs['appid']))).warning()
-                    #     #     return
                     config[attr] = v
 
                     if attr != "region":
