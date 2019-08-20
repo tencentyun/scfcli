@@ -66,7 +66,7 @@ class UserConfig(object):
                "version_time": "",
                "no_color": "None",
                "language": "None",
-               "allow_report": "None",
+               "allow_report": "True",
            }
         }
         self._migrate()
@@ -164,8 +164,14 @@ class UserConfig(object):
         for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
             self.section_map[UserConfig.USER_QCLOUD_CONFIG][key] = self.section_map[user][key]
 
-    def get_user_appid(self, user):
-        return self.section_map[user]['appid']
+    def get_user_info(self, user):
+        data = {}
+        data['appid'] = self.section_map[user]['appid']
+        data['secret_id'] = self.section_map[user]['secret_id']
+        data['secret_key'] = self.section_map[user]['secret_key']
+        data['region'] = self.section_map[user]['region']
+        data['using_cos'] = self.section_map[user]['using_cos']
+        return data
 
     def _load_config(self):
         cf = CliConfigParser()

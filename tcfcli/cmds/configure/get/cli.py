@@ -49,13 +49,26 @@ def get(**kwargs):
     bools = [v for k, v in kwargs.items()]
     if not reduce(lambda x, y: bool(x or y), bools):
         list(map(set_true, kwargs))
+
     attrs = uc.get_attrs(kwargs)
-    msg = "Config" #"{} config:".format(UserConfig.API)
-    for attr in sorted(attrs):
-        attr_value = attrs[attr]
-        if attr == "secret-id":
-            attr_value = "*" * 32 + attr_value[32:]
-        elif attr == "secret-key":
-            attr_value = "*" * 28 + attr_value[28:]
-        msg += Operation("\n[-] ", fg="cyan").style() + Operation("{} = {}".format(attr, attr_value), fg="cyan").style()
-    Operation(msg.strip()).process()
+    #msg = "Config" #"{} config:".format(UserConfig.API)
+
+    for section in uc.SECTION_LIST:
+        for attr in attrs:
+            if attr.replace("-", "_") in list(uc.section_map[section].keys()):
+                attr_value = attrs[attr]
+                if attr == "secret-id":
+                    attr_value = "*" * 32 + attr_value[32:]
+                elif attr == "secret-key":
+                    attr_value = "*" * 28 + attr_value[28:]
+                Operation("{} = {}".format(attr, attr_value), fg="cyan").process()
+
+
+    # for attr in sorted(attrs):
+    #     attr_value = attrs[attr]
+    #     if attr == "secret-id":
+    #         attr_value = "*" * 32 + attr_value[32:]
+    #     elif attr == "secret-key":
+    #         attr_value = "*" * 28 + attr_value[28:]
+    #     msg += Operation("\n[-] ", fg="cyan").style() + Operation("{} = {}".format(attr, attr_value), fg="cyan").style()
+    # Operation(msg.strip()).process()

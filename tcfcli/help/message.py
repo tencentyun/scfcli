@@ -126,9 +126,12 @@ class ConfigureHelp():
     GET_PATHON_PATH = PATHON_PATH
 
     ADD_SHORT_HELP = "Add a user"
-    CHANGE_SHORT_HELP ="Configure change your user"
 
-    NOCOLOR = "Suppress colored output"
+    CHANGE_SHORT_HELP ="Configure change your user."
+    CHANGE_USERID_HELP = 'UserId to change to.'
+
+    NOCOLOR = "Suppress colored output."
+    ALLOW_REPORT = "Cli will report some infos about command usage amount.You can turn off at any time."
 
 
 class NativeHelp():
