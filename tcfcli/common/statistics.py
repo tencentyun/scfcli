@@ -21,7 +21,7 @@ class StatisticsConfigure(object):
         self.data_file = os.path.join(os.path.expanduser('~'), '.statistics.ini')
 
     def read_data(self):
-        self.data_attr.read(self.data_file, encoding="utf-8")
+        self.data_attr.read(self.data_file)
 
     def write_data(self):
         self.data_attr.write(open(self.data_file, "w"))
@@ -41,6 +41,7 @@ class StatisticsConfigure(object):
                 data[section] = self.data_attr.getint(section, options)
             return data
         except Exception as e:
+            # print e
             self.delete_data()
             return False
 

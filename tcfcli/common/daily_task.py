@@ -53,13 +53,15 @@ def daily_task():
                 statistics.read_data()
                 post_data = statistics.get_data()
                 # statistics.delete_data()
+                # print post_data
                 if not post_data:
                     post_data = {}
                 post_data["appid"] = uc.appid
                 post_data["version"] = __version__
                 post_data = json.dumps(post_data) if post_data else "{}"
-                request = openurl.Request(data=post_data.encode("utf-8"),
+                request = openurl.Request(data= post_data.encode("utf-8") if version >= '3' else post_data,
                                           url=url) if version >= '3' else openurl.Request(url, data=post_data)
+                # print openurl.urlopen(request).read()
                 response = json.loads(json.loads(openurl.urlopen(request).read().decode("utf-8")))
                 release_version = response["version"]
                 message = response["message"]
@@ -72,6 +74,7 @@ def daily_task():
                 uc.set_attrs({'version_time': now_time})
                 uc.flush()
         except Exception as e:
+            # print e
             pass
 
     except Exception as e:

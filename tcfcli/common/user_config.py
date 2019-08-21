@@ -101,12 +101,14 @@ class UserConfig(object):
         self.version_time = self.section_map[UserConfig.OTHERS]['version_time']
 
     def set_attrs(self, attrs):
-        for attr_key in attrs:
-            for section in self.section_map:
-                if section not in UserConfig.SECTION_LIST: #避免设置其他用户的属性
-                    continue
-                if self._name_attr2obj(attr_key) in list(self.section_map[section].keys()):
-                    self.section_map[section][self._name_attr2obj(attr_key)] = attrs[attr_key]
+        for section in self.section_map:
+            # 只设置当前用户和公共配置
+            if section not in UserConfig.SECTION_LIST:
+                continue
+            for key in list(self.section_map[section].keys()):
+                # 如果 attr在
+                if key in list(attrs.keys()) and attrs[key]:
+                    self.section_map[section][key] = attrs[key]
 
     def get_attrs(self, attrs):
         ret = {}
@@ -158,6 +160,7 @@ class UserConfig(object):
                 self.section_map[user_section][key] = "False (By default, it isn't deployed by COS.)"
             else:
                 self.section_map[user_section][key] = "None"
+        return user_section
 
     def changeuser(self, user):
         self.section_map[UserConfig.OTHERS]['curr_user'] = user

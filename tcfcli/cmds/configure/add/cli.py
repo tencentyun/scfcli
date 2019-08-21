@@ -87,5 +87,14 @@ def add(**kwargs):
 
         kwargs = config
 
-    uc.add_user(data=kwargs)
+    user = uc.add_user(data=kwargs)
     uc.flush()
+    Operation('Add User %s success!' % user).success()
+    Operation(user).process()
+    Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % ('UserId', 'AppId', 'region', 'secret_id', 'secret_key', 'using_cos')).process()
+    userinfo = uc.get_user_info(user)
+    secret_id = ("*" * 3 + userinfo['secret_id'][32:]) if userinfo['secret_id'] != 'None' else 'None'
+    secret_key = ("*" * 3 + userinfo['secret_key'][28:]) if userinfo['secret_key'] != 'None' else 'None'
+    Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % (user.strip('USER_'), userinfo['appid'], userinfo['region'],
+                                                       secret_id, secret_key, userinfo['using_cos'][:5])).process()
+    Operation('You can use `scf configure change %s` to switch user.' % (user.strip('USER_'))).process()
