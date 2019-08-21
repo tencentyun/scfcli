@@ -34,11 +34,14 @@ def change(userid):
     '''
 
     uc = UserConfig()
-    curruser = uc.section_map[UserConfig.OTHERS]['curr_user']
-    Operation('Your current user is %s' % (curruser)).process()
+
     userlist = uc.get_all_user()
     userlist = sorted(userlist)
+
+    # 如果没有传入编号，则进入交互
     if not userid:
+        curruser = uc.section_map[UserConfig.OTHERS]['curr_user']
+        Operation('Your current user is %s' % (curruser)).process()
         Operation('%-10s %-15s %-15s %-10s %-10s %-10s' % ('UserId', 'AppId', 'region', 'secret_id', 'secret_key', 'using_cos')).process()
         for user in userlist:
             userinfo = uc.get_user_info(user)
@@ -52,6 +55,7 @@ def change(userid):
     if ('USER_'+v) in userlist:
         uc.changeuser(('USER_'+v))
         uc.flush()
+        Operation('Your current user has switched to %s' % ('USER_'+v)).success()
     else:
         Operation('error No').warning()
 

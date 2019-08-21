@@ -6,7 +6,6 @@ import tcfcli.common.base_infor as infor
 from tcfcli.help.message import ConfigureHelp as help
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.operation_msg import Operation
-from tcfcli.common.scf_client.scf_report_client import ScfReportClient
 
 version = platform.python_version()
 if version >= '3':
@@ -53,16 +52,25 @@ def get(**kwargs):
     attrs = uc.get_attrs(kwargs)
     #msg = "Config" #"{} config:".format(UserConfig.API)
 
+    # for section in uc.SECTION_LIST:
+    #     for attr in attrs:
+    #         if attr.replace("-", "_") in list(uc.section_map[section].keys()):
+    #             attr_value = attrs[attr]
+    #             if attr == "secret-id":
+    #                 attr_value = "*" * 32 + attr_value[32:]
+    #             elif attr == "secret-key":
+    #                 attr_value = "*" * 28 + attr_value[28:]
+    #             Operation("{} = {}".format(attr, attr_value), fg="cyan").process()
     for section in uc.SECTION_LIST:
-        for attr in attrs:
-            if attr.replace("-", "_") in list(uc.section_map[section].keys()):
-                attr_value = attrs[attr]
-                if attr == "secret-id":
+        for key in sorted(list(uc.section_map[section].keys())):
+            key = key.replace("_", "-")
+            if key in list(attrs.keys()):
+                attr_value = attrs[key]
+                if key == "secret-id":
                     attr_value = "*" * 32 + attr_value[32:]
-                elif attr == "secret-key":
+                elif key == "secret-key":
                     attr_value = "*" * 28 + attr_value[28:]
-                Operation("{} = {}".format(attr, attr_value), fg="cyan").process()
-
+                Operation("{} = {}".format(key, attr_value), fg="cyan").process()
 
     # for attr in sorted(attrs):
     #     attr_value = attrs[attr]

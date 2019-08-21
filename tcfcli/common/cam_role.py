@@ -28,7 +28,7 @@ def list_scf_role(region):
         for role in data['List']:
             for state in json.loads(role['PolicyDocument'])['statement']:
                 if 'scf.qcloud.com' in state['principal']['service']:
-                    rolelist.append(role['RoleName'])
+                    rolelist.append(str(role['RoleName']))
                     continue
         return rolelist
     except:
