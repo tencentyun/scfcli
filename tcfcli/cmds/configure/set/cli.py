@@ -62,10 +62,10 @@ def set(**kwargs):
         kwargs["using_cos"] = using_cos_true if kwargs["using_cos"] not in ["y", "Y"] else using_cos_false
 
     values = [v for k, v in kwargs.items()]
+    config = {}
     if not reduce(lambda x, y: (bool(x) or bool(y)), values):
         list(map(set_true, kwargs))
         attrs = uc.get_attrs(kwargs)
-        config = {}
         skip_attr = {'using-cos', 'python2-path', 'python3-path', 'no-color', 'allow-report'}
         for attr in sorted(attrs):
             if attr not in skip_attr:
@@ -103,17 +103,17 @@ def set(**kwargs):
                           default="y" if str(attrs["using-cos"]).startswith("True") else "n",
                           show_default=False)
         if v2:
-            config["using_cos"] = using_cos_true if v2 not in ["y", "Y"] else using_cos_false
+            config["using-cos"] = using_cos_true if v2 not in ["y", "Y"] else using_cos_false
         else:
-            config["using_cos"] = attrs["using-cos"]
+            config["using-cos"] = attrs["using-cos"]
 
         v3 = click.prompt(text="Allow report information to help us optimize scfcli. (y/n)",
                           default="y",
                           show_default=False)
         if v3:
-            config["allow_report"] = "False" if v3 not in ["y", "Y"] else "True"
+            config["allow-report"] = "False" if v3 not in ["y", "Y"] else "True"
         else:
-            config["allow_report"] = attrs["allow_report"]
+            config["allow-report"] = attrs["allow_report"]
 
         kwargs = config
 
