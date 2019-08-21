@@ -111,9 +111,8 @@ class UserConfig(object):
                 continue
             for key in list(self.section_map[section].keys()):
                 # 更新section_map中存在的配置变量
-                attr_key = self._name_obj2attr(key)
-                if attr_key in list(attrs.keys()) and attrs[attr_key]:
-                    self.section_map[section][key] = attrs[attr_key]
+                if key in list(attrs.keys()) and attrs[key]:
+                    self.section_map[section][key] = attrs[key]
 
     def get_attrs(self, attrs):
         ret = {}
@@ -122,7 +121,7 @@ class UserConfig(object):
                 if section not in UserConfig.SECTION_LIST:
                     continue
                 if self._name_attr2obj(attr_key) in self.section_map[section].keys():
-                    ret[self._name_obj2attr(attr_key)] = self.section_map[section][self._name_attr2obj(attr_key)]
+                    ret[self._name_attr2obj(attr_key)] = self.section_map[section][self._name_attr2obj(attr_key)]
         return ret
 
     def flush(self):
