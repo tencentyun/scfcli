@@ -19,7 +19,7 @@ REGIONS = infor.REGIONS
 @click.command(short_help=help.SHORT_HELP)
 @click.option('-n', '--name', help=help.NAME)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
-@click.option('--region', default=None, help=help.REGION)
+@click.option('-r', '--region', default=None, help=help.REGION)
 @click.option('-c', '--count', type=int, help=help.COUNT)
 @click.option('-s', '--start-time', type=str, default=None, help=help.START_TIME)
 @click.option('-e', '--end-time', type=str, default=None, help=help.END_TIMEE)

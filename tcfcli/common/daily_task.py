@@ -46,12 +46,15 @@ def daily_task():
 
             now_time = time.strftime("%Y-%m-%d")  # day
             version_time = uc.version_time
-
+            allow_report = uc.section_map[UserConfig.OTHERS]['allow_report']
+            #print allow_report
             if now_time != version_time:
                 url = "https://service-qgphxt7y-1253970226.gz.apigw.tencentcs.com/release/client_daily_task"
-                statistics = StatisticsConfigure()
-                statistics.read_data()
-                post_data = statistics.get_data()
+                post_data = None
+                if allow_report == 'True':
+                    statistics = StatisticsConfigure()
+                    statistics.read_data()
+                    post_data = statistics.get_data()
                 # statistics.delete_data()
                 # print post_data
                 if not post_data:
@@ -62,6 +65,7 @@ def daily_task():
                 request = openurl.Request(data=post_data.encode("utf-8") if version >= '3' else post_data,
                                           url=url) if version >= '3' else openurl.Request(url, data=post_data)
                 # print openurl.urlopen(request).read()
+                #print post_data
                 response = json.loads(json.loads(openurl.urlopen(request).read().decode("utf-8")))
                 release_version = response["version"]
                 message = response["message"]
