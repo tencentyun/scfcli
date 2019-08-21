@@ -3,7 +3,7 @@ from tencentcloud.common.profile.client_profile import ClientProfile
 from tencentcloud.common.profile.http_profile import HttpProfile
 from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
 from tencentcloud.cam.v20190116 import cam_client, models
-from user_config import UserConfig
+from tcfcli.common.user_config import UserConfig
 import json
 
 

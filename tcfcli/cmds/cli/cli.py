@@ -30,8 +30,7 @@ from tcfcli.cmds.eventdata.cli import eventdata
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
-@click.group(context_settings=dict(help_option_names=['--help']))
-@click.version_option(version=__version__, prog_name="SCF CLI",)
+@click.group(context_settings=dict(help_option_names=['--help','-h']))
 def cli():
     '''
         \b
