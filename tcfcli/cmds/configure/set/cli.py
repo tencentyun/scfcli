@@ -97,15 +97,15 @@ def set(**kwargs):
                             Operation("The region must in %s." % (", ".join(REGIONS))).warning()
 
         #
-        v1 = click.prompt(text="Show the command information without color. (y/n)",
-                          default="y" if str(attrs["using_cos"]).startswith("True") else "n",
+        v1 = click.prompt(text= ("Show the command information without color(cur:%s). (y/n)") % attrs["no_color"][:5],
+                          default="y" if str(attrs["no_color"]).startswith("True") else "n",
                           show_default=False)
         if v1:
             config["no_color"] = "False" if v1 not in ["y", "Y"] else "True"
         else:
             config["no_color"] = attrs["no_color"]
 
-        v2 = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
+        v2 = click.prompt(text=("Deploy SCF function by COS, it will be faster(cur:%s).  (y/n)") % attrs["using_cos"][:5],
                           default="y" if str(attrs["using_cos"]).startswith("True") else "n",
                           show_default=False)
         if v2:
@@ -113,8 +113,8 @@ def set(**kwargs):
         else:
             config["using_cos"] = attrs["using_cos"]
 
-        v3 = click.prompt(text="Allow report information to help us optimize scfcli. (y/n)",
-                          default="y",
+        v3 = click.prompt(text=("Allow report information to help us optimize scfcli(cur:%s). (y/n)") % attrs["allow_report"][:5],
+                          default="y" if str(attrs["allow_report"]).startswith("True") else "n",
                           show_default=False)
         if v3:
             config["allow_report"] = "False" if v3 not in ["y", "Y"] else "True"

@@ -2,8 +2,6 @@
 
 import os
 import platform
-from tcfcli.common.operation_msg import Operation
-
 
 home = os.path.expanduser('~')
 _USER_CONFIG_FILE = home + '/.tcli_config.ini'
@@ -79,18 +77,17 @@ class UserConfig(object):
         cf = CliConfigParser()
         if not cf.read(_USER_CONFIG_FILE):
             return
-        # 无旧有API标志,不迁移
-        if UserConfig.API not in cf.sections():
-            return
         # 若有新版本用户标志section,不迁移
         for section in cf.sections():
             if section.startswith('USER_'):
                 return
         # 读取旧的section数据
-        attrs = {}
-        for attrs_keys in cf.options(UserConfig.API):
-            attrs[attrs_keys] = cf.get(UserConfig.API, attrs_keys)
-        self.set_attrs(attrs)
+
+        if UserConfig.API in cf.sections():
+            attrs = {}
+            for attrs_keys in cf.options(UserConfig.API):
+                attrs[self._name_attr2obj(attrs_keys)] = cf.get(UserConfig.API, attrs_keys)
+            self.set_attrs(attrs)
         self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_'+str(1)
         self._dump_config()
 
