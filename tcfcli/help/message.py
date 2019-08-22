@@ -189,3 +189,16 @@ class ListHelp():
     NAMESPACE = CommonHelp.NAMESPACE
 
     REGION = "The function region. Including %s" % REGIONS_STR
+
+
+class StatHelp():
+    SHORT_HELP = "Show the SCF function monitor info."
+    NAME = "scf function name."
+    PERIOD = "get date period (unit s). default 60s"
+    # INTERVAL = "get info interval (unit sec). default 5s"
+    NAMESPACE = "specify namespace"
+    STARTTIME = "start time"
+    ENDTIME = "end time"
+    REGION = "specify region"
+    METRIC = "specify show metric, multiple separated by commas"
+
