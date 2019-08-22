@@ -77,9 +77,9 @@ class StatisticsConfigure(object):
 
             args.append("command_count")
 
-            print(section, args)
+            # print(section, args)
             for eve_args in args:
-                print(eve_args)
+                # print(eve_args)
                 try:
                     value = self.get_data(section, eve_args)
                     print(value)
