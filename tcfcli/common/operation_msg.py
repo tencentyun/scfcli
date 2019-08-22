@@ -3,6 +3,7 @@
 import sys
 import click
 from builtins import str as text
+from tcfcli.common.user_config import UserConfig
 
 
 class Operation(object):
@@ -26,7 +27,7 @@ class Operation(object):
         return text(self.message)
 
     def new_style(self, msg, bg=None, fg=None):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
+        if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].startswith('True'):
             return click.style(u'%s' % msg)
         else:
             return click.style(u'%s' % msg, bg=bg, fg=fg)
@@ -50,7 +51,7 @@ class Operation(object):
         click.secho(self.new_style("[x]", bg="red") + self.new_style(u' %s' % self.format_message(), fg="red"))
 
     def echo(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
+        if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].startswith('True'):
             click.secho(u'%s' % self.format_message(), bold=self.bold, dim=self.dim,
                         underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset,
                         file=self.file, nl=self.nl, err=self.err, color=self.color, )
@@ -60,7 +61,7 @@ class Operation(object):
                         file=self.file, nl=self.nl, err=self.err, color=self.color, )
 
     def style(self):
-        if "--no-color" in sys.argv or "-nc" in sys.argv:
+        if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].startswith('True'):
             return click.style(u'%s' % self.format_message(), bold=self.bold, dim=self.dim,
                                underline=self.underline, blink=self.blink, reverse=self.reverse, reset=self.reset, )
         else:
