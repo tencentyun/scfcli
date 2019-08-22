@@ -40,7 +40,7 @@ class UserConfig(object):
         self.using_cos = "False (By default, it isn't deployed by COS.)"
         self.python2_path = "None"
         self.python3_path = "None"
-        self.version_time = ""
+        self.version_time = "None"
 
         self.section_map = {
             UserConfig.USER_QCLOUD_CONFIG: {
@@ -61,7 +61,7 @@ class UserConfig(object):
             },
             UserConfig.OTHERS: {
                "curr_user": "None",
-               "version_time": "",
+               "version_time": "None",
                "no_color": "None",
                "language": "None",
                "allow_report": "True",
