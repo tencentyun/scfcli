@@ -75,7 +75,7 @@ class StatisticsConfigure(object):
             if not args:
                 args.append("no_args")
 
-            args.append(section)
+            args.append("command_count")
 
             #print(section, args)
             for eve_args in args:
