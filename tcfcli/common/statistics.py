@@ -74,6 +74,8 @@ class StatisticsConfigure(object):
             if not args:
                 args.append("no_args")
 
+            args.append(section)
+
             # print(section, args)
             for eve_args in args:
                 try:

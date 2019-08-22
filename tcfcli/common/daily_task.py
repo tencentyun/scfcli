@@ -52,7 +52,7 @@ def daily_task():
                 statistics = StatisticsConfigure()
                 statistics.read_data()
                 post_data = statistics.get_data()
-                # statistics.delete_data()
+                statistics.delete_data()
                 # print post_data
                 if not post_data:
                     post_data = {}

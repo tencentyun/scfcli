@@ -9,9 +9,10 @@ from io import BytesIO
 import shutil
 import hashlib
 import threading
-from multiprocessing import Pool, Process
+from multiprocessing import Process
 from zipfile import ZipFile, ZIP_DEFLATED
-import platform
+from click.utils import echo
+from click._compat import get_text_stderr
 
 import tcfcli.common.base_infor as infor
 from tcfcli.help.message import DeployHelp as help
@@ -31,11 +32,6 @@ DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
-
-if platform.python_version() < '3':
-    version = 2
-else:
-    version = 3
 
 
 @click.command(short_help=help.SHORT_HELP)
@@ -78,10 +74,10 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     region = region if region else UserConfig().region
     uc = UserConfig()
-    Operation(uc.region).process()
-    Operation(uc.secret_key).process()
-    Operation(uc.appid).process()
-    Operation(uc.secret_id).process()
+    # Operation(uc.region).process()
+    # Operation(uc.secret_key).process()
+    # Operation(uc.appid).process()
+    # Operation(uc.secret_id).process()
     package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
     resource = package.do_package()
 
@@ -658,7 +654,7 @@ class Deploy(object):
 
     def do_deploy(self):
 
-        deploy_pool = Pool(processes=8)
+        deploy_process = None
 
         function_list = []
 
@@ -673,27 +669,19 @@ class Deploy(object):
                 if func == tsmacro.Type:
                     continue
 
-                if version == 3:
-                    deploy_pool.apply_async(
-                        self._do_deploy_core,
-                        args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
-                    )
-                else:
-                    deploy_pool = Process(
-                        target=self._do_deploy_core,
-                        args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
-                    )
-                    deploy_pool.start()
+                deploy_process = Process(
+                    target=self._do_deploy_core,
+                    args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
+                )
+                deploy_process.start()
 
                 # self._do_deploy_core(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event)
 
                 function_list.append((self.region, ns, func, self.resources))
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
-        if version == 3:
-            deploy_pool.close()
-
-        deploy_pool.join()
+        if deploy_process:
+            deploy_process.join()
 
         for eve_function in function_list:
             Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
@@ -723,7 +711,12 @@ class Deploy(object):
 
             if func['Properties']['Runtime'] != now_runtime:
                 err_msg = "RUNTIME in YAML does not match RUNTIME on the RELEASE (release: %s)" % now_runtime
-                raise DeployException(err_msg)
+                echo(
+                    Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                    file=get_text_stderr()
+                )
+                exit(1)
+                # raise DeployException(err_msg)
 
         rep = ScfClient(region).get_ns(func_ns)
         if not rep:
@@ -734,7 +727,13 @@ class Deploy(object):
                     s = err.get_message()
                 else:
                     s = err.get_message().encode("UTF-8")
-                raise NamespaceException("Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s))
+                err_msg = "Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s)
+                echo(
+                    Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                    file=get_text_stderr()
+                )
+                exit(1)
+                # raise NamespaceException()
 
         deploy_result = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
 
@@ -753,7 +752,13 @@ class Deploy(object):
 
         elif deploy_result == 2:
             Operation("You can add -f to update the function when it already exists. Example : scf deploy -f").warning()
-            raise CloudAPIException("The function already exists.")
+            err_msg = "The function already exists."
+            echo(
+                Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                file=get_text_stderr()
+            )
+            exit(1)
+            # raise CloudAPIException("The function already exists.")
 
         if deploy_result != None:
             err = deploy_result
@@ -764,8 +769,12 @@ class Deploy(object):
 
             if err.get_request_id():
                 err_msg += (u" RequestId: {}".format(err.get_request_id()))
-
-            raise CloudAPIException(err_msg)
+            echo(
+                Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                file=get_text_stderr()
+            )
+            exit(1)
+            # raise CloudAPIException(err_msg)
 
     def _do_deploy_trigger(self, func, func_name, func_ns, region=None, trigger_release=None):
 

@@ -24,7 +24,7 @@ class UserException(ClickException):
         else:
             echo(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"), file=file)
 
-    exit_code = 1
+    exit_code = -1
 
 
 class CloudAPIException(UserException):
