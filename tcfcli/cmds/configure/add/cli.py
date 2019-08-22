@@ -21,11 +21,11 @@ REGIONS = infor.REGIONS
 
 
 @click.command(short_help=help.ADD_SHORT_HELP)
-@click.option('--secret-id', help=help.SET_SECRET_ID)
-@click.option('--secret-key', help=help.SET_SECRET_KEY)
-@click.option('--region', help=help.SET_REGION)
-@click.option('--appid', help=help.SET_APPID)
-@click.option('--using-cos', help=help.SET_USING_COS)
+@click.option('--secret-id', '-si', help=help.SET_SECRET_ID)
+@click.option('--secret-key', '-sk', help=help.SET_SECRET_KEY)
+@click.option('--region', '-r', help=help.SET_REGION)
+@click.option('--appid', '-a', help=help.SET_APPID)
+@click.option('--using-cos', '-uc', help=help.SET_USING_COS)
 def add(**kwargs):
     '''
         \b
@@ -58,7 +58,7 @@ def add(**kwargs):
         list(map(set_true, kwargs))
         attrs = uc.get_attrs(kwargs)
         config = {}
-        skip_attr = {'using-cos'}
+        skip_attr = {'using_cos'}
         for attr in sorted(attrs):
             if attr not in skip_attr:
                 while True:
@@ -77,13 +77,13 @@ def add(**kwargs):
                             Operation("The region must in %s." % (", ".join(REGIONS))).warning()
 
         v = click.prompt(text="Deploy SCF function by COS, it will be faster. (y/n)",
-                         default="y" if str(attrs["using-cos"]).startswith("True") else "n",
+                         default="y" if str(attrs["using_cos"]).startswith("True") else "n",
                          show_default=False)
 
         if v:
-            config["using-cos"] = using_cos_true if v not in ["y", "Y"] else using_cos_false
+            config["using_cos"] = using_cos_true if v not in ["y", "Y"] else using_cos_false
         else:
-            config["using-cos"] = attrs["using-cos"]
+            config["using_cos"] = attrs["using_cos"]
 
         kwargs = config
 

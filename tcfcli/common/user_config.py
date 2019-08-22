@@ -61,25 +61,29 @@ class UserConfig(object):
                 "python2_path": "None",
                 "python3_path": "None",
             },
-           UserConfig.OTHERS: {
+            UserConfig.OTHERS: {
                "curr_user": "None",
                "version_time": "",
                "no_color": "None",
                "language": "None",
                "allow_report": "True",
-           }
+            }
         }
+
         self._migrate()
         self._load_config()
         self._dumpattr()
 
-    def _migrate(self):#新老配置迁移函数
+    # 新老配置迁移函数
+    def _migrate(self):
         cf = CliConfigParser()
         if not cf.read(_USER_CONFIG_FILE):
             return
-        if UserConfig.API not in cf.sections():#无旧有API标志,不迁移
+        # 无旧有API标志,不迁移
+        if UserConfig.API not in cf.sections():
             return
-        for section in cf.sections():#若有新版本用户标志section,不迁移
+        # 若有新版本用户标志section,不迁移
+        for section in cf.sections():
             if section.startswith('USER_'):
                 return
         # 读取旧的section数据
@@ -106,7 +110,7 @@ class UserConfig(object):
             if section not in UserConfig.SECTION_LIST:
                 continue
             for key in list(self.section_map[section].keys()):
-                # 如果 attr在
+                # 更新section_map中存在的配置变量
                 if key in list(attrs.keys()) and attrs[key]:
                     self.section_map[section][key] = attrs[key]
 
@@ -117,7 +121,7 @@ class UserConfig(object):
                 if section not in UserConfig.SECTION_LIST:
                     continue
                 if self._name_attr2obj(attr_key) in self.section_map[section].keys():
-                    ret[self._name_obj2attr(attr_key)] = self.section_map[section][self._name_attr2obj(attr_key)]
+                    ret[self._name_attr2obj(attr_key)] = self.section_map[section][self._name_attr2obj(attr_key)]
         return ret
 
     def flush(self):

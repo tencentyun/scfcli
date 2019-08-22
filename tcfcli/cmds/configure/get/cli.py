@@ -20,13 +20,13 @@ REGIONS = infor.REGIONS
 
 
 @click.command(short_help=help.GET_SHORT_HELP)
-@click.option('--secret-id', is_flag=True, help=help.GET_SECRET_ID)
-@click.option('--secret-key', is_flag=True, help=help.GET_SECRET_KEY)
-@click.option('--region', is_flag=True, help=help.GET_REGION)
-@click.option('--appid', is_flag=True, help=help.GET_APPID)
-@click.option('--using-cos', is_flag=True, help=help.GET_USING_COS)
-@click.option('--python2-path', help=help.GET_PATHON_PATH)
-@click.option('--python3-path', help=help.GET_PATHON_PATH)
+@click.option('--secret-id', '-si', is_flag=True, help=help.GET_SECRET_ID)
+@click.option('--secret-key', '-sk', is_flag=True, help=help.GET_SECRET_KEY)
+@click.option('--region', '-r', is_flag=True, help=help.GET_REGION)
+@click.option('--appid', '-a', is_flag=True, help=help.GET_APPID)
+@click.option('--using-cos', '-uc', is_flag=True, help=help.GET_USING_COS)
+@click.option('--python2-path', '-p2p', is_flag=True, help=help.GET_PATHON_PATH)
+@click.option('--python3-path', '-p3p', is_flag=True, help=help.GET_PATHON_PATH)
 @click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def get(**kwargs):
     '''
@@ -63,14 +63,13 @@ def get(**kwargs):
     #             Operation("{} = {}".format(attr, attr_value), fg="cyan").process()
     for section in uc.SECTION_LIST:
         for key in sorted(list(uc.section_map[section].keys())):
-            key = key.replace("_", "-")
             if key in list(attrs.keys()):
                 attr_value = attrs[key]
-                if key == "secret-id":
+                if key == "secret_id":
                     attr_value = "*" * 32 + attr_value[32:]
-                elif key == "secret-key":
+                elif key == "secret_key":
                     attr_value = "*" * 28 + attr_value[28:]
-                Operation("{} = {}".format(key, attr_value), fg="cyan").process()
+                Operation("{} = {}".format(key.replace('_', '-'), attr_value), fg="cyan").process()
 
     # for attr in sorted(attrs):
     #     attr_value = attrs[attr]

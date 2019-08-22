@@ -105,7 +105,7 @@ class ConfigureHelp():
     SECRET_ID = "TencentCloudAPI  SecretId."
     SECRET_KEY = "TencentCloudAPI  SecretKey."
     REGION = "TencentCloudAPI  Region."
-    APPID = "TencentCloudAPI  Region."
+    APPID = "TencentCloudAPI  APPID."
     USING_COS = "Deploy function by COS. The default is False.(y/n)"
     PATHON_PATH = "Cli native invoke first use this path."
 
