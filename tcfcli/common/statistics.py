@@ -18,9 +18,11 @@ class StatisticsConfigure(object):
 
     def __init__(self):
         self.data_attr = ConfigParser()
-        self.data_file = os.path.join(os.path.expanduser('~'), '.statistics.ini')
+        self.data_file = os.path.join(os.path.expanduser('~'), '.scf_statistics.ini')
 
     def read_data(self):
+        if not os.path.isfile(self.data_file):
+            self.write_data()
         self.data_attr.read(self.data_file)
 
     def write_data(self):
@@ -41,8 +43,7 @@ class StatisticsConfigure(object):
                 data[section] = self.data_attr.getint(section, options)
             return data
         except Exception as e:
-            # print e
-            self.delete_data()
+            # self.delete_data()
             return False
 
     def set_data(self, section, options, value):
@@ -76,10 +77,12 @@ class StatisticsConfigure(object):
 
             args.append(section)
 
-            # print(section, args)
+            print(section, args)
             for eve_args in args:
+                print(eve_args)
                 try:
                     value = self.get_data(section, eve_args)
+                    print(value)
                     if value == False:
                         value = 0
                     else:
@@ -88,7 +91,6 @@ class StatisticsConfigure(object):
                     # print(value)
                     self.set_data(section, eve_args, str(value))
                 except Exception as e:
-                    # print(e)
                     pass
             self.write_data()
         except Exception as e:
