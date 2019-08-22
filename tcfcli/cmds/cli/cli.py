@@ -24,6 +24,7 @@ from tcfcli.cmds.validate.cli import validate
 from tcfcli.cmds.configure.cli import configure
 from tcfcli.cmds.native.cli import native
 from tcfcli.cmds.logs.cli import logs
+from tcfcli.cmds.stat.cli import stat
 from tcfcli.cmds.list.cli import list
 from tcfcli.cmds.delete.cli import delete
 
@@ -54,6 +55,7 @@ cli.add_command(deploy)
 cli.add_command(native)
 cli.add_command(validate)
 cli.add_command(logs)
+cli.add_command(stat)
 cli.add_command(local)
 
 cli.add_command(delete)
