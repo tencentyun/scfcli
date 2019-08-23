@@ -22,7 +22,7 @@ class MonitorClient(object):
             self._region = uc.region
         else:
             self._region = region
-
+            
         self.period = period
         hp = HttpProfile(reqTimeout=MonitorClient.CLOUD_API_REQ_TIMEOUT)
         cp = ClientProfile("TC3-HMAC-SHA256", hp)
