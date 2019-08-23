@@ -193,12 +193,10 @@ class ListHelp():
 
 class StatHelp():
     SHORT_HELP = "Show the SCF function monitor info."
-    NAME = "scf function name."
-    PERIOD = "date period (unit s). the value must great than or equal to 60s. default 60s"
-    # INTERVAL = "get info interval (unit sec). default 5s"
-    NAMESPACE = "specify namespace"
-    STARTTIME = "start time format YYYY-MM-DD H:M:S"
-    ENDTIME = "end time format YYYY-MM-DD H:M:S"
-    REGION = "specify region"
-    METRIC = "specify show metric. multiple separated by commas case sensitive\n\tmore goto 'https://cloud.tencent.com/document/api/248/37207#2.2-.E6.8C.87.E6.A0.87.E5.90.8D.E7.A7.B0'"
+    NAME = CommonHelp.NAME
+    PERIOD = "Specify monitor period (unit s). the value must great than or equal to 60s. default 60s"
+    STARTTIME = "Start time format YYYY-MM-DD H:M:S"
+    ENDTIME = "End time format YYYY-MM-DD H:M:S"
+    REGION = LogsHelp.REGION
+    METRIC = "Specify show metric. multiple separated by commas case sensitive\n\tmore goto 'https://cloud.tencent.com/document/api/248/37207#2.2-.E6.8C.87.E6.A0.87.E5.90.8D.E7.A7.B0'"
 
