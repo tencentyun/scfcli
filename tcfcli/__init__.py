@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import click
+
+import sys
 import platform
+import click
 
 click.disable_unicode_literals_warning = True
 

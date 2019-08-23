@@ -17,20 +17,7 @@ from tencentcloud.common.abstract_model import AbstractModel
 
 
 class Code(AbstractModel):
-    """函数代码
-
-    """
-
     def __init__(self):
-        """
-        :param CosBucketName: 对象存储桶名称
-        :type CosBucketName: str
-        :param CosObjectName: 对象存储对象路径
-        :type CosObjectName: str
-        :param CosBucketRegion: 对象存储的地域，地域为北京时需要传入ap-beijing,北京一区时需要传递ap-beijing-1，其他的地域不需要传递。
-        :type CosBucketRegion: str
-
-        """
         self.CosBucketName = None
         self.CosObjectName = None
         self.CosBucketRegion = None
@@ -84,7 +71,6 @@ class DeleteFunctionRequest(AbstractModel):
     def __init__(self):
         self.FunctionName = None
 
-
     def _deserialize(self, params):
         self.FunctionName = params.get("FunctionName")
 
@@ -95,7 +81,6 @@ class DeleteFunctionResponse(AbstractModel):
 
         self.RequestId = None
 
-
     def _deserialize(self, params):
         self.RequestId = params.get("RequestId")
 
@@ -105,7 +90,6 @@ class Environment(AbstractModel):
     def __init__(self):
 
         self.Variables = None
-
 
     def _deserialize(self, params):
         if params.get("Variables") is not None:
@@ -127,8 +111,6 @@ class Function(AbstractModel):
         self.Status = None
         self.StatusDesc = None
         self.Description = None
-
-
 
     def _deserialize(self, params):
         self.ModTime = params.get("ModTime")
@@ -162,7 +144,6 @@ class UpdateFunctionCodeResponse(AbstractModel):
     def __init__(self):
         self.RequestId = None
 
-
     def _deserialize(self, params):
         self.RequestId = params.get("RequestId")
 
@@ -175,7 +156,6 @@ class UpdateFunctionConfigurationRequest(AbstractModel):
         self.MemorySize = None
         self.Environment = None
         self.VpcConfig = None
-
 
     def _deserialize(self, params):
         self.FunctionName = params.get("FunctionName")
@@ -192,9 +172,7 @@ class UpdateFunctionConfigurationRequest(AbstractModel):
 class UpdateFunctionConfigurationResponse(AbstractModel):
 
     def __init__(self):
-
         self.RequestId = None
-
 
     def _deserialize(self, params):
         self.RequestId = params.get("RequestId")
@@ -202,12 +180,10 @@ class UpdateFunctionConfigurationResponse(AbstractModel):
 
 class Variable(AbstractModel):
 
-
     def __init__(self):
 
         self.Key = None
         self.Value = None
-
 
     def _deserialize(self, params):
         self.Key = params.get("Key")
@@ -219,7 +195,6 @@ class VpcConfig(AbstractModel):
     def __init__(self):
         self.VpcId = None
         self.SubnetId = None
-
 
     def _deserialize(self, params):
         self.VpcId = params.get("VpcId")

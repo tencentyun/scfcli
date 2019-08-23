@@ -17,9 +17,9 @@ STD_IN = '-'
 @click.option('--quiet', '-q', is_flag=True, default=False, help=help.INVOKE_QUIET)
 @click.argument('namespace_identifier', required=False)
 @click.argument('function_identifier', required=False)
+@click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def invoke(template, namespace_identifier, function_identifier, event, no_event, env_vars, debug_port, debug_args,
-           debugger_path,
-           docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet):
+           debugger_path, docker_volume_basedir, docker_network, log_file, skip_pull_image, region, quiet, no_color):
     '''
     \b
     Execute your scf in a docker environment locally.

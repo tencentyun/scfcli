@@ -46,7 +46,6 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def delete_function(self, function_name=None, namespace='default'):
@@ -61,7 +60,6 @@ class ScfClient(object):
                 s = err.get_message()
             else:
                 s = err.get_message().encode("UTF-8")
-            # click.secho("Get functions failure. Error: {e}.".format(e=s), fg="red")
         return None
 
     def list_function(self, namespace=None):
@@ -101,6 +99,7 @@ class ScfClient(object):
         req.Description = proper.get(tsmacro.Desc)
         req.MemorySize = proper.get(tsmacro.MemSize)
         req.Timeout = proper.get(tsmacro.Timeout)
+        req.Role = proper.get(tsmacro.Role)
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
         req.VpcConfig = self._model_vpc(proper.get(tsmacro.VpcConfig))
         resp = self._client.UpdateFunctionConfiguration(req)
@@ -138,6 +137,7 @@ class ScfClient(object):
         req.MemorySize = proper.get(tsmacro.MemSize)
         req.Timeout = proper.get(tsmacro.Timeout)
         req.Runtime = proper.get(tsmacro.Runtime)
+        req.Role = proper.get(tsmacro.Role)
         if req.Runtime:
             req.Runtime = req.Runtime[0].upper() + req.Runtime[1:].lower()
         req.Environment = self._model_envs(proper.get(tsmacro.Envi, {}))
@@ -169,31 +169,44 @@ class ScfClient(object):
         return resp.to_json_string()
 
     def deploy_func(self, func, func_name, func_ns, forced):
+        '''
+
+        :param func:
+        :param func_name:
+        :param func_ns:
+        :param forced:
+        :return: 0 : success
+                 1 : error in-use
+                 2 : only in-use
+                 e : error
+        '''
         try:
-            #SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
-            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                #self.create_service(func, func_name, func_ns)
-            #else:
+            # SERVICE_RUNTIME_SUPPORT_LIST = ["Nodejs8.9-service"]
+            # if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
+            # func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
+            # self.create_service(func, func_name, func_ns)
+            # else:
             self.create_func(func, func_name, func_ns)
-            return
+            return 0
         except TencentCloudSDKException as err:
-            if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"] and forced:
-                pass
+            if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
+                return 1 if forced else 2
             else:
                 return err
-        Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
+
+    def update_config(self, func, func_name, func_ns):
         try:
-            #if 'Type' in func['Properties'] and func['Properties']['Type'] == 'HTTP' and \
-                    #func['Properties']['Runtime'] in SERVICE_RUNTIME_SUPPORT_LIST:
-                #self.update_service_config(func, func_name, func_ns)
-                #self.update_service_code(func, func_name, func_ns)
-            #else:
             self.update_func_config(func, func_name, func_ns)
-            self.update_func_code(func, func_name, func_ns)
+            return True
         except TencentCloudSDKException as err:
             return err
-        return
+
+    def update_code(self, func, func_name, func_ns):
+        try:
+            self.update_func_code(func, func_name, func_ns)
+            return True
+        except TencentCloudSDKException as err:
+            return err
 
     def create_trigger(self, trigger, name, func_name, func_ns):
         req = models.CreateTriggerRequest()
@@ -214,9 +227,17 @@ class ScfClient(object):
         if isinstance(enable, bool):
             enable = ["CLOSE", "OPEN"][int(enable)]
         req.Enable = enable
-        # click.secho(str(req))
-        resp = self._client.CreateTrigger(req)
-        # Operation(resp.to_json_string()).process()
+        self._client.CreateTrigger(req)
+
+    def delete_trigger(self, trigger, func_name, func_ns):
+        req = models.DeleteTriggerRequest()
+        req.Namespace = func_ns
+        req.FunctionName = func_name
+        req.TriggerName = trigger["TriggerName"]
+        req.Type = str(trigger["Type"]).lower()
+        req.Qualifier = "$LATEST"
+        req.TriggerDesc = json.dumps(trigger["TriggerDesc"])
+        self._client.DeleteTrigger(req)
 
     def get_ns(self, namespace):
         try:
@@ -254,6 +275,48 @@ class ScfClient(object):
             Operation("list namespace failure. Error: {e}.".format(e=s)).warning()
         return None
 
+    def create_func_testmodel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            self._client_ext.CreateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
+                                                     testModelName=testModelName, namespace=namespace)
+        except TencentCloudSDKException as err:
+            return err
+        return
+
+    def update_func_testmodel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            self._client_ext.UpdateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
+                                                     testModelName=testModelName, namespace=namespace)
+        except TencentCloudSDKException as err:
+            return err
+        return
+
+    def list_func_testmodel(self, functionName, namespace):
+        try:
+            resp = self._client_ext.ListFunctionTestModels(functionName=functionName, namespace=namespace)
+            testmodels = resp.get("TestModels", [])
+            return testmodels
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            Operation("list testmodels failure. Error: {e}.".format(e=s)).warning()
+        return None
+
+    def get_func_testmodel(self, functionName, testModelName, namespace):
+        try:
+            resp = self._client_ext.GetFunctionTestModel(functionName=functionName, testModelName=testModelName,
+                                                         namespace=namespace)
+            return resp
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+            Operation("list testmodels failure. Error: {e}.".format(e=s)).warning()
+        return None
+
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
         if t == tsmacro.TrTimer:
@@ -261,6 +324,9 @@ class ScfClient(object):
         elif t == tsmacro.TrApiGw:
             ir_flag = proper.get(trmacro.IntegratedResp, False)
             isIntegratedResponse = "TRUE" if ir_flag else "FALSE"
+            service_name = {"serviceName": "SCF_API_SERVICE"}
+            service_id = {"serviceId": proper.get('ServiceId', None)}
+            service_temp = service_id if service_id["serviceId"] else service_name
             desc = {
                 "api": {
                     "authRequired": "FALSE",
@@ -269,9 +335,7 @@ class ScfClient(object):
                     },
                     "isIntegratedResponse": isIntegratedResponse
                 },
-                "service": {
-                    "serviceName": "SCF_API_SERVICE"
-                },
+                "service": service_temp,
                 "release": {
                     "environmentName": proper.get(trmacro.StageName, None)
                 }
@@ -294,6 +358,12 @@ class ScfClient(object):
     def deploy_trigger(self, trigger, name, func_name, func_ns):
         try:
             self.create_trigger(trigger, name, func_name, func_ns)
+        except TencentCloudSDKException as err:
+            return err
+
+    def remove_trigger(self, trigger, func_name, func_ns):
+        try:
+            self.delete_trigger(trigger, func_name, func_ns)
         except TencentCloudSDKException as err:
             return err
 
@@ -387,6 +457,84 @@ class ScfClientExt(scf_client.ScfClient):
             #     raise
             # else:
             #     raise TencentCloudSDKException(e.message, e.message)
+
+    def CreateFunctionTestModel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelValue': testModelValue,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("CreateFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def UpdateFunctionTestModel(self, functionName, testModelValue, testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelValue': testModelValue,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("UpdateFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def ListFunctionTestModels(self, functionName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'Namespace': namespace,
+            }
+            body = self.call("ListFunctionTestModels", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
+    def GetFunctionTestModel(self, functionName, testModelName, namespace):
+        try:
+            request = {
+                'FunctionName': functionName,
+                'TestModelName': testModelName,
+                'Namespace': namespace,
+            }
+            body = self.call("GetFunctionTestModel", request)
+            response = json.loads(body)
+            if "Error" not in response["Response"]:
+                return response["Response"]
+            else:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+        except Exception as e:
+            raise TCSDKException(str(e))
+
 
 """
     def ListFunctions(self, namespace):

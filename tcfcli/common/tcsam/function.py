@@ -16,31 +16,34 @@ func_schema = {
             "properties": {
                 macro.CodeUri: {"type": "string"},
                 macro.Desc: {"type": "string"},
+                macro.Role: {"type": "string"},
                 macro.Envi: {
                     "type": "object",
                     "properties": {
                         macro.Vari: {
                             "type": ["object", "null"],
                             "properties": {},
-                            "additionalProperties": { "type": "string" }
+                            "additionalProperties": {"type": "string"}
                         }
                     },
                     "required": [macro.Vari],
                     "additionalProperties": False
                 },
-                macro.Type: {"type": "string"},
+                macro.Type: {"type": "string",
+                             "enum": ["Event", "HTTP", "Service"]
+                             },
                 macro.Handler: {"type": "string"},
                 macro.MemSize: {"type": "integer", "exclusiveMinimum": 0},
                 macro.Runtime: {
                     "type": "string",
                     "enum": ["Python2.7", "Python3.6", "Nodejs6.10", "Nodejs8.9",
                     "Php5", "Php7", "Go1", "Java8", "python2.7", "python3.6", 
-                    "nodejs6.10", "nodejs8.9", "php5", "php7", "go1", "java8", "Nodejs8.9-service"]
+                    "nodejs6.10", "nodejs8.9", "php5", "php7", "go1", "java8"] #, "Nodejs8.9-service"]
                 },
                 macro.Timeout: {"type": "integer", "exclusiveMinimum": 0},
                 macro.Events: {
-                    "type": ["object","null"],
-                    "properties":{},
+                    "type": ["object", "null"],
+                    "properties": {},
                     "additionalProperties": {
                         "type": "object",
                         "oneOf": [apigw_schema, cos_schema, timer_schema, cmq_schema, ckafka_schema]

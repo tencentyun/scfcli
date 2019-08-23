@@ -4,6 +4,7 @@ import io
 import json
 from tcfcli.common.user_exceptions import InvalidEnvVarsException
 
+
 class FileUtil(object):
 
     @staticmethod

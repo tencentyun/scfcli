@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class MacroRuntime(object):
 
     # nodejs 6.10

@@ -3,7 +3,8 @@
 import io
 import re
 import os
-# import subprocess
+import platform
+from subprocess import call
 from setuptools import setup, find_packages
 
 
@@ -27,6 +28,17 @@ def read_version():
     content = read(os.path.join(
         os.path.dirname(__file__), 'tcfcli', 'cmds', 'cli', '__init__.py'))
     return re.search(r"__version__ = '([^']+)'", content).group(1)
+
+
+#
+# installed exec shell, set scf command completion
+#
+class post_install():
+    def run(self):
+        systemName = platform.system()
+        if systemName.lower() == 'linux':
+            call(['./scf_complete.sh'],
+                 cwd=self.install_lib + 'packagename')
 
 
 cmd_name = "scf"

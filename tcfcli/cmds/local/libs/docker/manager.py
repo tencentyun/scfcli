@@ -3,6 +3,7 @@
 import docker
 import click
 
+from tcfcli.common.operation_msg import  Operation
 
 class ContainerManager(object):
     def __init__(self,
@@ -23,7 +24,7 @@ class ContainerManager(object):
             self.pull_image(image)
         else:
             if not self._is_quiet:
-                click.secho('skip pull image %s' % image)
+                Operation('skip pull image %s' % image).echo()
 
         if not container.is_exist():
             container.create()
@@ -36,12 +37,12 @@ class ContainerManager(object):
     def pull_image(self, image):
         try:
             if not self._is_quiet:
-                click.secho('pull image %s...' % image, nl=False)
+                Operation('pull image %s...' % image, nl=False).Operation
             for _ in self._docker_client.api.pull(image, stream=True, decode=True):
                 if not self._is_quiet:
-                    click.secho('.', nl=False)
+                    Operation('.', nl=False).echo()
             if not self._is_quiet:
-                click.secho('\n')
+                Operation('\n').echo()
         except docker.errors.APIError as e:
             raise Exception('pull the docker image %s failed, %s' % (image, str(e)))
 

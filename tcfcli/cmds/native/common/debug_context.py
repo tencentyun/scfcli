@@ -2,7 +2,7 @@
 
 from tcfcli.common.user_exceptions import InvalidOptionValue
 from tcfcli.common.macro import MacroRuntime
-
+from tcfcli.common.user_config import UserConfig
 
 class DebugContext(object):
 
@@ -26,7 +26,12 @@ class DebugContext(object):
     @property
     def cmd(self):
         if self.debug_port is None:
-            return self.DEBUG_CMD[self.runtime]
+            if self.runtime == 'python3.6' and UserConfig().python3_path != 'None':
+                return UserConfig().python3_path
+            elif self.runtime == 'python2.7' and UserConfig().python2_path != 'None':
+                return UserConfig().python2_path
+            else:
+                return self.DEBUG_CMD[self.runtime]
         return None
 
     @property

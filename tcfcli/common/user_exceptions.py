@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import click
 from builtins import str as text
+from click.utils import echo
+from click._compat import get_text_stderr
+from click import ClickException
 
 
-class UserException(click.ClickException):
+class UserException(ClickException):
 
     def __init__(self, message):
         super(UserException, self).__init__(str(message))
@@ -12,10 +16,15 @@ class UserException(click.ClickException):
     def format_message(self):
         return str(self.message)
 
-    def show(self):
-        click.secho(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"))
+    def show(self, file=None):
+        if file is None:
+            file = get_text_stderr()
+        if "--no-color" in sys.argv or "-nc" in sys.argv:
+            echo(click.style("[x]") + click.style(u' %s' % text(self.format_message())), file=file)
+        else:
+            echo(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"), file=file)
 
-    exit_code = 1
+    exit_code = -1
 
 
 class CloudAPIException(UserException):
@@ -121,8 +130,30 @@ class InitException(UserException):
 class TCSDKException(UserException):
     pass
 
+
 class RollbackException(UserException):
     pass
+
+
+class PackageException(UserException):
+    pass
+
+
+class EventFileNotFoundException(UserException):
+    pass
+
+
+class EventFileNameFormatException(UserException):
+    pass
+
+
+class LoadEventFileException(UserException):
+    pass
+
+
+class OutputDirNotFound(UserException):
+    pass
+
 
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
