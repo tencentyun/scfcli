@@ -34,12 +34,11 @@ metricTables = {
 @click.command(short_help=help.SHORT_HELP)
 @click.option('-p', '--period', type=int, default=60, help=help.PERIOD)
 @click.option('-n', '--name', type=str, default=None, help=help.NAME)
-@click.option('-ns', '--namespace', type=str, default="default", help=help.NAMESPACE)
 @click.option('-r', '--region', type=str, help=help.REGION)
 @click.option('--starttime', type=str, help=help.STARTTIME)
 @click.option('--endtime', type=str, help=help.ENDTIME)
 @click.option('-m', '--metric', type=str, help=help.METRIC)
-def stat(period, name, namespace, region, starttime, endtime, metric):
+def stat(period, name, region, starttime, endtime, metric):
     if name is None:
         raise InvalidEnvParameters("function name is unspecif")
 
@@ -104,7 +103,7 @@ def stat(period, name, namespace, region, starttime, endtime, metric):
     padding = []
     monitorCli = MonitorClient(region, period)
     for k, val in enumerate(metrics):
-        resp = monitorCli.get_data(name, namespace, strStarTime, strEndTime, val)
+        resp = monitorCli.get_data(name, strStarTime, strEndTime, val)
         if resp and resp.DataPoints:
             metricResp.append(resp)
 

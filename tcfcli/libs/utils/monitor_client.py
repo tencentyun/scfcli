@@ -13,7 +13,7 @@ from tcfcli.libs.utils.scf_client import ScfClient
 
 class MonitorClient(object):
     CLOUD_API_REQ_TIMEOUT = 30
-    ProductNS = 'qce/scf_v2'
+    ProductNS = 'QCE/SCF_V2'
 
     def __init__(self, region=None, period=60):
         uc = UserConfig()
@@ -29,7 +29,7 @@ class MonitorClient(object):
         self._client = monitor_client.MonitorClient(self._cred, self._region, cp)
         self._client._sdkVersion = "TCFCLI"
 
-    def get_data(self, func_name, namespace, start_time, end_time, metric):
+    def get_data(self, func_name, start_time, end_time, metric):
         try:
             req = models.GetMonitorDataRequest()
             req.Period = self.period
