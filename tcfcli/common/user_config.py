@@ -62,7 +62,7 @@ class UserConfig(object):
             UserConfig.OTHERS: {
                "curr_user": "None",
                "version_time": "None",
-               "no_color": "None",
+               "no_color": "False",
                "language": "None",
                "allow_report": "True",
             }
@@ -75,21 +75,23 @@ class UserConfig(object):
     # 新老配置迁移函数
     def _migrate(self):
         cf = CliConfigParser()
-        if not cf.read(_USER_CONFIG_FILE):
-            return
+        cf.read(_USER_CONFIG_FILE)
+        # 未读取到文件或任何sections
+        # if not cf.read(_USER_CONFIG_FILE):
+        #     self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_' + str(1)
         # 若有新版本用户标志section,不迁移
-        for section in cf.sections():
-            if section.startswith('USER_'):
-                return
+        # for section in cf.sections():
+        #     if section.startswith('USER_'):
+        #         return
         # 读取旧的section数据
-
         if UserConfig.API in cf.sections():
             attrs = {}
             for attrs_keys in cf.options(UserConfig.API):
                 attrs[self._name_attr2obj(attrs_keys)] = cf.get(UserConfig.API, attrs_keys)
             self.set_attrs(attrs)
-        self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_'+str(1)
-        self._dump_config()
+            self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_'+str(1)
+            #print self.section_map
+            self._dump_config()
 
     def _dumpattr(self):
         self.secret_id = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['secret_id']
@@ -134,7 +136,7 @@ class UserConfig(object):
 
     def get_all_user(self):
         cf = CliConfigParser()
-        userlist=[]
+        userlist = []
         if not cf.read(_USER_CONFIG_FILE):
             return None
         for section in cf.sections():  # 若有新版本用户标志section,不迁移
@@ -181,7 +183,7 @@ class UserConfig(object):
         cf = CliConfigParser()
         if not cf.read(_USER_CONFIG_FILE):
             return
-        #获取当前用户
+        # 从配置文件获取当前用户
         curr_user = self._get_curr_user_section()
         if not curr_user:
             return
@@ -212,15 +214,20 @@ class UserConfig(object):
 
     def _dump_config(self):
         cf = CliConfigParser()
-        for section in list(self.section_map.keys()):
+        # 保证先遍历到USER_QCLOUD_CONFIG
+        for section in sorted(list(self.section_map.keys()), reverse=True):
             # 当前用户的配置
             if section == UserConfig.USER_QCLOUD_CONFIG:
                 curr_user = self.section_map[UserConfig.OTHERS]['curr_user']
+                # 当前用户非User_开头，强制修正为user_1
+                if not curr_user.startswith('USER_'):
+                    self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_1'
+                    curr_user = 'USER_1'
                 cf.add_section(curr_user)
                 for key in list(self.section_map[section].keys()):
                     if self.section_map[section][key]:
                         cf.set(curr_user, self._name_obj2attr(key), self.section_map[section][key])
-            # 其他用户列表的配置,防止重复add_section
+            # 其他用户列表的配置
             elif section.startswith('USER_') and section != self.section_map[UserConfig.OTHERS]['curr_user']:
                 cf.add_section(section)
                 for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):

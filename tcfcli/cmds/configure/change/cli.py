@@ -41,7 +41,7 @@ def change(userid):
     # 如果没有传入编号，则进入交互
     if not userid:
         curruser = uc.section_map[UserConfig.OTHERS]['curr_user']
-        Operation('Your current user is %s' % (curruser)).process()
+        Operation('Your current user is %s' % curruser).process()
         Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % ('UserId', 'AppId', 'region', 'secret_id', 'secret_key', 'using_cos')).process()
         for user in userlist:
             userinfo = uc.get_user_info(user)
@@ -50,7 +50,7 @@ def change(userid):
             Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % (user.strip('USER_'), userinfo['appid'], userinfo['region'],
                       secret_id, secret_key, userinfo['using_cos'][:5])).process()
 
-        v = click.prompt(text="Please choice UserId to change",show_default=False)
+        v = click.prompt(text="Please choice UserId to change", show_default=False)
 
     v = userid if userid else v
     if ('USER_'+v) in userlist:

@@ -97,4 +97,4 @@ def add(**kwargs):
     secret_key = ("*" * 3 + userinfo['secret_key'][28:]) if userinfo['secret_key'] != 'None' else 'None'
     Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % (user.strip('USER_'), userinfo['appid'], userinfo['region'],
                                                        secret_id, secret_key, userinfo['using_cos'][:5])).process()
-    Operation('You can use `scf configure change %s` to switch user.' % (user.strip('USER_'))).process()
+    Operation('You can use `scf configure change -u %s` to switch user.' % (user.strip('USER_'))).process()

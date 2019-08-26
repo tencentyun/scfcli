@@ -225,5 +225,15 @@ class EventdataHelp():
     FORCED_UPDATE = "The remote eventdata will be forced to update when it already exists. The default is False."
     NAMESPACE = CommonHelp.NAMESPACE
     REGION = "Region name. Including %s." % REGIONS_STR
-
     NOCOLOR = "Suppress colored output"
+
+
+class StatHelp():
+    SHORT_HELP = "Show the SCF function monitor info."
+    NAME = CommonHelp.NAME
+    PERIOD = "Specify monitor period (unit s). the value must great than or equal to 60s. default 60s"
+    STARTTIME = "Start time format YYYY-MM-DD H:M:S"
+    ENDTIME = "End time format YYYY-MM-DD H:M:S"
+    REGION = LogsHelp.REGION
+    METRIC = "Specify show metric. multiple separated by commas case sensitive\n\tmore goto 'https://cloud.tencent.com/document/api/248/37207#2.2-.E6.8C.87.E6.A0.87.E5.90.8D.E7.A7.B0'"
+
