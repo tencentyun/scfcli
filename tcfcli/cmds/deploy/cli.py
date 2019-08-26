@@ -531,6 +531,15 @@ class Package(object):
 
         return code_url
 
+    def zip_ignore(self, ignore_list, path):
+        for eve_ignore_file in ignore_list:
+            if fnmatch.fnmatch(
+                    os.path.normpath(path),
+                    os.path.normpath(eve_ignore_file)):
+                # print(path)
+                return False
+        return True
+
     def _zip_func(self, func_path, namespace, func_name):
 
         if not os.path.exists(func_path):
@@ -562,13 +571,6 @@ class Package(object):
 
             if os.path.isdir(func_path):
 
-                '''
-                    以斜杠“/”开头表示目录； o
-                    以星号“*”通配多个字符； o
-                    以问号“?”通配单个字符   o
-                    以方括号“[]”包含单个字符的匹配列表； o
-                    以叹号“!”表示不忽略(跟踪)匹配到的文件或目录。 
-                '''
                 ignore_list = []
                 ignore_dir_path = os.path.join(func_path, "ignore")
                 ignore_file_path = os.path.join(ignore_dir_path, "%s.ignore" % func_name)
@@ -579,21 +581,10 @@ class Package(object):
                 with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
                     for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                         if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
-                            for eve_ignore_file_dir in ignore_list:
-                                if fnmatch.fnmatch(
-                                        os.path.realpath(current_path),
-                                        os.path.realpath(eve_ignore_file_dir)):
-                                    # print(current_path)
-                                    continue
+                            if self.zip_ignore(ignore_list, current_path):
                                 for file in files_name:
-                                    file_path = os.path.join(current_path, file)
-                                    for eve_ignore_file in ignore_list:
-                                        if fnmatch.fnmatch(
-                                                os.path.normpath(file_path),
-                                                os.path.normpath(eve_ignore_file)):
-                                            # print(file_path)
-                                            continue
-                                    zip_object.write(file_path)
+                                    if self.zip_ignore(ignore_list, os.path.join(current_path, file)):
+                                        zip_object.write(os.path.join(current_path, file))
 
                 os.chdir(cwd)
                 buff.seek(0)
