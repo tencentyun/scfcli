@@ -90,7 +90,7 @@ class UserConfig(object):
                 attrs[self._name_attr2obj(attrs_keys)] = cf.get(UserConfig.API, attrs_keys)
             self.set_attrs(attrs)
             self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_'+str(1)
-            print self.section_map
+            #print self.section_map
             self._dump_config()
 
     def _dumpattr(self):
