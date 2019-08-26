@@ -580,7 +580,10 @@ class Package(object):
                     for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                         if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
                             for eve_ignore_file_dir in ignore_list:
-                                if os.path.realpath(current_path) == os.path.realpath(eve_ignore_file_dir):
+
+                                if fnmatch.fnmatch(
+                                        os.path.realpath(current_path),
+                                        os.path.realpath(eve_ignore_file_dir)):
                                     continue
                                 for file in files_name:
                                     file_path = os.path.join(current_path, file)
