@@ -9,6 +9,7 @@ from io import BytesIO
 import shutil
 import hashlib
 import threading
+import fnmatch
 from multiprocessing import Process
 from zipfile import ZipFile, ZIP_DEFLATED
 from click.utils import echo
@@ -324,8 +325,13 @@ class Package(object):
                         raise RollbackException(err_msg)
 
                 else:
+                    template_path, template_name = os.path.split(self.template_file)
+                    code_uri = self.resource[namespace][function][tsmacro.Properties].get(tsmacro.CodeUri, "")
+                    function_path = os.path.join(template_path, code_uri)
+                    # print(function_path)
                     code_url = self._do_package_core(
-                        self.resource[namespace][function][tsmacro.Properties].get(tsmacro.CodeUri, ""),
+                        # self.resource[namespace][function][tsmacro.Properties].get(tsmacro.CodeUri, ""),
+                        function_path,
                         namespace,
                         function,
                         self.region
@@ -555,12 +561,35 @@ class Package(object):
                 pass
 
             if os.path.isdir(func_path):
+
+                '''
+                    以斜杠“/”开头表示目录； o
+                    以星号“*”通配多个字符； o
+                    以问号“?”通配单个字符   o
+                    以方括号“[]”包含单个字符的匹配列表； o
+                    以叹号“!”表示不忽略(跟踪)匹配到的文件或目录。 
+                '''
+                ignore_list = []
+                ignore_dir_path = os.path.join(func_path, "ignore")
+                ignore_file_path = os.path.join(ignore_dir_path, "%s.ignore" % func_name)
+                if os.path.isfile(ignore_file_path):
+                    with open(ignore_file_path) as f:
+                        ignore_list = [str(eve_line).strip() for eve_line in f.readlines()]
                 os.chdir(func_path)
                 with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
                     for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                         if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
-                            for file in files_name:
-                                zip_object.write(os.path.join(current_path, file))
+                            for eve_ignore_file_dir in ignore_list:
+                                if os.path.realpath(current_path) == os.path.realpath(eve_ignore_file_dir):
+                                    continue
+                                for file in files_name:
+                                    file_path = os.path.join(current_path, file)
+                                    for eve_ignore_file in ignore_list:
+                                        if fnmatch.fnmatch(
+                                                os.path.normpath(file_path),
+                                                os.path.normpath(eve_ignore_file)):
+                                            continue
+                                    zip_object.write(file_path)
 
                 os.chdir(cwd)
                 buff.seek(0)
