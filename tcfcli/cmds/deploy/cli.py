@@ -531,14 +531,23 @@ class Package(object):
 
         return code_url
 
-    def zip_ignore(self, ignore_list, path):
-        for eve_ignore_file in ignore_list:
-            if fnmatch.fnmatch(
-                    os.path.normpath(path),
-                    os.path.normpath(eve_ignore_file)):
-                # print(path)
-                return False
-        return True
+    def zip_ignore(self, ignore_list, file_list):
+        temp_list = []
+        for eve_file in file_list:
+            if eve_file not in (".", ".."):
+                for eve_ignore_file in ignore_list:
+                    if fnmatch.fnmatch(
+                            os.path.normpath(eve_file),
+                            os.path.normpath(eve_ignore_file)):
+                        if os.path.isdir(eve_file):
+                            eve_file = eve_file + "/" if "/" in eve_file else eve_file + "\\"
+                        temp_list.append(eve_file)
+                        break
+                    for eve_list_file in temp_list:
+                        if eve_list_file in eve_file:
+                            temp_list.append(eve_file)
+                            break
+        return temp_list
 
     def _zip_func(self, func_path, namespace, func_name):
 
@@ -579,12 +588,19 @@ class Package(object):
                         ignore_list = [str(eve_line).strip() for eve_line in f.readlines()]
                 os.chdir(func_path)
                 with ZipFile(buff, mode='w', compression=ZIP_DEFLATED) as zip_object:
+                    file_list = []
+                    for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
+                        file_list.append(current_path)
+                        for eve_file in files_name:
+                            file_list.append(os.path.join(current_path, eve_file))
+                    temp_list = self.zip_ignore(ignore_list, file_list)
+
                     for current_path, sub_folders, files_name in os.walk(_CURRENT_DIR):
                         if not str(current_path).startswith("./.") and not str(current_path).startswith(r".\."):
-                            if self.zip_ignore(ignore_list, current_path):
-                                for file in files_name:
-                                    if self.zip_ignore(ignore_list, os.path.join(current_path, file)):
-                                        zip_object.write(os.path.join(current_path, file))
+                            for file in files_name:
+                                file_path = os.path.join(current_path, file)
+                                if file_path not in temp_list:
+                                    zip_object.write(os.path.join(current_path, file))
 
                 os.chdir(cwd)
                 buff.seek(0)
