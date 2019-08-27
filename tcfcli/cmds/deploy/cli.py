@@ -723,93 +723,101 @@ class Deploy(object):
 
     def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
         # check role exit
-        role = func.get(tsmacro.Properties, {}).get(tsmacro.Role)
-        if role:
-            rolelist = list_scf_role(region)
-            if rolelist == None:
-                Operation("Get Role list error").warning()
-                func[tsmacro.Properties][tsmacro.Role] = None
-            elif role not in rolelist:
-                Operation("%s not exists in remote scf role list" % (role)).warning()
-                if len(rolelist):
-                    Operation("You can choose from %s " % (str(rolelist))).warning()
-                func[tsmacro.Properties][tsmacro.Role] = None
-        # check namespace exit, create namespace
-        if self.namespace and self.namespace != func_ns:
-            func_ns = self.namespace
+        try:
+            role = func.get(tsmacro.Properties, {}).get(tsmacro.Role)
+            if role:
+                rolelist = list_scf_role(region)
+                if rolelist == None:
+                    Operation("Get Role list error").warning()
+                    func[tsmacro.Properties][tsmacro.Role] = None
+                elif role not in rolelist:
+                    Operation("%s not exists in remote scf role list" % (role)).warning()
+                    if len(rolelist):
+                        Operation("You can choose from %s " % (str(rolelist))).warning()
+                    func[tsmacro.Properties][tsmacro.Role] = None
+            # check namespace exit, create namespace
+            if self.namespace and self.namespace != func_ns:
+                func_ns = self.namespace
 
-        function_data = Function(region, func_ns, func_name, self.resources).get_function_trigger()
-        trigger_release = None
-        if function_data:
-            now_runtime = function_data[0]
-            trigger_release = function_data[1]
+            function_data = Function(region, func_ns, func_name, self.resources).get_function_trigger()
+            trigger_release = None
+            if function_data:
+                now_runtime = function_data[0]
+                trigger_release = function_data[1]
 
-            if func['Properties']['Runtime'] != now_runtime:
-                err_msg = "RUNTIME in YAML does not match RUNTIME on the RELEASE (release: %s)" % now_runtime
+                if func['Properties']['Runtime'] != now_runtime:
+                    err_msg = "RUNTIME in YAML does not match RUNTIME on the RELEASE (release: %s)" % now_runtime
+                    echo(
+                        Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                        file=get_text_stderr()
+                    )
+                    exit(1)
+                    # raise DeployException(err_msg)
+
+            rep = ScfClient(region).get_ns(func_ns)
+            if not rep:
+                Operation("{ns} not exists, create it now".format(ns=func_ns)).process()
+                err = ScfClient(region).create_ns(func_ns)
+                if err is not None:
+                    if sys.version_info[0] == 3:
+                        s = err.get_message()
+                    else:
+                        s = err.get_message().encode("UTF-8")
+                    err_msg = "Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s)
+                    echo(
+                        Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                        file=get_text_stderr()
+                    )
+                    exit(1)
+                    # raise NamespaceException()
+
+            deploy_result = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
+
+            if deploy_result == 1:
+                Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
+                deploy_result = ScfClient(region).update_config(func, func_name, func_ns)
+                if deploy_result == True:
+                    deploy_result = ScfClient(region).update_code(func, func_name, func_ns)
+                    deploy_result = 0 if deploy_result == True else deploy_result
+
+            if deploy_result == 0:
+                Operation("Deploy function '{name}' success".format(name=func_name)).success()
+                if not skip_event:
+                    self._do_deploy_trigger(func, func_name, func_ns, region, trigger_release)
+                return
+
+            elif deploy_result == 2:
+                Operation(
+                    "You can add -f to update the function when it already exists. Example : scf deploy -f").warning()
+                err_msg = "The function already exists."
                 echo(
                     Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
                     file=get_text_stderr()
                 )
                 exit(1)
-                # raise DeployException(err_msg)
+                # raise CloudAPIException("The function already exists.")
 
-        rep = ScfClient(region).get_ns(func_ns)
-        if not rep:
-            Operation("{ns} not exists, create it now".format(ns=func_ns)).process()
-            err = ScfClient(region).create_ns(func_ns)
-            if err is not None:
-                if sys.version_info[0] == 3:
-                    s = err.get_message()
-                else:
-                    s = err.get_message().encode("UTF-8")
-                err_msg = "Create namespace '{name}' failure. Error: {e}.".format(name=func_ns, e=s)
+            if deploy_result != None:
+                err = deploy_result
+                s = err.get_message()
+                if sys.version_info[0] == 2 and isinstance(s, str):
+                    s = s.encode("utf8")
+                err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
+
+                if err.get_request_id():
+                    err_msg += (u" RequestId: {}".format(err.get_request_id()))
                 echo(
                     Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
                     file=get_text_stderr()
                 )
                 exit(1)
-                # raise NamespaceException()
-
-        deploy_result = ScfClient(region).deploy_func(func, func_name, func_ns, forced)
-
-        if deploy_result == 1:
-            Operation("{ns} {name} already exists, update it now".format(ns=func_ns, name=func_name)).process()
-            deploy_result = ScfClient(region).update_config(func, func_name, func_ns)
-            if deploy_result == True:
-                deploy_result = ScfClient(region).update_code(func, func_name, func_ns)
-                deploy_result = 0 if deploy_result == True else deploy_result
-
-        if deploy_result == 0:
-            Operation("Deploy function '{name}' success".format(name=func_name)).success()
-            if not skip_event:
-                self._do_deploy_trigger(func, func_name, func_ns, region, trigger_release)
-            return
-
-        elif deploy_result == 2:
-            Operation("You can add -f to update the function when it already exists. Example : scf deploy -f").warning()
-            err_msg = "The function already exists."
+                # raise CloudAPIException(err_msg)
+        except Exception as e:
             echo(
-                Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
+                Operation("[x]", bg="red").style() + Operation(u' %s' % text(str(e)), fg="red").style(),
                 file=get_text_stderr()
             )
             exit(1)
-            # raise CloudAPIException("The function already exists.")
-
-        if deploy_result != None:
-            err = deploy_result
-            s = err.get_message()
-            if sys.version_info[0] == 2 and isinstance(s, str):
-                s = s.encode("utf8")
-            err_msg = u"Deploy function '{name}' failure, {e}.".format(name=func_name, e=s)
-
-            if err.get_request_id():
-                err_msg += (u" RequestId: {}".format(err.get_request_id()))
-            echo(
-                Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
-                file=get_text_stderr()
-            )
-            exit(1)
-            # raise CloudAPIException(err_msg)
 
     def _do_deploy_trigger(self, func, func_name, func_ns, region=None, trigger_release=None):
 
