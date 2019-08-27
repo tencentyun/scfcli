@@ -6,6 +6,9 @@ import datetime
 import time
 import sys
 from dateutil.tz import *
+import tcfcli.common.base_infor as infor
+from tcfcli.common.user_exceptions import *
+from tcfcli.libs.utils.scf_client import ScfClient
 from tcfcli.help.message import StatHelp as help
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import InvalidEnvParameters
@@ -54,6 +57,29 @@ def stat(period, name, region, starttime, endtime, metric):
 
     if period < 60:
         period = 60
+
+    if region and region not in infor.REGIONS:
+        raise ArgsException("The region must in %s." % (", ".join(infor.REGIONS)))
+
+    namespaces = ScfClient(region).list_ns()
+    if not namespaces:
+        Operation("Region {r} not exist namespace".format(r=region)).warning()
+        return
+
+    flag = True
+    for key, namespace in enumerate(namespaces):
+        if flag == False:
+            break
+
+        functions = ScfClient(region).list_function(namespace['Name'])
+        if functions:
+            for k, func in enumerate(functions):
+                if name == func.FunctionName:
+                    flag = False
+                    break
+
+    if flag:
+        raise InvalidEnvParameters('function %s not exist' % name)
 
     if starttime:
         try:
