@@ -55,8 +55,8 @@ def stat(period, name, region, starttime, endtime, metric):
         'FunctionErrorPercentage',
     ]
 
-    if period < 60:
-        period = 60
+    if not (period == 60 or period == 300):
+        raise InvalidEnvParameters('period %s invalid. value is 60 or 300' % period)
 
     if region and region not in infor.REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(infor.REGIONS)))
