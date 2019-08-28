@@ -10,7 +10,7 @@ import shutil
 import hashlib
 import threading
 import fnmatch
-from multiprocessing import Process
+from multiprocessing import Process, Manager
 from zipfile import ZipFile, ZIP_DEFLATED
 from click.utils import echo
 from click._compat import get_text_stderr
@@ -71,12 +71,14 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
               $ scf deploy -f -ue
     '''
 
+    time1 = time.time()
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     region = region if region else UserConfig().region
 
     # package
     Operation("Package begin").begin()
+
     package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
     package_result, resource = package.do_package()
 
@@ -112,6 +114,9 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
         except Exception as e:
             pass
 
+    print(time.time() - time1)
+
+
 class Function(object):
     def __init__(self, region, namespace, function, resources):
         self.region = region if region else UserConfig().region
@@ -141,19 +146,18 @@ class Function(object):
         result = self.get_information()
         if result:
             information = json.loads(result)
-            Operation(u"%s %s" % (information["Namespace"], self.function)).process()
-            Operation(u"    [+] Function Information: ", fg="cyan").echo()
-            Operation("    Name: %s" % self.function).out_infor()
-            Operation("    Version: %s" % information["FunctionVersion"]).out_infor()
-            Operation("    Status: %s" % information["Status"]).out_infor()
-            Operation("    FunctionId: %s" % information["FunctionId"]).out_infor()
-            Operation("    Region: %s" % self.region).out_infor()
-            Operation("    Namespace: %s" % information["Namespace"]).out_infor()
-            Operation("    Runtime: %s" % information["Runtime"]).out_infor()
+            Operation("   [+] %s - %s:" % (information["Namespace"], self.function), fg="cyan").echo()
+            Operation("  Name: %s" % self.function).out_infor()
+            Operation("  Version: %s" % information["FunctionVersion"]).out_infor()
+            Operation("  Status: %s" % information["Status"]).out_infor()
+            Operation("  FunctionId: %s" % information["FunctionId"]).out_infor()
+            Operation("  Region: %s" % self.region).out_infor()
+            Operation("  Namespace: %s" % information["Namespace"]).out_infor()
+            Operation("  Runtime: %s" % information["Runtime"]).out_infor()
 
             release_serviceid_list = []
             if information["Triggers"]:
-                Operation(u"    [+] Trigger Information: ", fg="cyan").echo()
+                Operation("       Trigger Information: ", fg="cyan").echo()
                 for eve_trigger in information["Triggers"]:
                     trigger_type = eve_trigger['Type']
 
@@ -295,6 +299,7 @@ class Package(object):
         }
 
         for namespace in self.resource:
+
             for function in list(self.resource[namespace]):
 
                 if function == tsmacro.Type:
@@ -727,8 +732,13 @@ class Deploy(object):
     def do_deploy(self):
 
         function_list = []
+        result_dict = {}
 
         for ns in self.resources:
+
+            manager = Manager()
+            success_list = manager.list()
+            faild_list = manager.list()
 
             deploy_process = None
 
@@ -742,10 +752,16 @@ class Deploy(object):
                 if func == tsmacro.Type:
                     continue
 
-
                 deploy_process = Process(
                     target=self._do_deploy_core,
-                    args=(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event,)
+                    args=(self.resources[ns][func],
+                          func,
+                          ns,
+                          self.region,
+                          self.forced,
+                          success_list,
+                          faild_list,
+                          self.skip_event,)
                 )
                 deploy_process.start()
 
@@ -756,12 +772,33 @@ class Deploy(object):
             if deploy_process:
                 deploy_process.join()
 
+            result_dict[ns] = (success_list, faild_list)
+
             Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
-        for eve_function in function_list:
-            Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
+        try:
+            Operation("Deploy result:").process()
+            for eve_key, eve_value in result_dict.items():
+                Operation("  Namespace: %s:" % (eve_key)).out_infor()
+                Operation("    Success: %d" % (len(eve_value[0]))).out_infor()
+                for eve_success in eve_value[0]:
+                    Operation("      Function: %s" % (eve_success)).out_infor()
 
-    def _do_deploy_core(self, func, func_name, func_ns, region, forced, skip_event=False):
+                Operation("    Faild: %d" % (len(eve_value[1]))).out_infor()
+                for eve_success in eve_value[1]:
+                    Operation("      Function: %s" % (eve_success)).out_infor()
+        except Exception as e:
+            # print(e)
+            pass
+
+        try:
+            Operation("Function information:").process()
+            for eve_function in function_list:
+                Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
+        except:
+            pass
+
+    def _do_deploy_core(self, func, func_name, func_ns, region, forced, success_list, faild_list, skip_event=False):
         # check role exit
         try:
             role = func.get(tsmacro.Properties, {}).get(tsmacro.Role)
@@ -824,9 +861,11 @@ class Deploy(object):
                 Operation("Deploy function '{name}' success".format(name=func_name)).success()
                 if not skip_event:
                     self._do_deploy_trigger(func, func_name, func_ns, region, trigger_release)
+                success_list.append(func_name)
                 return
 
             elif deploy_result == 2:
+                faild_list.append(func_name)
                 Operation(
                     "%s %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
                         func_ns, func_name)).warning()
@@ -840,6 +879,7 @@ class Deploy(object):
                 # raise CloudAPIException("The function already exists.")
 
             if deploy_result != None:
+                faild_list.append(func_name)
                 err = deploy_result
                 s = err.get_message()
                 if sys.version_info[0] == 2 and isinstance(s, str):
@@ -855,6 +895,7 @@ class Deploy(object):
                 exit(1)
                 # raise CloudAPIException(err_msg)
         except Exception as e:
+            faild_list.append(func_name)
             echo(
                 Operation("[x]", bg="red").style() + Operation(u' %s' % text(str(e)), fg="red").style(),
                 file=get_text_stderr()
