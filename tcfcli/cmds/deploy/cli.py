@@ -74,25 +74,43 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     region = region if region else UserConfig().region
+
+    # package
+    Operation("Package begin").begin()
     package = Package(template_file, cos_bucket, name, region, namespace, without_cos, history)
-    resource = package.do_package()
+    package_result, resource = package.do_package()
 
-    if resource == None:
-        return
+    try:
+        Operation("Package result:").process()
+        Operation("  Success: %d" % (len(package_result["success"]))).out_infor()
+        for eve_success in package_result["success"]:
+            Operation("    Namespace: %s\tFunction: %s" % (eve_success[0], eve_success[1])).out_infor()
+        Operation("  Faild: %d" % (len(package_result["faild"]))).out_infor()
+        for eve_success in package_result["faild"]:
+            Operation("    Namespace: %s\tFunction: %s" % (eve_success[0], eve_success[1])).out_infor()
+    except Exception as e:
+        # print(e)
+        pass
 
+    if resource == None or len(package_result["success"]) == 0:
+        raise PackageException("The number of deployable packages is 0, and the deployment is terminated.")
+
+    Operation("Package end").success()
+
+    # deploy
     if name and "'%s'" % str(name) not in str(resource):
         raise DeployException("Couldn't find the function in YAML, please add this function in YAML.")
     else:
+        Operation("Deploy begin").begin()
         deploy = Deploy(resource, namespace, region, forced, skip_event, update_event)
         deploy.do_deploy()
-        Operation("Deploy success").success()
+        Operation("Deploy end").success()
 
         # delete package dir
         try:
             shutil.rmtree(_BUILD_DIR)
         except Exception as e:
             pass
-
 
 class Function(object):
     def __init__(self, region, namespace, function, resources):
@@ -123,18 +141,19 @@ class Function(object):
         result = self.get_information()
         if result:
             information = json.loads(result)
-            Operation(u"[+] Function Base Information: ", fg="cyan").echo()
-            Operation("Name: %s" % self.function).out_infor()
-            Operation("Version: %s" % information["FunctionVersion"]).out_infor()
-            Operation("Status: %s" % information["Status"]).out_infor()
-            Operation("FunctionId: %s" % information["FunctionId"]).out_infor()
-            Operation("Region: %s" % self.region).out_infor()
-            Operation("Namespace: %s" % information["Namespace"]).out_infor()
-            Operation("Runtime: %s" % information["Runtime"]).out_infor()
+            Operation(u"%s %s" % (information["Namespace"], self.function)).process()
+            Operation(u"    [+] Function Information: ", fg="cyan").echo()
+            Operation("    Name: %s" % self.function).out_infor()
+            Operation("    Version: %s" % information["FunctionVersion"]).out_infor()
+            Operation("    Status: %s" % information["Status"]).out_infor()
+            Operation("    FunctionId: %s" % information["FunctionId"]).out_infor()
+            Operation("    Region: %s" % self.region).out_infor()
+            Operation("    Namespace: %s" % information["Namespace"]).out_infor()
+            Operation("    Runtime: %s" % information["Runtime"]).out_infor()
 
             release_serviceid_list = []
             if information["Triggers"]:
-                Operation(u"[+] Trigger Information: ", fg="cyan").echo()
+                Operation(u"    [+] Trigger Information: ", fg="cyan").echo()
                 for eve_trigger in information["Triggers"]:
                     trigger_type = eve_trigger['Type']
 
@@ -146,9 +165,9 @@ class Function(object):
                     except Exception as e:
                         pass
 
-                    msg = u"    > %s - %s:" % (text(trigger_type).upper(), text(eve_trigger["TriggerName"]))
+                    msg = u"        > %s - %s:" % (text(trigger_type).upper(), text(eve_trigger["TriggerName"]))
                     Operation(msg, fg="cyan").echo()
-                    self.recursion_dict(eve_trigger, 2)
+                    self.recursion_dict(eve_trigger, 6)
 
             # yaml apigateway service_id list
             function = self.resources[self.namespace][self.function]
@@ -270,6 +289,11 @@ class Package(object):
 
     def do_package(self):
 
+        package_result = {
+            "success": [],
+            "faild": []
+        }
+
         for namespace in self.resource:
             for function in list(self.resource[namespace]):
 
@@ -337,15 +361,24 @@ class Package(object):
                         self.region
                     )
 
-                if "cos_bucket_name" in code_url:
-                    bucket_name = code_url["cos_bucket_name"]
-                    object_name = code_url["cos_object_name"]
-                    self.resource[namespace][function][tsmacro.Properties]["CosBucketName"] = bucket_name
-                    self.resource[namespace][function][tsmacro.Properties]["CosObjectName"] = object_name
-                elif "zip_file" in code_url:
-                    self.resource[namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
+                try:
+                    if "cos_bucket_name" in code_url:
+                        bucket_name = code_url["cos_bucket_name"]
+                        object_name = code_url["cos_object_name"]
+                        self.resource[namespace][function][tsmacro.Properties]["CosBucketName"] = bucket_name
+                        self.resource[namespace][function][tsmacro.Properties]["CosObjectName"] = object_name
+                        package_result["success"].append((namespace, function))
+                    elif "zip_file" in code_url:
+                        self.resource[namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
+                        package_result["success"].append((namespace, function))
+                    else:
+                        del self.resource[namespace][function]
+                        package_result["faild"].append((namespace, function))
+                except:
+                    package_result["faild"].append((namespace, function))
 
-        return self.resource
+        # print(package_result)
+        return (package_result, self.resource)
 
     def check_params(self):
         if not self.template_file:
@@ -391,17 +424,19 @@ class Package(object):
 
         if self.without_cos:
             size_infor = self.file_size_infor(file_size)
+            # size_infor = -1
             if size_infor == -1:
-                msg = 'Your package is too large and needs to be uploaded via COS.'
+                msg = 'Your package %s is too large and needs to be uploaded via COS.' % (zip_file_name)
                 Operation(msg).warning()
                 msg = 'You can use --cos-bucket BucketName to specify the bucket, or you can use the "scf configure set" to set the default to open the cos upload.'
                 Operation(msg).warning()
-                raise UploadFailed("Upload faild")
+                return
             elif size_infor == 0:
-                Operation("Package size is over 8M, it is highly recommended that you upload using COS. ").information()
+                Operation("Package %s size is over 8M, it is highly recommended that you upload using COS. " % (
+                    zip_file_name)).information()
             Operation("Uploading this package without COS.").process()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
-            Operation("Upload success").success()
+            Operation("%s Upload success" % (zip_file_name)).success()
 
         elif self.cos_bucket:
             bucket_name = self.cos_bucket + "-" + UserConfig().appid
@@ -422,7 +457,7 @@ class Package(object):
                 "If you don't want to upload the package to COS by default, you could change your configure!").information()
 
             cos_client = CosClient(region)
-            Operation("Checking you COS Bucket.").process()
+            Operation("Checking you COS Bucket: %s." % (default_bucket_name)).process()
             cos_bucket_status = cos_client.get_bucket(default_bucket_name)
 
             if cos_bucket_status == 0:
@@ -433,7 +468,7 @@ class Package(object):
                     cos_bucket_status = 1
                     Operation("Creating success. Cos Bucket name:  " + default_bucket_name).success()
                 else:
-                    Operation("Creating Cos Bucket faild.").warning()
+                    Operation("Creating Cos Bucket: %s faild." % (default_bucket_name)).warning()
                     cos_bucket_status = create_status
                     try:
                         if "<?xml" in str(create_status):
@@ -505,6 +540,8 @@ class Package(object):
                     raise UploadFailed(str(e))
                 else:
                     Operation("There are some exceptions and the process of uploading to COS is terminated!").warning()
+                    if len(str(cos_bucket_status)) > 3:
+                        Operation(str(cos_bucket_status)).warning()
                     Operation("This package will be uploaded by TencentCloud Cloud API.").information()
                     if size_infor == 0:
                         msg = "Package size is over 8M, it is highly recommended that you upload using COS. "
@@ -689,20 +726,22 @@ class Deploy(object):
 
     def do_deploy(self):
 
-        deploy_process = None
-
         function_list = []
 
         for ns in self.resources:
+
+            deploy_process = None
+
             if not self.resources[ns]:
                 continue
             ns_this = ns
             if self.namespace and self.namespace != ns:
                 ns_this = self.namespace
-            Operation("Deploy namespace '{ns}' begin".format(ns=ns_this)).process()
+            Operation("Deploy namespace '{ns}' begin".format(ns=ns_this)).begin()
             for func in self.resources[ns]:
                 if func == tsmacro.Type:
                     continue
+
 
                 deploy_process = Process(
                     target=self._do_deploy_core,
@@ -713,10 +752,11 @@ class Deploy(object):
                 # self._do_deploy_core(self.resources[ns][func], func, ns, self.region, self.forced, self.skip_event)
 
                 function_list.append((self.region, ns, func, self.resources))
-            Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
-        if deploy_process:
-            deploy_process.join()
+            if deploy_process:
+                deploy_process.join()
+
+            Operation("Deploy namespace '{ns}' end".format(ns=ns_this)).success()
 
         for eve_function in function_list:
             Function(eve_function[0], eve_function[1], eve_function[2], eve_function[3]).format_information()
@@ -788,12 +828,14 @@ class Deploy(object):
 
             elif deploy_result == 2:
                 Operation(
-                    "You can add -f to update the function when it already exists. Example : scf deploy -f").warning()
-                err_msg = "The function already exists."
+                    "%s %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
+                        func_ns, func_name)).warning()
+                err_msg = "%s %s: The function already exists." % (func_ns, func_name)
                 echo(
                     Operation("[x]", bg="red").style() + Operation(u' %s' % text(err_msg), fg="red").style(),
                     file=get_text_stderr()
                 )
+
                 exit(1)
                 # raise CloudAPIException("The function already exists.")
 
@@ -916,5 +958,7 @@ class Deploy(object):
                                                                                                    function=func_name,
                                                                                                    name=trigger, e=s, )
                 Operation(msg).warning()
-        Operation("Deploy {namespace} {function} trigger '{name}' success".format(namespace=func_ns, function=func_name,
-                                                                                  name=trigger)).success()
+        else:
+            Operation(
+                "Deploy {namespace} {function} trigger '{name}' success".format(namespace=func_ns, function=func_name,
+                                                                                name=trigger)).success()

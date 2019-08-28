@@ -35,6 +35,9 @@ class Operation(object):
     def success(self):
         click.secho(self.new_style("[o]", bg="green") + self.new_style(u' %s' % self.format_message(), fg="green"))
 
+    def begin(self):
+        click.secho(self.new_style("[+]", bg="green") + self.new_style(u' %s' % self.format_message(), fg="green"))
+
     def warning(self):
         click.secho(self.new_style("[!]", bg="magenta") + self.new_style(u' %s' % self.format_message(), fg="magenta"))
 
