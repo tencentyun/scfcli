@@ -2,6 +2,7 @@
 
 import os
 import platform
+from tcfcli.common.user_exceptions import *
 
 home = os.path.expanduser('~')
 _USER_CONFIG_FILE = home + '/.tcli_config.ini'
@@ -151,6 +152,8 @@ class UserConfig(object):
             user_section = 'USER_'+str(i+1)
             if user_section not in userlist:
                 break
+            if i >= 99:
+                raise UserLimitException("Amount of Users Limit!")
 
         self.section_map[user_section] = {}
         format_data = {}

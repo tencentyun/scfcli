@@ -231,7 +231,7 @@ class EventdataHelp():
 class StatHelp():
     SHORT_HELP = "Show the SCF function monitor info."
     NAME = CommonHelp.NAME
-    PERIOD = "Specify monitor period (unit s). the value must great than or equal to 60s. default 60s"
+    PERIOD = "Specify monitor period (unit s). the value must is 60s or 300s. default 60s"
     STARTTIME = "Start time format YYYY-MM-DD H:M:S"
     ENDTIME = "End time format YYYY-MM-DD H:M:S"
     REGION = LogsHelp.REGION

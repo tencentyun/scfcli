@@ -27,6 +27,10 @@ class UserException(ClickException):
     exit_code = -1
 
 
+class UserLimitException(UserException):
+    pass
+
+
 class CloudAPIException(UserException):
     pass
 
