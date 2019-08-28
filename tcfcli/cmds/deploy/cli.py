@@ -71,7 +71,7 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
               $ scf deploy -f -ue
     '''
 
-    time1 = time.time()
+    # time1 = time.time()
     if region and region not in REGIONS:
         raise ArgsException("The region must in %s." % (", ".join(REGIONS)))
     region = region if region else UserConfig().region
@@ -114,7 +114,7 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
         except Exception as e:
             pass
 
-    print(time.time() - time1)
+    # print(time.time() - time1)
 
 
 class Function(object):
