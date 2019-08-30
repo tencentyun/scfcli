@@ -51,7 +51,7 @@ def daily_task():
             if now_time != version_time:
                 url = "https://service-qgphxt7y-1253970226.gz.apigw.tencentcs.com/release/client_daily_task"
                 post_data = None
-                if allow_report == 'True':
+                if allow_report.upper() == 'TRUE':
                     statistics = StatisticsConfigure()
                     statistics.read_data()
                     post_data = statistics.get_data()

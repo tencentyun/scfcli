@@ -27,7 +27,7 @@ class Operation(object):
         return text(self.message)
 
     def new_style(self, msg, bg=None, fg=None):
-        if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].startswith('True'):
+        if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].upper() == 'TRUE':
             return click.style(u'%s' % msg)
         else:
             return click.style(u'%s' % msg, bg=bg, fg=fg)

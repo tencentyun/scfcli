@@ -421,7 +421,7 @@ class Package(object):
         Operation("Package name: %s, package size: %s kb" % (zip_file_name, str(file_size / 1000))).process()
 
         default_bucket_name = ""
-        if UserConfig().using_cos.startswith("True"):
+        if UserConfig().using_cos.upper().startswith("TRUE"):
             using_cos = True
             default_bucket_name = "scf-deploy-" + region + "-" + str(UserConfig().appid)
         else:
