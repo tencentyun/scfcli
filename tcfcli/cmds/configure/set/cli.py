@@ -98,7 +98,7 @@ def set(**kwargs):
 
         #
         v1 = click.prompt(text= ("Show the command information without color(cur:%s). (y/n)") % attrs["no_color"][:5],
-                          default="y" if str(attrs["no_color"]).startswith("True") else "n",
+                          default="y" if str(attrs["no_color"]).upper().startswith("TRUE") else "n",
                           show_default=False)
         if v1:
             config["no_color"] = "False" if v1 not in ["y", "Y"] else "True"
@@ -106,20 +106,20 @@ def set(**kwargs):
             config["no_color"] = attrs["no_color"]
 
         v2 = click.prompt(text=("Deploy SCF function by COS, it will be faster(cur:%s).  (y/n)") % attrs["using_cos"][:5],
-                          default="y" if str(attrs["using_cos"]).startswith("True") else "n",
+                          default="y" if str(attrs["using_cos"]).upper().startswith("TRUE") else "n",
                           show_default=False)
         if v2:
             config["using_cos"] = using_cos_false if v2 not in ["y", "Y"] else using_cos_true
         else:
             config["using_cos"] = attrs["using_cos"]
 
-        v3 = click.prompt(text=("Allow report information to help us optimize scfcli(cur:%s). (y/n)") % attrs["allow_report"][:5],
-                          default="y" if str(attrs["allow_report"]).startswith("True") else "n",
-                          show_default=False)
-        if v3:
-            config["allow_report"] = "False" if v3 not in ["y", "Y"] else "True"
-        else:
-            config["allow_report"] = attrs["allow_report"]
+        #v3 = click.prompt(text=("Allow report information to help us optimize scfcli(cur:%s). (y/n)") % attrs["allow_report"][:5],
+        #                  default="y" if str(attrs["allow_report"]).upper().startswith("TRUE") else "n",
+        #                  show_default=False)
+        #if v3:
+        #    config["allow_report"] = "False" if v3 not in ["y", "Y"] else "True"
+        #else:
+        #    config["allow_report"] = attrs["allow_report"]
 
         kwargs = config
 
