@@ -26,9 +26,9 @@ class DebugContext(object):
     @property
     def cmd(self):
         if self.debug_port is None:
-            if self.runtime == 'python3.6' and UserConfig().python3_path != 'None':
+            if self.runtime == 'python3.6' and UserConfig().python3_path.upper() != 'NONE':
                 return UserConfig().python3_path
-            elif self.runtime == 'python2.7' and UserConfig().python2_path != 'None':
+            elif self.runtime == 'python2.7' and UserConfig().python2_path.upper() != 'NONE':
                 return UserConfig().python2_path
             else:
                 return self.DEBUG_CMD[self.runtime]
