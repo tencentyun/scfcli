@@ -39,4 +39,5 @@ SCF CLI 是腾讯云无服务器云函数 SCF（Serverless Cloud Function）产�
 * [测试模板](https://cloud.tencent.com/document/product/583/33453)
 * [模板文件](https://cloud.tencent.com/document/product/583/33454)
 * [TCSAM说明](https://cloud.tencent.com/document/product/583/36198)
+* [更新日志](https://cloud.tencent.com/document/product/583/36908)
 * [常见问题 FAQ](https://cloud.tencent.com/document/product/583/33456)
