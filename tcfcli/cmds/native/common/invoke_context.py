@@ -144,9 +144,9 @@ class InvokeContext(object):
     def cmd(self):
         if self._debug_context.cmd is not None:
             return self._debug_context.cmd
-        elif self._runtime.runtime == 'python3.6' and UserConfig().python3_path != 'None':
+        elif self._runtime.runtime == 'python3.6' and UserConfig().python3_path.upper() != 'NONE':
             return UserConfig().python3_path
-        elif self._runtime.runtime == 'python2.7' and UserConfig().python2_path != 'None':
+        elif self._runtime.runtime == 'python2.7' and UserConfig().python2_path.upper() != 'NONE':
             return UserConfig().python2_path
         else:
             return self._runtime.cmd
