@@ -125,4 +125,7 @@ def set(**kwargs):
 
     uc.set_attrs(kwargs)
     uc.flush()
+    if uc.section_map[UserConfig.OTHERS]['allow_report'].upper() == 'TRUE':
+        Operation('当前已开启数据收集，详情请参考 https://cloud.tencent.com/document/product/583/37766').out_infor()
+
 
