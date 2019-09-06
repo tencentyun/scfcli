@@ -6,7 +6,6 @@ import tcfcli.common.base_infor as infor
 from tcfcli.help.message import ConfigureHelp as help
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.operation_msg import Operation
-from tcfcli.common.scf_client.scf_report_client import ScfReportClient
 
 version = platform.python_version()
 if version >= '3':
@@ -93,8 +92,8 @@ def add(**kwargs):
     Operation(user).process()
     Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % ('UserId', 'AppId', 'region', 'secret_id', 'secret_key', 'using_cos')).process()
     userinfo = uc.get_user_info(user)
-    secret_id = ("*" * 3 + userinfo['secret_id'][32:]) if userinfo['secret_id'] != 'None' else 'None'
-    secret_key = ("*" * 3 + userinfo['secret_key'][28:]) if userinfo['secret_key'] != 'None' else 'None'
+    secret_id = ("*" * 3 + userinfo['secret_id'][32:]) if userinfo['secret_id'].upper() != 'NONE' else 'None'
+    secret_key = ("*" * 3 + userinfo['secret_key'][28:]) if userinfo['secret_key'].upper() != 'NONE' else 'None'
     Operation('%-10s %-15s %-15s %-15s %-15s %-10s' % (user.strip('USER_'), userinfo['appid'], userinfo['region'],
                                                        secret_id, secret_key, userinfo['using_cos'][:5])).process()
     Operation('You can use `scf configure change -u %s` to switch user.' % (user.strip('USER_'))).process()
