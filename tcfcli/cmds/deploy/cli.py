@@ -446,7 +446,8 @@ class Package(object):
         elif self.cos_bucket:
             bucket_name = self.cos_bucket + "-" + UserConfig().appid
             Operation("Uploading this package to COS, bucket_name: %s" % (bucket_name)).process()
-            CosClient(region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(), key=zip_file_name_cos)
+            cos_region = "ap-guangzhou" if region == "ap-guangzhou-open" else region  # Cos guangzhou open -> guangzhou
+            CosClient(cos_region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(), key=zip_file_name_cos)
             Operation("Upload success").success()
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name_cos
@@ -461,7 +462,8 @@ class Package(object):
             Operation(
                 "If you don't want to upload the package to COS by default, you could change your configure!").information()
 
-            cos_client = CosClient(region)
+            cos_region = "ap-guangzhou" if region == "ap-guangzhou-open" else region  # Cos guangzhou open -> guangzhou
+            cos_client = CosClient(cos_region)
             Operation("Checking you COS Bucket: %s." % (default_bucket_name)).process()
             cos_bucket_status = cos_client.get_bucket(default_bucket_name)
 
@@ -542,7 +544,7 @@ class Package(object):
                 size_infor = self.file_size_infor(file_size)
                 if size_infor == -1:
                     Operation("Upload Error.").warning()
-                    raise UploadFailed(str(e))
+                    raise UploadFailed(str(cos_bucket_status))
                 else:
                     Operation("There are some exceptions and the process of uploading to COS is terminated!").warning()
                     if len(str(cos_bucket_status)) > 3:
