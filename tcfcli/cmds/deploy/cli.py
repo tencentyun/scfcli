@@ -311,7 +311,8 @@ class Package(object):
 
                 if self.history:
 
-                    cos_function = CosClient(self.region).get_object_list(
+                    cos_region = "ap-guangzhou" if self.region == "ap-guangzhou-open" else self.region  # Cos guangzhou open -> guangzhou
+                    cos_function = CosClient(cos_region).get_object_list(
                         bucket=self.bucket_name,
                         prefix=str(namespace) + "-" + str(function)
                     )
