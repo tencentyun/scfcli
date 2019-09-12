@@ -77,13 +77,6 @@ class UserConfig(object):
     def _migrate(self):
         cf = CliConfigParser()
         cf.read(_USER_CONFIG_FILE)
-        # 未读取到文件或任何sections
-        # if not cf.read(_USER_CONFIG_FILE):
-        #     self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_' + str(1)
-        # 若有新版本用户标志section,不迁移
-        # for section in cf.sections():
-        #     if section.startswith('USER_'):
-        #         return
         # 读取旧的section数据
         if UserConfig.API in cf.sections():
             attrs = {}
@@ -91,7 +84,6 @@ class UserConfig(object):
                 attrs[self._name_attr2obj(attrs_keys)] = cf.get(UserConfig.API, attrs_keys)
             self.set_attrs(attrs)
             self.section_map[UserConfig.OTHERS]['curr_user'] = 'USER_'+str(1)
-            #print self.section_map
             self._dump_config()
 
     def _dumpattr(self):
@@ -201,7 +193,7 @@ class UserConfig(object):
                 for attr in attrs:
                     if self._name_attr2obj(attr) in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
                         self.section_map[UserConfig.USER_QCLOUD_CONFIG][self._name_attr2obj(attr)] = cf.get(section, attr)
-            # 获取所有用户配置到对象，包括当前用户
+            # 获取所有用户配置到对象
             if section.startswith('USER_'):
                 self.section_map[section] = {}
                 for key in list(self.section_map[UserConfig.USER_QCLOUD_CONFIG].keys()):
