@@ -610,7 +610,7 @@ class Deploy(object):
         events = proper.get(tsmacro.Events, {})
 
         trigger_threads = []
-        trigger_queue = Queue(maxsize=20)
+        trigger_queue = Queue(maxsize=2000)
         trigger_count = 0
         trigger_result = []
         for trigger in events:
