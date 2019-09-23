@@ -317,6 +317,24 @@ class ScfClient(object):
             Operation("list testmodels failure. Error: {e}.".format(e=s)).warning()
         return None
 
+    def invoke_func(self, functionName, namespace, eventdata, invocationType, logtype):
+        try:
+            req = models.InvokeRequest()
+            req.FunctionName = functionName
+            req.Namespace = namespace
+            req.ClientContext = eventdata
+            req.InvocationType = invocationType
+            req.LogType = logtype
+            resp = self._client.Invoke(req)
+            return True, resp.to_json_string()
+        except TencentCloudSDKException as err:
+            if sys.version_info[0] == 3:
+                s = err.get_message()
+            else:
+                s = err.get_message().encode("UTF-8")
+        return False, s
+
+
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
         if t == tsmacro.TrTimer:
