@@ -28,7 +28,7 @@ from tcfcli.common.operation_msg import Operation
 from tcfcli.common.cam_role import list_scf_role
 
 _CURRENT_DIR = '.'
-_BUILD_DIR = os.path.join(os.getcwd(), '.tcf_build')
+_BUILD_DIR = os.path.join(os.getcwd(), '.scf_build')
 DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
