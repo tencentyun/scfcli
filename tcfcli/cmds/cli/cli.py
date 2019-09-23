@@ -17,7 +17,7 @@ os.chdir('../../..')
 sys.path.insert(0, os.getcwd())
 os.chdir(work_dir)
 
-from tcfcli.cmds.deploy.cli import deploy
+from tcfcli.cmds.deploy.new_cli import deploy
 from tcfcli.cmds.local.cli import local
 from tcfcli.cmds.init.cli import init
 from tcfcli.cmds.validate.cli import validate

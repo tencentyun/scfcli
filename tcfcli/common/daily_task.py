@@ -79,6 +79,7 @@ def daily_task():
                 uc.set_attrs({'version_time': now_time})
                 uc.flush()
         except Exception as e:
+            # print e
             pass
 
     except Exception as e:

@@ -448,7 +448,7 @@ class Package(object):
             bucket_name = self.cos_bucket + "-" + UserConfig().appid
             Operation("Uploading this package to COS, bucket_name: %s" % (bucket_name)).process()
             cos_region = "ap-guangzhou" if region == "ap-guangzhou-open" else region  # Cos guangzhou open -> guangzhou
-            CosClient(cos_region).upload_file2cos(bucket=self.cos_bucket, file=zipfile.read(), key=zip_file_name_cos)
+            CosClient(cos_region).upload_file2cos(bucket=self.cos_bucket, file=de.read(), key=zip_file_name_cos)
             Operation("Upload success").success()
             code_url["cos_bucket_name"] = self.cos_bucket
             code_url["cos_object_name"] = "/" + zip_file_name_cos
@@ -513,20 +513,20 @@ class Package(object):
                     if is_have == 0:
                         Operation("Uploading to COS, bucket name: " + default_bucket_name).process()
 
-                        # 普通上传
-                        cos_client.upload_file2cos(
-                            bucket=default_bucket_name,
-                            file=file_data,
-                            key=zip_file_name_cos
-                        )
+                        # # 普通上传
+                        # cos_client.upload_file2cos(
+                        #     bucket=default_bucket_name,
+                        #     file=file_data,
+                        #     key=zip_file_name_cos
+                        # )
 
                         # 分块上传
-                        # cos_client.upload_file2cos2(
-                        #     bucket=default_bucket_name,
-                        #     file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
-                        #     key=zip_file_name_cos,
-                        #     md5=md5,
-                        # )
+                        cos_client.upload_file2cos2(
+                            bucket=default_bucket_name,
+                            file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
+                            key=zip_file_name_cos,
+                            md5=md5,
+                        )
 
                     code_url["cos_bucket_name"] = default_bucket_name.replace("-" + UserConfig().appid, '') \
                         if default_bucket_name and default_bucket_name.endswith(
@@ -752,6 +752,7 @@ class Deploy(object):
                 ns_this = self.namespace
             Operation("Deploy namespace '{ns}' begin".format(ns=ns_this)).begin()
             for func in self.resources[ns]:
+                print("FUNCTION:", func)
                 if func == tsmacro.Type:
                     continue
 

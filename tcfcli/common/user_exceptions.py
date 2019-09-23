@@ -158,6 +158,8 @@ class LoadEventFileException(UserException):
 class OutputDirNotFound(UserException):
     pass
 
+class COSBucketException(UserException):
+    pass
 
 class InvalidDocumentException(Exception):
     def __init__(self, causes):

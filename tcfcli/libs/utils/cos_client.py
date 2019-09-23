@@ -573,7 +573,7 @@ class CosClient(object):
                                                })
             if not response['ETag']:
                 # Operation(str(response)).warning()
-                raise UploadToCosFailed("Upload func package failed")
+                raise UploadToCosFailed("Upload func package failed [No ETag].")
         except Exception as e:
             # error_msg = ""
             # if "<?xml" in e.message:
@@ -590,13 +590,12 @@ class CosClient(object):
                     error_message = re.findall("<Message>(.*?)</Message>", str(e))[0]
                     Operation("COS client error code: %s, message: %s" % (error_code, error_message)).warning()
             finally:
-                raise UploadToCosFailed("Upload func package failed.")
+                raise UploadToCosFailed(str(e))
 
         code_uri_in_cos = bucket + '/' + key
         return code_uri_in_cos
 
     def upload_file2cos2(self, bucket, file, key, md5):
-        # save funcs in the func directory
         try:
             response = self._client.upload_file(Bucket=bucket,
                                                 LocalFilePath=file,
@@ -607,27 +606,20 @@ class CosClient(object):
                                                     'Content-Type': 'application/x-zip-compressed',
                                                 })
             if not response['ETag']:
-                raise UploadToCosFailed("Upload func package failed")
+                return "Upload func package failed [No ETag]."
         except Exception as e:
-            # error_msg = ""
-            # if "<?xml" in e.message:
-            #     msg_dict = xmltodict.parse(e.message)
-            #     if isinstance(msg_dict, dict):
-            #         error_msg_dict = msg_dict.get("Error", {})
-            #         error_msg = error_msg_dict.get("Code", "") + ", " + error_msg_dict.get("Message", "")
-            # else:
-            #     error_msg = e.message
-            # raise UploadToCosFailed("Upload func package failed. {} ".format(error_msg))
             try:
                 if "<?xml" in str(e):
                     error_code = re.findall("<Code>(.*?)</Code>", str(e))[0]
                     error_message = re.findall("<Message>(.*?)</Message>", str(e))[0]
-                    Operation("COS client error code: %s, message: %s" % (error_code, error_message)).warning()
+                    return "COS client error code: %s, message: %s" % (error_code, error_message)
+                else:
+                    return str(e)
             finally:
-                raise UploadToCosFailed("Upload func package failed.")
+                # raise UploadToCosFailed("Upload func package failed.")
+                return str(e)
 
-        code_uri_in_cos = bucket + '/' + key
-        return code_uri_in_cos
+        return True
 
     def get_bucket_list(self):
         '''
@@ -651,6 +643,7 @@ class CosClient(object):
         '''
         try:
             temp_data = self.get_bucket_list()
+            # print(temp_data)
             if temp_data[0] == 0:
                 bucket_list = temp_data[1]
                 for eve_bucket in bucket_list:
