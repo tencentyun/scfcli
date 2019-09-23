@@ -572,6 +572,8 @@ class Deploy(object):
                 if not self.skip_event:
                     trigger_result = self.deploy_trigger_core(function_resource, function, namespace, self.region,
                                                               trigger_release)
+                else:
+                    trigger_result = None
                 return (True, trigger_result)
 
             elif deploy_result == 2:
@@ -602,106 +604,113 @@ class Deploy(object):
                     Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").warning()
                     return False
         except Exception as e:
+            print("=========")
             Operation(u'%s - %s: %s' % (str(namespace), str(function), str(e)), fg="red").warning()
 
         return False
 
     def deploy_trigger_core(self, function_resource, function, namespace, region, trigger_release):
-        proper = function_resource.get(tsmacro.Properties, {})
-        events = proper.get(tsmacro.Events, {})
+        try:
+            proper = function_resource.get(tsmacro.Properties, {})
+            events = proper.get(tsmacro.Events, {})
 
-        trigger_threads = []
-        trigger_queue = Queue(maxsize=2000)
-        trigger_count = 0
-        trigger_result = []
-        for trigger in events:
-            trigger_count = trigger_count + 1
-            trigger_status = True
-            msg = "%s - %s: Deploy %s trigger '%s' failure, this trigger has been created." % (
-                str(namespace), str(function), events[trigger]['Type'], trigger)
-            if trigger_release:
-                try:
-                    event_type = str(events[trigger]['Type']).lower()
-                    temp_trigger = events[trigger].copy()
-
-                    if event_type == "timer":
-                        temp_trigger['TriggerName'] = trigger
-
-                    for eve_event in trigger_release[str(events[trigger]['Type']).lower()]:
-                        eve_event_infor = eve_event.copy()
-                        eve_event_infor.pop("TriggerDesc", eve_event_infor)
-                        change_infor = False
-                        tproperty = temp_trigger['Properties']
-                        eproperty = eve_event['Properties']
+            trigger_threads = []
+            trigger_queue = Queue(maxsize=2000)
+            trigger_count = 0
+            trigger_result = []
+            for trigger in events:
+                trigger_count = trigger_count + 1
+                trigger_status = True
+                msg = "%s - %s: Deploy %s trigger '%s' failure, this trigger has been created." % (
+                    str(namespace), str(function), events[trigger]['Type'], trigger)
+                if trigger_release:
+                    try:
+                        event_type = str(events[trigger]['Type']).lower()
+                        temp_trigger = events[trigger].copy()
 
                         if event_type == "timer":
-                            if temp_trigger['TriggerName'] == eve_event['TriggerName']:
-                                change_infor = True
-                        elif event_type == "apigw":
-                            if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty[
-                                'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
-                                eve_event_infor.pop("TriggerName")
-                                change_infor = True
-                        elif event_type == "ckafka":
-                            if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty[
-                                'Topic']:
-                                eve_event_infor.pop("TriggerName")
-                                change_infor = True
-                        elif event_type == "cmq":
-                            if tproperty['Name'] == eproperty['Name']:
-                                eve_event_infor.pop("TriggerName")
-                                change_infor = True
-                        elif event_type == "cos":
-                            if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty[
-                                'Events'] and tproperty['Filter'] == eproperty['Filter']:
-                                eve_event_infor.pop("TriggerName")
-                                change_infor = True
+                            temp_trigger['TriggerName'] = trigger
 
-                        if change_infor:
-                            if temp_trigger == eve_event_infor:
-                                trigger_status = False
-                                Operation(msg).warning()
-                                trigger_result.append((trigger, True))
-                            else:
-                                if self.update_event:
-                                    eve_event["Properties"].pop("Enable", eve_event["Properties"])
-                                    err = ScfClient(region).remove_trigger(eve_event, function, namespace)
-                                    if not err:
-                                        trigger_result.append((trigger, True))
-                                        Operation("%s - %s: %s, The trigger is being redeployed." % (
-                                            namespace, function, temp_trigger['TriggerName'])).warning()
-                                    else:
-                                        trigger_result.append((trigger, False))
-                                        trigger_status = False
-                                        err_msg = "%s - %s: %s, The redeployment trigger failed. Please manually delete the trigger and redeploy." % (
-                                            namespace, function, temp_trigger['TriggerName'])
-                                        Operation(err_msg).warning()
-                                else:
-                                    Operation(
-                                        '%s - %s: %s, The same name Trigger already exists. If you want to upgrade, you can add the --update-event parameter.' % (
-                                            namespace, function, temp_trigger['TriggerName'])).warning()
+                        for eve_event in trigger_release[str(events[trigger]['Type']).lower()]:
+                            eve_event_infor = eve_event.copy()
+                            eve_event_infor.pop("TriggerDesc", eve_event_infor)
+                            change_infor = False
+                            tproperty = temp_trigger['Properties']
+                            eproperty = eve_event['Properties']
+
+                            if event_type == "timer":
+                                if temp_trigger['TriggerName'] == eve_event['TriggerName']:
+                                    change_infor = True
+                            elif event_type == "apigw":
+                                if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty[
+                                    'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
+                                    eve_event_infor.pop("TriggerName")
+                                    change_infor = True
+                            elif event_type == "ckafka":
+                                if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty[
+                                    'Topic']:
+                                    eve_event_infor.pop("TriggerName")
+                                    change_infor = True
+                            elif event_type == "cmq":
+                                if tproperty['Name'] == eproperty['Name']:
+                                    eve_event_infor.pop("TriggerName")
+                                    change_infor = True
+                            elif event_type == "cos":
+                                if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty[
+                                    'Events'] and tproperty['Filter'] == eproperty['Filter']:
+                                    eve_event_infor.pop("TriggerName")
+                                    change_infor = True
+
+                            if change_infor:
+                                if temp_trigger == eve_event_infor:
                                     trigger_status = False
-                                    trigger_result.append((trigger, False))
-                            break
+                                    Operation(msg).warning()
+                                    trigger_result.append((trigger, True))
+                                else:
+                                    if self.update_event:
+                                        eve_event["Properties"].pop("Enable", eve_event["Properties"])
+                                        err = ScfClient(region).remove_trigger(eve_event, function, namespace)
+                                        if not err:
+                                            trigger_result.append((trigger, True))
+                                            Operation("%s - %s: %s, The trigger is being redeployed." % (
+                                                namespace, function, temp_trigger['TriggerName'])).warning()
+                                        else:
+                                            trigger_result.append((trigger, False))
+                                            trigger_status = False
+                                            err_msg = "%s - %s: %s, The redeployment trigger failed. Please manually delete the trigger and redeploy." % (
+                                                namespace, function, temp_trigger['TriggerName'])
+                                            Operation(err_msg).warning()
+                                    else:
+                                        Operation(
+                                            '%s - %s: %s, The same name Trigger already exists. If you want to upgrade, you can add the --update-event parameter.' % (
+                                                namespace, function, temp_trigger['TriggerName'])).warning()
+                                        trigger_status = False
+                                        trigger_result.append((trigger, False))
+                                break
+                    except Exception as e:
+                        pass
+
+                if trigger_status == True:
+                    t = threading.Thread(target=self.deploy_do_trigger,
+                                         args=(region, events, trigger, function, namespace, trigger_queue))
+                    trigger_threads.append(t)
+                    t.start()
+
+            for t in trigger_threads:
+                t.join()
+            while trigger_count != 0:
+                try:
+                    temp_trigger = trigger_queue.get(False)
+                    trigger_result.append(temp_trigger)
                 except Exception as e:
                     pass
+                time.sleep(0.1)
+                if len(trigger_result) == trigger_count:
+                    break
+            return trigger_result
+        except Exception as e:
+            return False
 
-            if trigger_status == True:
-                t = threading.Thread(target=self.deploy_do_trigger,
-                                     args=(region, events, trigger, function, namespace, trigger_queue))
-                trigger_threads.append(t)
-                t.start()
-
-        for t in trigger_threads:
-            t.join()
-
-        while trigger_count != 0:
-            temp_trigger = trigger_queue.get()
-            trigger_result.append(temp_trigger)
-            time.sleep(0.1)
-            if len(trigger_result) == trigger_count:
-                break
-        return trigger_result
 
     def deploy_do_trigger(self, region, events, trigger, function, namespace, queue):
         err = ScfClient(region).deploy_trigger(events[trigger], trigger, function, namespace)
