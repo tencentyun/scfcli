@@ -13,7 +13,7 @@ import fnmatch
 import platform
 import multiprocessing
 import tcfcli.common.base_infor as infor
-from multiprocessing import Process, Manager, queues
+from multiprocessing import Process, queues
 from queue import Queue
 from zipfile import ZipFile, ZIP_DEFLATED
 from tcfcli.help.message import DeployHelp as help
@@ -26,6 +26,7 @@ from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.libs.utils.cos_client import CosClient
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.cam_role import list_scf_role
+from tcfcli.cmds.function.information.cli import Information
 
 _CURRENT_DIR = '.'
 _BUILD_DIR = os.path.join(os.getcwd(), '.scf_build')
@@ -213,7 +214,7 @@ class Deploy(object):
                 if len(result_list) == function_count:
                     break
 
-            self.function_output(result_list, namespace)
+            self.function_output(result_list, real_namespace)
 
         # 删除缓存目录（临时文件存放）
         try:
@@ -862,16 +863,24 @@ class Deploy(object):
                 if eve_information and 'deploy_trigger' in eve_information:
                     if eve_information['deploy_trigger']:
                         for eve_trigger in eve_information['deploy_trigger']:
-                            Operation(
-                                "    %s: %s" % (eve_trigger[0], "success" if eve_trigger[1] else "failed")).out_infor()
+                            Operation("    %s: %s" % (eve_trigger[0], "success" if eve_trigger[1] else "failed")).out_infor()
                     else:
                         Operation("    No Trigger deployment results").out_infor()
         except Exception as e:
             pass
 
-        Operation("Deployment is complete and can be triggered by scf remote invoke").information()
-        Operation(
-            "For example: scf remote invoke -n %s -e ./event.json " % (function_dict[0]["function"])).information()
+        try:
+            if len(function_dict) > 0:
+                Operation("Deployment is complete and can be triggered by scf remote invoke").information()
+                Operation("For example: scf remote invoke -n %s -e ./event.json " % (function_dict[0]["function"])).information()
+
+                if len(function_dict) == 1 and function_dict[0]['deploy_function']:
+                    Information(region=self.region, namespace=namespace, name=function_dict[0]["function"]).get_information()
+                else:
+                    Operation("If you want to query function information, you can use: scf function info").information()
+                    Operation("For example: scf function info -r %s -ns %s -n %s" % (self.region, namespace, function_dict[0]["function"])).information()
+        except:
+            pass
 
         if error_state:
             raise DeployException("Not all deployments were successful, please check！")

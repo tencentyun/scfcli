@@ -161,6 +161,9 @@ class OutputDirNotFound(UserException):
 class COSBucketException(UserException):
     pass
 
+class InformationException(UserException):
+    pass
+
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
         self._causes = sorted(causes)

@@ -205,6 +205,7 @@ class FunctionHelp():
 
     DELETE_NAME = CommonHelp.NAME
     NAMESPACE = CommonHelp.NAMESPACE
+    INFO_NAME = CommonHelp.NAMESPACE
     FORCED = "Force delete function without ask."
     REGION = "Region name. Including %s." % REGIONS_STR
 
