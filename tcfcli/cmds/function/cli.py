@@ -3,6 +3,7 @@
 import click
 from .delete.cli import delete
 from .list.cli import list
+from .information.cli import info
 from tcfcli.help.message import FunctionHelp as help
 
 
@@ -25,3 +26,4 @@ def function():
 
 function.add_command(delete)
 function.add_command(list)
+function.add_command(info)
