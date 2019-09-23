@@ -40,18 +40,20 @@ class Invoke(object):
         else:
             invokeres=json.loads(invokeres)
             Operation('Invoke success\n\n'
-                      'RetMsg:%s\n\n'
+                      'Response:%s\n\n'
+                      'Output:\n%s\n\n'
+                      'Summary:\n'
                       'FunctionRequestId:%s\n'
-                      'Duration:%sms\n'
-                      'BillDuration:%sms\n'
-                      'MemUsage:%sB\n\n'
-                      'Log:\n%s' %
+                      'Run Duration:%sms\n'
+                      'Bill Duration:%sms\n'
+                      'Usage memory:%sB\n\n' %
                       (invokeres['Result']['RetMsg'],
+                       invokeres['Result']['Log'],
                        invokeres['Result']['FunctionRequestId'],
                        invokeres['Result']['Duration'],
                        invokeres['Result']['BillDuration'],
                        invokeres['Result']['MemUsage'],
-                       invokeres['Result']['Log'])).success()
+                       )).success()
 
 
 @click.command(name='invoke', short_help=help.SHORT_HELP)
