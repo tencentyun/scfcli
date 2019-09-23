@@ -238,3 +238,15 @@ class StatHelp():
     REGION = LogsHelp.REGION
     METRIC = "Specify show metric. multiple separated by commas case sensitive\n\tmore goto 'https://cloud.tencent.com/document/api/248/37207#2.2-.E6.8C.87.E6.A0.87.E5.90.8D.E7.A7.B0'"
 
+
+class RemoteHelp():
+    # RemoteHelp Help Message
+
+    SHORT_HELP = "Manage SCF remote function invoke."
+    INVOKE_NAME = CommonHelp.NAME
+    NAMESPACE = CommonHelp.NAMESPACE
+    REGION = "Region name. Including %s." % REGIONS_STR
+    EVENTDATA = "Local eventdata file"
+    NOCOLOR = "Suppress colored output"
+    INVOCATIONTYPE ="The type of invoke remote function.Include %s." % infor.INVOCATION_TYPE
+    LOGTYPE = "The type of invoke remote function log.Include %s." % infor.LOG_TYPE

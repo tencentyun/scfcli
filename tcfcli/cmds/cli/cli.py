@@ -23,7 +23,7 @@ from tcfcli.cmds.init.cli import init
 from tcfcli.cmds.validate.cli import validate
 from tcfcli.cmds.configure.cli import configure
 from tcfcli.cmds.native.cli import native
-# from tcfcli.cmds.remote.cli import remote
+from tcfcli.cmds.remote.cli import remote
 from tcfcli.cmds.logs.cli import logs
 from tcfcli.cmds.stat.cli import stat
 from tcfcli.cmds.function.cli import function
@@ -54,7 +54,7 @@ cli.add_command(init)
 cli.add_command(deploy)
 cli.add_command(native)
 cli.add_command(validate)
-# cli.add_command(remote)
+cli.add_command(remote)
 cli.add_command(logs)
 cli.add_command(stat)
 cli.add_command(local)
