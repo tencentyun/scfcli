@@ -58,6 +58,6 @@ def change(userid):
         uc.flush()
         Operation('Your current user has switched to %s' % ('USER_'+v)).success()
     else:
-        Operation('error No').warning()
+        Operation('error UserId').warning()
 
 
