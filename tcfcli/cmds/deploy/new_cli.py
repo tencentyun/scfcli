@@ -10,6 +10,7 @@ import shutil
 import hashlib
 import threading
 import fnmatch
+import platform
 import multiprocessing
 import tcfcli.common.base_infor as infor
 from multiprocessing import Process, Manager, queues
@@ -172,7 +173,8 @@ class Deploy(object):
                     Operation(u' %s' % text(err_msg), fg="red").warning()
                     return False
 
-            li = queues.Queue(1000, ctx=multiprocessing)
+            li = queues.Queue(1000, ctx=multiprocessing) if platform.python_version() >= '3' else queues.Queue(1000)
+
             workflow_process = None
             function_count = 0
 
@@ -275,6 +277,13 @@ class Deploy(object):
 
         template_path, template_name = os.path.split(self.template_file)
         code_uri = self.resource[namespace][function][tsmacro.Properties].get(tsmacro.CodeUri, "")
+
+        if isinstance(code_uri, dict):
+            return {
+                "cos_bucket_name": code_uri["Bucket"],
+                "cos_object_name": code_uri["Key"]
+            }
+
         function_path = os.path.join(template_path, code_uri)
         zip_result = self.package_zip_core(function_path, real_namespace, function)
         if zip_result[0] == True:
@@ -350,16 +359,17 @@ class Deploy(object):
                     if upload_result != True:
                         if "your policy or acl has reached the limit" in upload_result:
                             msg = "%s - %s: Your policy or acl has reached the limit, Please clean up COS-Bucket: %s" % (
-                                real_namespace, function,self.bucket_name)
+                                real_namespace, function, self.bucket_name)
                         else:
                             msg = "%s - %s: Upload function zip file %s failed: %s" % (
-                                real_namespace, function, zip_file_name_cos , upload_result)
+                                real_namespace, function, zip_file_name_cos, upload_result)
                         Operation(msg).warning()
                         return
 
                 code_url["cos_bucket_name"] = self.bucket_name
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
-                msg = "%s - %s: Upload function zip file %s success." % (real_namespace, function, code_url["cos_object_name"])
+                msg = "%s - %s: Upload function zip file %s success." % (
+                    real_namespace, function, code_url["cos_object_name"])
                 Operation(msg).success()
             except Exception as e:
                 Operation("%s - %s: This package will be uploaded by TencentCloud Cloud API." % (

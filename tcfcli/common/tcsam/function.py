@@ -14,7 +14,7 @@ func_schema = {
         macro.Properties: {
             "type": "object",
             "properties": {
-                macro.CodeUri: {"type": "string"},
+                macro.CodeUri: {"type": ["string", "object"]},
                 macro.Desc: {"type": "string"},
                 macro.Role: {"type": "string"},
                 macro.Envi: {
