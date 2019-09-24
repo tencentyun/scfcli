@@ -7,7 +7,7 @@ from tcfcli.common.user_exceptions import *
 from tcfcli.help.message import FunctionHelp as help
 from tcfcli.common.user_config import UserConfig
 
-@click.command(name='info', short_help=help.LIST_SHORT_HELP)
+@click.command(name='info', short_help=help.INFO_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-n', '--name',  help=help.INFO_NAME)
@@ -15,12 +15,12 @@ from tcfcli.common.user_config import UserConfig
 def info(region, namespace, name, no_color):
     """
         \b
-        Show the SCF function list.
+        Show the function information.
         \b
         Common usage:
         \b
-            * All function in ap-guangzhou and in namespace default
-              $ scf function list --region ap-guangzhou --namespace default
+            * Get the function information
+              $ scf function infor --region ap-guangzhou --namespace default --name hello_world
     """
     Information(region=region, namespace=namespace, name=name).get_information()
 

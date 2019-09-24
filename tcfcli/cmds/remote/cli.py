@@ -2,7 +2,7 @@
 
 import click
 from .invoke.cli import invoke
-from tcfcli.help.message import NativeHelp as help
+from tcfcli.help.message import RemoteHelp as help
 
 
 @click.group(name='remote', short_help=help.SHORT_HELP)
