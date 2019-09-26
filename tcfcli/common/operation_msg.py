@@ -51,7 +51,7 @@ class Operation(object):
         click.secho(self.new_style("    ") + self.new_style(u' %s' % self.format_message(), fg="cyan"))
 
     def exception(self):
-        click.secho(self.new_style("[x]", bg="red") + self.new_style(u' %s' % self.format_message(), fg="red"))
+        click.secho(self.new_style("[x] [ERROR] ", bg="red") + self.new_style(u' %s' % self.format_message(), fg="red"))
 
     def echo(self):
         if "--no-color" in sys.argv or "-nc" in sys.argv or UserConfig().section_map[UserConfig.OTHERS]['no_color'].startswith('True'):
