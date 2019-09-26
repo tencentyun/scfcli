@@ -881,7 +881,7 @@ class Deploy(object):
         try:
             if len(function_dict) > 0:
                 Operation("Deployment is complete and can be triggered by scf remote invoke").information()
-                Operation("For example: scf remote invoke -n %s -e ./event.json " % (function_dict[0]["function"])).information()
+                Operation("For example: scf remote invoke -n %s" % (function_dict[0]["function"])).information()
 
                 if len(function_dict) == 1 and function_dict[0]['deploy_function']:
                     Information(region=self.region, namespace=namespace, name=function_dict[0]["function"]).get_information()
