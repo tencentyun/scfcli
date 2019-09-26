@@ -12,7 +12,7 @@ import click
 import tcfcli.common.base_infor as infor
 from tcfcli.common.operation_msg import Operation
 
-REGIONS = infor.REGIONS
+REGIONS = infor.SHOW_REGIONS
 REGIONS_STR = Operation("%s" % (", ".join(REGIONS)), fg='green').style()
 
 RUNTIME = infor.EVENT_RUNTIME
