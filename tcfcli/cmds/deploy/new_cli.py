@@ -232,7 +232,7 @@ class Deploy(object):
         }
 
         function_resource = self.package(namespace, real_namespace, function)
-        if function not in function_resource[real_namespace]:
+        if (not function_resource) or (function not in function_resource[real_namespace]):
             function_message["package"] = False
         else:
             function_message["package"] = True
@@ -258,19 +258,22 @@ class Deploy(object):
         else:
             code_url = self.package_core(namespace, real_namespace, function)
 
-        try:
-            if "cos_bucket_name" in code_url:  # 使用了cos_bucket或者是using_cos
-                bucket_name = code_url["cos_bucket_name"]
-                object_name = code_url["cos_object_name"]
-                function_resource[real_namespace][function][tsmacro.Properties]["CosBucketName"] = bucket_name
-                function_resource[real_namespace][function][tsmacro.Properties]["CosObjectName"] = object_name
-            elif "zip_file" in code_url:  # 未使用using_cos或者使用without-cos,
-                function_resource[real_namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
-            else:
+        if code_url:
+            try:
+                if "cos_bucket_name" in code_url:  # 使用了cos_bucket或者是using_cos
+                    bucket_name = code_url["cos_bucket_name"]
+                    object_name = code_url["cos_object_name"]
+                    function_resource[real_namespace][function][tsmacro.Properties]["CosBucketName"] = bucket_name
+                    function_resource[real_namespace][function][tsmacro.Properties]["CosObjectName"] = object_name
+                elif "zip_file" in code_url:  # 未使用using_cos或者使用without-cos,
+                    function_resource[real_namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
+                else:
+                    del self.resource[namespace][function]
+            except Exception as e:
+                Operation("%s - %s: %s" % (real_namespace, function, str(e))).warning()
                 del self.resource[namespace][function]
-        except Exception as e:
-            Operation("%s - %s: %s" % (real_namespace, function, str(e))).warning()
-            del self.resource[namespace][function]
+        else:
+            return None
 
         return function_resource
 
