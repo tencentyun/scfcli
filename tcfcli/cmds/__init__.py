@@ -20,6 +20,8 @@ if "-v" in sys.argv or "--version" in sys.argv:
         Operation("If you want to upgrade: pip install -U scf").information()
     except:
         pass
+    if "-test" in sys.argv:
+        Operation("Test Version: %s" % ("0.2.1.1")).success()
     sys.exit(0)
 else:
     daily_task.daily_task()
