@@ -7,6 +7,7 @@ Resources:
         CodeUri: ./
         Type: {{cookiecutter.type}}
         Description: This is a template function
+        Role: QCS_SCFExcuteRole
         Environment:
           Variables:
             ENV_FIRST: env1
