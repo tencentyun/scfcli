@@ -8,7 +8,6 @@ import tcfcli.common.base_infor as infor
 from tcfcli.common.user_config import UserConfig
 import json
 
-
 REGIONS = infor.REGIONS
 INVOCATION_TYPE = infor.INVOCATION_TYPE
 LOG_TYPE = infor.LOG_TYPE
@@ -28,7 +27,8 @@ class Invoke(object):
 
         functions = ScfClient(region).get_function(name, namespace)
         if not functions:
-            Operation("Region {r} namespace {n} not exist function {fn}".format(r=region, n=namespace, fn=name)).warning()
+            Operation(
+                "Region {r} namespace {n} not exist function {fn}".format(r=region, n=namespace, fn=name)).warning()
             return
 
         rep, invokeres = ScfClient(region).invoke_func(name, namespace, eventdata, invocationtype, logtype)
@@ -38,7 +38,7 @@ class Invoke(object):
             Operation(invokeres).exception()
             return
         else:
-            invokeres=json.loads(invokeres)
+            invokeres = json.loads(invokeres)
             Operation('Invoke success\n\n'
                       'Response:%s\n\n'
                       'Output:\n%s\n\n'
@@ -78,12 +78,15 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
         Operation("InvocationType must in {it}".format(it=INVOCATION_TYPE)).warning()
         return
     if type.lower() not in LOG_TYPE:
-        Operation("logtype must in {l}".format(l=LOG_TYPE)).warning()
+        Operation("Log type must in {l}".format(l=LOG_TYPE)).warning()
         return
 
     if eventdata:
-        with open(eventdata, 'r') as f:
-            eventdata = f.read()
+        try:
+            with open(eventdata, 'r') as f:
+                eventdata = f.read()
+        except Exception as e:
+            raise EventFileException("Read file error: %s" % (str(e)))
     else:
         eventdata = json.dumps({"key1": "value1", "key2": "value2"})
 
