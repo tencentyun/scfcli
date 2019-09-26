@@ -164,6 +164,9 @@ class COSBucketException(UserException):
 class InformationException(UserException):
     pass
 
+class EventFileException(UserException):
+    pass
+
 class InvalidDocumentException(Exception):
     def __init__(self, causes):
         self._causes = sorted(causes)
