@@ -6,7 +6,7 @@ Resources:
       Properties:
         CodeUri: ./
         Type: {{cookiecutter.type}}
-        Description: This is a template service
+        Description: This is a template servic
         Handler: index.js
         Runtime: Nodejs8.9-service
 

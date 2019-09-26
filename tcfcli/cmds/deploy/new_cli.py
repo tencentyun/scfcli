@@ -546,7 +546,7 @@ class Deploy(object):
                     Operation("%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).warning()
                     if len(rolelist):
                         Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).warning()
-                    function_resource[tsmacro.Properties][tsmacro.Role] = None
+                    return False
 
             function_data = self.function_trigger(self.region, namespace, function)
             trigger_release = None
