@@ -27,8 +27,7 @@ class Invoke(object):
 
         functions = ScfClient(region).get_function(name, namespace)
         if not functions:
-            Operation(
-                "Region {r} namespace {n} not exist function {fn}".format(r=region, n=namespace, fn=name)).warning()
+            Operation("This command requires the --name option / -n shortcut. Usage: The function name").warning()
             return
 
         rep, invokeres = ScfClient(region).invoke_func(name, namespace, eventdata, invocationtype, logtype)
@@ -39,6 +38,7 @@ class Invoke(object):
             return
         else:
             invokeres = json.loads(invokeres)
+            # print(invokeres)
             Operation('Invoke success\n\n'
                       'Response:%s\n\n'
                       'Output:\n%s\n\n'
@@ -55,6 +55,12 @@ class Invoke(object):
                        invokeres['Result']['MemUsage'],
                        )).success()
 
+            if len(invokeres['Result']['Log']) > 4000:
+                Operation('You could get more logs by: `scf logs -r %s -ns %s -n %s`' % (
+                region, namespace, name)).information()
+
+
+
 
 @click.command(name='invoke', short_help=help.SHORT_HELP)
 @click.option('-n', '--name', help=help.INVOKE_NAME)
@@ -62,7 +68,7 @@ class Invoke(object):
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-e', '--eventdata', help=help.EVENTDATA)
 @click.option('-it', '--invocationtype', default='RequestResponse', help=help.INVOCATIONTYPE)
-@click.option('-l', '--type', default='None', help=help.LOGTYPE)
+@click.option('-t', '--type', default='sync', help=help.LOGTYPE)
 @click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
 def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     """
@@ -73,13 +79,23 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
         \b
             * Invoke the function test in ap-guangzhou and in namespace default
               $ scf remote invoke --name test --region ap-guangzhou --namespace default
+
     """
+
+    type_dict = {
+        "sync":"tail",
+        "async": "none"
+    }
+
     if invocationtype.lower() not in INVOCATION_TYPE:
         Operation("InvocationType must in {it}".format(it=INVOCATION_TYPE)).warning()
         return
     if type.lower() not in LOG_TYPE:
         Operation("Log type must in {l}".format(l=LOG_TYPE)).warning()
         return
+
+    if type.lower == "async":
+        Operation('invoke start ,you can get the invoke logs by excute `scf logs -r %s -ns %s -n %s`'%(region, namespace, name)).information()
 
     if eventdata:
         try:
@@ -90,4 +106,6 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     else:
         eventdata = json.dumps({"key1": "value1", "key2": "value2"})
 
-    Invoke.do_cli(name, region, namespace, eventdata, invocationtype, type)
+
+
+    Invoke.do_cli(name, region, namespace, eventdata, invocationtype, type_dict[type.lower()])
