@@ -60,11 +60,11 @@ class Invoke(object):
 @click.option('-n', '--name', help=help.INVOKE_NAME)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
-@click.option('-e', '--eventdata', required=True, help=help.EVENTDATA)
+@click.option('-e', '--eventdata', help=help.EVENTDATA)
 @click.option('-it', '--invocationtype', default='RequestResponse', help=help.INVOCATIONTYPE)
-@click.option('-l', '--logtype', default='None', help=help.LOGTYPE)
+@click.option('-l', '--type', default='None', help=help.LOGTYPE)
 @click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
-def invoke(name, region, namespace, eventdata, invocationtype, logtype, no_color):
+def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     """
         \b
         Invoke the SCF remote function.
@@ -77,10 +77,14 @@ def invoke(name, region, namespace, eventdata, invocationtype, logtype, no_color
     if invocationtype.lower() not in INVOCATION_TYPE:
         Operation("InvocationType must in {it}".format(it=INVOCATION_TYPE)).warning()
         return
-    if logtype.lower() not in LOG_TYPE:
+    if type.lower() not in LOG_TYPE:
         Operation("logtype must in {l}".format(l=LOG_TYPE)).warning()
         return
 
-    with open(eventdata, 'r') as f:
-        eventdata = f.read()
-    Invoke.do_cli(name, region, namespace, eventdata, invocationtype, logtype)
+    if eventdata:
+        with open(eventdata, 'r') as f:
+            eventdata = f.read()
+    else:
+        eventdata = json.dumps({"key1": "value1", "key2": "value2"})
+
+    Invoke.do_cli(name, region, namespace, eventdata, invocationtype, type)
