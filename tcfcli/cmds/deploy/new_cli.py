@@ -143,7 +143,7 @@ class Deploy(object):
                     Operation("Creating default COS-Bucket success.").success()
                     Operation("Region: %s, COS-Bucket: %s" % (self.region, default_bucket)).information()
                 else:
-                    Operation("Creating %s Cos Bucket: %s faild." % (self.region, default_bucket)).warning()
+                    Operation("Creating %s Cos Bucket: %s faild." % (self.region, default_bucket)).exception()
                     try:
                         if "<?xml" in str(create_status):
                             error_code = re.findall("<Code>(.*?)</Code>", str(create_status))[0]
@@ -171,7 +171,7 @@ class Deploy(object):
                     else:
                         s = err.get_message().encode("UTF-8")
                     err_msg = "%s: Create namespace failure. Error: %s." % (real_namespace, s)
-                    Operation(u' %s' % text(err_msg), fg="red").warning()
+                    Operation(u' %s' % text(err_msg), fg="red").exception()
                     return False
 
             li = queues.Queue(1000, ctx=multiprocessing) if platform.python_version() >= '3' else queues.Queue(1000)
@@ -305,7 +305,7 @@ class Deploy(object):
             if size_infor == -1:
                 msg = '%s - %s: Your package %s is too large and needs to be uploaded via COS.' % (
                     real_namespace, function, zip_file_name)
-                Operation(msg).warning()
+                Operation(msg).exception()
                 return
             elif size_infor == 0:
                 Operation(
@@ -324,7 +324,7 @@ class Deploy(object):
             else:
                 msg = "%s - %s: Upload function zip file %s failed: %s" % (
                     real_namespace, function, code_url["cos_object_name"], upload_result)
-                Operation(msg).warning()
+                Operation(msg).exception()
                 return
         elif using_cos:
             cos_client = CosClient(self.cos_region)
@@ -364,7 +364,7 @@ class Deploy(object):
                         else:
                             msg = "%s - %s: Upload function zip file %s failed: %s" % (
                                 real_namespace, function, zip_file_name_cos, upload_result)
-                        Operation(msg).warning()
+                        Operation(msg).exception()
                         return
 
                 code_url["cos_bucket_name"] = self.bucket_name
@@ -381,7 +381,7 @@ class Deploy(object):
             if size_infor == -1:
                 msg = '%s - %s: Your package %s is too large and needs to be uploaded via COS.' % (
                     real_namespace, function, zip_file_name)
-                Operation(msg).warning()
+                Operation(msg).exception()
                 return
             elif size_infor == 0:
                 Operation(
@@ -540,12 +540,12 @@ class Deploy(object):
             if role:
                 rolelist = list_scf_role(self.region)
                 if rolelist == None:
-                    Operation("%s - %s: Get Role list error" % (namespace, function)).warning()
-                    function_resource[tsmacro.Properties][tsmacro.Role] = None
+                    Operation("%s - %s: Get Role list error" % (namespace, function)).exception()
+                    return False
                 elif role not in rolelist:
-                    Operation("%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).warning()
+                    Operation("%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).exception()
                     if len(rolelist):
-                        Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).warning()
+                        Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).exception()
                     return False
 
             function_data = self.function_trigger(self.region, namespace, function)
@@ -555,7 +555,7 @@ class Deploy(object):
                 trigger_release = function_data[1]
                 if function_resource['Properties']['Runtime'] != runtime_release:
                     err_msg = "RUNTIME in YAML does not match RUNTIME on the RELEASE (release: %s)" % (runtime_release)
-                    Operation(u'%s - %s: %s' % (namespace, function, text(err_msg)), fg="red").warning()
+                    Operation(u'%s - %s: %s' % (namespace, function, text(err_msg)), fg="red").exception()
                     return False
 
             deploy_result = ScfClient(self.region).deploy_func(function_resource, function, namespace, self.forced)
@@ -581,7 +581,7 @@ class Deploy(object):
                     "%s - %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
                         str(namespace), str(function))).warning()
                 err_msg = "The function already exists."
-                Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").warning()
+                Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                 return False
 
             if deploy_result != None:
@@ -601,11 +601,10 @@ class Deploy(object):
                     err_msg = u"Deploy function '{name}' failure, {e}.".format(name=function, e=s)
                     if err.get_request_id():
                         err_msg += (u" RequestId: {}".format(err.get_request_id()))
-                    Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").warning()
+                    Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                     return False
         except Exception as e:
-            print("=========")
-            Operation(u'%s - %s: %s' % (str(namespace), str(function), str(e)), fg="red").warning()
+            Operation(u'%s - %s: %s' % (str(namespace), str(function), str(e)), fg="red").exception()
 
         return False
 
@@ -679,7 +678,7 @@ class Deploy(object):
                                             trigger_status = False
                                             err_msg = "%s - %s: %s, The redeployment trigger failed. Please manually delete the trigger and redeploy." % (
                                                 namespace, function, temp_trigger['TriggerName'])
-                                            Operation(err_msg).warning()
+                                            Operation(err_msg).exception()
                                     else:
                                         Operation(
                                             '%s - %s: %s, The same name Trigger already exists. If you want to upgrade, you can add the --update-event parameter.' % (
@@ -723,11 +722,11 @@ class Deploy(object):
 
             if err.get_request_id():
                 Operation("%s - %s: Deploy %s %s trigger %s failure. Error: %s. RequestId: %s" % (
-                    namespace, function, namespace, function, trigger, s, err.get_request_id())).warning()
+                    namespace, function, namespace, function, trigger, s, err.get_request_id())).exception()
             else:
                 msg = "%s - %s: Deploy %s %s trigger %s failure. Error: %s." % (
                     namespace, function, namespace, function, trigger, s)
-                Operation(msg).warning()
+                Operation(msg).exception()
         else:
             message = (trigger, True)
             Operation(
