@@ -187,8 +187,7 @@ class Deploy(object):
             li = queues.Queue(1000, ctx=multiprocessing) if platform.python_version() >= '3' else queues.Queue(1000)
 
             workflow_process = None
-            function_count = 0
-
+            function_list = []
             for function in list(self.resource[namespace]):  # 遍历函数
 
                 # 去除掉函数类型行
@@ -199,17 +198,23 @@ class Deploy(object):
                 if self.function is not None and function != self.function:
                     continue
 
-                function_count = function_count + 1
+                function_list.append(function)
 
+            function_count = len(function_list)
+            max_thread = int(50 / function_count)
+            max_thread = 2 if max_thread < 2 else max_thread
+
+            for function in function_list:
                 # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
                 # 此处采用多进程实现
                 # self.workflow(namespace, function, message)
+
                 if self.history:
-                    self.workflow(namespace, real_namespace, function, li)
+                    self.workflow(namespace, real_namespace, function, li, 10)
                 else:
                     workflow_process = Process(
                         target=self.workflow,
-                        args=(namespace, real_namespace, function, li)
+                        args=(namespace, real_namespace, function, li, max_thread)
                     )
                     workflow_process.start()
 
@@ -238,7 +243,7 @@ class Deploy(object):
         except Exception as e:
             Operation(e, err_msg=traceback.format_exc()).no_output()
 
-    def workflow(self, namespace, real_namespace, function, li):
+    def workflow(self, namespace, real_namespace, function, li, max_thread):
 
         function_message = {
             "function": function,
@@ -247,7 +252,7 @@ class Deploy(object):
             "deploy_trigger": None,
         }
 
-        function_resource = self.package(namespace, real_namespace, function)
+        function_resource = self.package(namespace, real_namespace, function, max_thread)
         if (not function_resource) or (function not in function_resource[real_namespace]):
             function_message["package"] = False
         else:
@@ -261,7 +266,7 @@ class Deploy(object):
         li.put(function_message)
         # message.append(function)
 
-    def package(self, namespace, real_namespace, function):
+    def package(self, namespace, real_namespace, function, max_thread):
         function_resource = {
             real_namespace: {
                 "Type": "TencentCloud::Serverless::Namespace",
@@ -272,7 +277,7 @@ class Deploy(object):
         if self.history:
             code_url = self.package_history(namespace, function)
         else:
-            code_url = self.package_core(namespace, real_namespace, function)
+            code_url = self.package_core(namespace, real_namespace, function, max_thread)
 
         if code_url:
             try:
@@ -295,7 +300,7 @@ class Deploy(object):
 
         return function_resource
 
-    def package_core(self, namespace, real_namespace, function):
+    def package_core(self, namespace, real_namespace, function, max_thread):
 
         template_path, template_name = os.path.split(self.template_file)
         code_uri = self.resource[namespace][function][tsmacro.Properties].get(tsmacro.CodeUri, "")
@@ -312,7 +317,7 @@ class Deploy(object):
             zip_file, zip_file_name, zip_file_name_cos = zip_result[1:]
         else:
             if len(zip_result) == 2:
-                Operation("%s - %s: %s"%(real_namespace, function, zip_result[1])).exception()
+                Operation("%s - %s: %s" % (real_namespace, function, zip_result[1])).exception()
             return
 
         code_url = dict()
@@ -338,7 +343,7 @@ class Deploy(object):
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
         elif self.cos_bucket:
             upload_result = CosClient(self.cos_region).upload_file2cos2(bucket=self.cos_bucket, file=zip_file.read(),
-                                                                        key=zip_file_name_cos)
+                                                                        key=zip_file_name_cos, max_thread=max_thread)
             if upload_result == True:
                 code_url["cos_bucket_name"] = self.cos_bucket
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
