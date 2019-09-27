@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import copy
+import traceback
+from tcfcli.common.operation_msg import Operation
 from tcfcli.libs.function.provider import TENCENT_FUNCTION_TYPE
 from tcfcli.common.user_exceptions import InvalidDocumentException, InvalidTemplateException
 
@@ -20,6 +22,7 @@ class TemplateReimplemented(object):
 
             return self._template
         except InvalidDocumentException as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise e
 
     def _validate(self):

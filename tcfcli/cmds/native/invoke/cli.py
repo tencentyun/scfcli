@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import click
+import traceback
 from tcfcli.cmds.native.common.invoke_context import InvokeContext
 from tcfcli.help.message import NativeHelp as help
 from tcfcli.common.operation_msg import Operation
@@ -57,6 +58,7 @@ def do_invoke(template, namespace, function, env_vars, event, no_event, debug_po
         ) as context:
             context.invoke()
     except Exception as e:
+        Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
         raise e
 
 

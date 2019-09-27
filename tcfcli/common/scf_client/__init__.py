@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import traceback
 from tcfcli.cmds.cli import __version__
 from tencentcloud.common import credential
 from tencentcloud.common.profile.client_profile import ClientProfile
@@ -8,6 +9,7 @@ from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentClo
 from tencentcloud.scf.v20180416 import scf_client, models
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.user_exceptions import LogsException
+from tcfcli.common.operation_msg import Operation
 
 
 class ScfBaseClient(object):
@@ -30,6 +32,7 @@ class ScfBaseClient(object):
         try:
             return apifunc(req)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             requestId = err.get_request_id()
             errmsg = err.get_message()
             if requestId:

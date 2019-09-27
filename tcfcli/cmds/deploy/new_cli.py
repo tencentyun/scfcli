@@ -11,6 +11,7 @@ import hashlib
 import threading
 import fnmatch
 import platform
+import traceback
 import multiprocessing
 import tcfcli.common.base_infor as infor
 from multiprocessing import Process, queues
@@ -151,8 +152,9 @@ class Deploy(object):
                             err_msg = "COS client error code: %s, message: %s" % (error_code, error_message)
                         else:
                             err_msg = str(create_status)
-                    except:
+                    except Exception as e:
                         err_msg = "Failed to create COS-Bucket. Please check if you have related operation permissions."
+                        Operation(e, err_msg=traceback.format_exc()).no_output()
                     raise COSBucketException(err_msg)
         else:
             Operation(
@@ -220,7 +222,7 @@ class Deploy(object):
         try:
             shutil.rmtree(_BUILD_DIR)
         except Exception as e:
-            pass
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
     def workflow(self, namespace, real_namespace, function, li):
 
@@ -266,11 +268,12 @@ class Deploy(object):
                     function_resource[real_namespace][function][tsmacro.Properties]["CosBucketName"] = bucket_name
                     function_resource[real_namespace][function][tsmacro.Properties]["CosObjectName"] = object_name
                 elif "zip_file" in code_url:  # 未使用using_cos或者使用without-cos,
-                    function_resource[real_namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url["zip_file"]
+                    function_resource[real_namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url[
+                        "zip_file"]
                 else:
                     del self.resource[namespace][function]
             except Exception as e:
-                Operation("%s - %s: %s" % (real_namespace, function, str(e))).warning()
+                Operation("%s - %s: %s" % (real_namespace, function, str(e)), err_msg=traceback.format_exc()).warning()
                 del self.resource[namespace][function]
         else:
             return None
@@ -352,7 +355,7 @@ class Deploy(object):
                                     is_have = 1
                                 break
                 except Exception as e:
-                    pass
+                    Operation(e, err_msg=traceback.format_exc()).no_output()
                 if is_have == 0:
                     upload_result = cos_client.upload_file2cos2(
                         bucket=self.bucket_name,
@@ -377,7 +380,7 @@ class Deploy(object):
                 Operation(msg).success()
             except Exception as e:
                 Operation("%s - %s: This package will be uploaded by TencentCloud Cloud API." % (
-                    real_namespace, function,)).information()
+                    real_namespace, function,), err_msg=traceback.format_exc()).information()
                 code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
         else:
             size_infor = self.package_zip_size(file_size)
@@ -519,6 +522,7 @@ class Deploy(object):
 
 
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR")
             return (False, "Package Error: %s" % (str(e)))
 
         return (True, buff, zip_file_name, zip_file_name_cos)
@@ -546,7 +550,8 @@ class Deploy(object):
                     Operation("%s - %s: Get Role list error" % (namespace, function)).exception()
                     return False
                 elif role not in rolelist:
-                    Operation("%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).exception()
+                    Operation(
+                        "%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).exception()
                     if len(rolelist):
                         Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).exception()
                     return False
@@ -607,7 +612,8 @@ class Deploy(object):
                     Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                     return False
         except Exception as e:
-            Operation(u'%s - %s: %s' % (str(namespace), str(function), str(e)), fg="red").exception()
+            Operation(u'%s - %s: %s' % (str(namespace), str(function), str(e)), fg="red",
+                      err_msg=traceback.format_exc()).exception()
 
         return False
 
@@ -644,8 +650,9 @@ class Deploy(object):
                                 if temp_trigger['TriggerName'] == eve_event['TriggerName']:
                                     change_infor = True
                             elif event_type == "apigw":
-                                if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == eproperty[
-                                    'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
+                                if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == \
+                                        eproperty[
+                                            'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
                             elif event_type == "ckafka":
@@ -690,6 +697,7 @@ class Deploy(object):
                                         trigger_result.append((trigger, False))
                                 break
                     except Exception as e:
+                        Operation(e, err_msg=traceback.format_exc()).no_output()
                         pass
 
                 if trigger_status == True:
@@ -705,14 +713,14 @@ class Deploy(object):
                     temp_trigger = trigger_queue.get(False)
                     trigger_result.append(temp_trigger)
                 except Exception as e:
-                    pass
+                    Operation(e, err_msg=traceback.format_exc()).no_output()
                 time.sleep(0.1)
                 if len(trigger_result) == trigger_count:
                     break
             return trigger_result
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return False
-
 
     def deploy_do_trigger(self, region, events, trigger, function, namespace, queue):
         err = ScfClient(region).deploy_trigger(events[trigger], trigger, function, namespace)
@@ -817,10 +825,10 @@ class Deploy(object):
                             })
 
                     except Exception as e:
-                        pass
+                        Operation(e, err_msg=traceback.format_exc()).no_output()
                 return (function_runtime, trigger)
-        except:
-            pass
+        except Exception as e:
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
         return None
 
@@ -854,7 +862,7 @@ class Deploy(object):
             for eve_failed in package_result["failed"]:
                 Operation("    %s" % (eve_failed)).out_infor()
         except Exception as e:
-            pass
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
         try:
             Operation("Function result:").out_infor()
@@ -865,7 +873,7 @@ class Deploy(object):
             for eve_failed in function_result["failed"]:
                 Operation("    %s" % (eve_failed)).out_infor()
         except Exception as e:
-            pass
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
         try:
             Operation("Trigger result:").out_infor()
@@ -874,24 +882,28 @@ class Deploy(object):
                 if eve_information and 'deploy_trigger' in eve_information:
                     if eve_information['deploy_trigger']:
                         for eve_trigger in eve_information['deploy_trigger']:
-                            Operation("    %s: %s" % (eve_trigger[0], "success" if eve_trigger[1] else "failed")).out_infor()
+                            Operation(
+                                "    %s: %s" % (eve_trigger[0], "success" if eve_trigger[1] else "failed")).out_infor()
                     else:
                         Operation("    No Trigger deployment results").out_infor()
         except Exception as e:
-            pass
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
         try:
             if len(function_dict) > 0:
                 Operation("Deployment is complete and can be triggered by scf remote invoke").information()
-                Operation("For example: scf remote invoke -n %s" % (function_dict[0]["function"])).information()
+                Operation("For example: scf remote invoke -r %s -ns %s -n %s" % (
+                self.region, namespace, function_dict[0]["function"])).information()
 
                 if len(function_dict) == 1 and function_dict[0]['deploy_function']:
-                    Information(region=self.region, namespace=namespace, name=function_dict[0]["function"]).get_information()
+                    Information(region=self.region, namespace=namespace,
+                                name=function_dict[0]["function"]).get_information()
                 else:
                     Operation("If you want to query function information, you can use: scf function info").information()
-                    Operation("For example: scf function info -r %s -ns %s -n %s" % (self.region, namespace, function_dict[0]["function"])).information()
-        except:
-            pass
+                    Operation("For example: scf function info -r %s -ns %s -n %s" % (
+                    self.region, namespace, function_dict[0]["function"])).information()
+        except Exception as e:
+            Operation(e, err_msg=traceback.format_exc()).no_output()
 
         if error_state:
             raise DeployException("Not all deployments were successful, please check！")

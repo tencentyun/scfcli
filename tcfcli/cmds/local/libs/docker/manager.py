@@ -2,7 +2,7 @@
 
 import docker
 import click
-
+import traceback
 from tcfcli.common.operation_msg import  Operation
 
 class ContainerManager(object):
@@ -44,11 +44,13 @@ class ContainerManager(object):
             if not self._is_quiet:
                 Operation('\n').echo()
         except docker.errors.APIError as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise Exception('pull the docker image %s failed, %s' % (image, str(e)))
 
     def has_image(self, image):
         try:
             self._docker_client.images.get(image)
             return True
-        except docker.errors.ImageNotFound:
+        except docker.errors.ImageNotFound as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return False

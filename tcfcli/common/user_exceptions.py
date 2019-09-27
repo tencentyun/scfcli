@@ -6,7 +6,7 @@ from builtins import str as text
 from click.utils import echo
 from click._compat import get_text_stderr
 from click import ClickException
-
+import tcfcli.common.operation_msg
 
 class UserException(ClickException):
 
@@ -17,6 +17,9 @@ class UserException(ClickException):
         return str(self.message)
 
     def show(self, file=None):
+
+        tcfcli.common.operation_msg.Operation(self.format_message(), level="ERROR").no_output()
+
         if file is None:
             file = get_text_stderr()
         if "--no-color" in sys.argv or "-nc" in sys.argv:
@@ -158,14 +161,18 @@ class LoadEventFileException(UserException):
 class OutputDirNotFound(UserException):
     pass
 
+
 class COSBucketException(UserException):
     pass
+
 
 class InformationException(UserException):
     pass
 
+
 class EventFileException(UserException):
     pass
+
 
 class InvalidDocumentException(Exception):
     def __init__(self, causes):

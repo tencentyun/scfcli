@@ -6,6 +6,7 @@ import os
 import click
 import subprocess
 import threading
+import traceback
 from tcfcli.common import tcsam
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
 from tcfcli.common.user_exceptions import InvokeContextException, TimeoutException, UserException
@@ -117,7 +118,7 @@ class InvokeContext(object):
             Operation("Run %s's cmd: %s" % (self._runtime.runtime, Operation(self.cmd, fg="green").style())).echo()
             child = subprocess.Popen(args=[self.cmd] + self.argv, env=self.env)
         except OSError:
-            Operation("Execution Failed.", fg="red").echo()
+            Operation("Execution Failed.", fg="red", err_msg=traceback.format_exc()).echo()
             raise UserException(
                 "Execution failed,confirm whether the program({}) is installed".format(self._runtime.cmd))
 
@@ -132,7 +133,7 @@ class InvokeContext(object):
             ret_code = child.wait()
         except KeyboardInterrupt:
             child.kill()
-            Operation("Recv a SIGINT, exit.").echo()
+            Operation("Recv a SIGINT, exit.", err_msg=traceback.format_exc()).echo()
         timer.cancel()
         if self._thread_err_msg != "":
             raise TimeoutException(self._thread_err_msg)

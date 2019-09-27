@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import zipfile
 import click
+import traceback
 import signal
 import threading
 from contextlib import contextmanager
@@ -84,9 +85,9 @@ class LocalRuntime(object):
                 self._container.get_logs(stdout=stdout, stderr=stderr)
 
             except KeyboardInterrupt:
-                Operation('Abort function execution').echo()
+                Operation('Abort function execution',err_msg=traceback.format_exc(), level="ERROR").echo()
             except Exception as err:
-                Operation('Invoke Failed.', fg="red").echo()
+                Operation('Invoke Failed.', fg="red", err_msg=traceback.format_exc(), level="ERROR").echo()
                 raise InvokeException('Invoke error:%s' % str(err))
 
             finally:

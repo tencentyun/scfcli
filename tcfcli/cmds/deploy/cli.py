@@ -91,7 +91,6 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
         for eve_success in package_result["faild"]:
             Operation("    Namespace: %s\tFunction: %s" % (eve_success[0], eve_success[1])).out_infor()
     except Exception as e:
-        # print(e)
         pass
 
     if resource == None or len(package_result["success"]) == 0:
