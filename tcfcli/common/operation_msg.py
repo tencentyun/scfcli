@@ -4,6 +4,7 @@ import sys
 import click
 import logging
 from logging.handlers import RotatingFileHandler
+from logging import StreamHandler
 from builtins import str as text
 from tcfcli.common.user_config import UserConfig
 
@@ -12,13 +13,16 @@ log_format = "%(asctime)s %(name)s:%(levelname)s:%(message)s"
 log_datefmt = "%d-%M-%Y %H:%M:%S"
 logging.basicConfig(
     format=log_format,
-    datefmt=log_datefmt,
-    handlers=[RotatingFileHandler(log_name, maxBytes=100000, backupCount=1)])
+    datefmt=log_datefmt)
+logger = logging.getLogger()
+for eve in logger.handlers:
+    logger.handlers.remove(eve)
+logger.addHandler(RotatingFileHandler(log_name, maxBytes=100000, backupCount=1))
 
 
 class Operation(object):
     def __init__(self, message, fg=None, bg=None, bold=None, dim=None, underline=None, blink=None, reverse=None,
-                 reset=True, file=None, nl=True, err=False, color=None, err_msg=None, level=None):
+                 reset=True, file=None, nl=True, err=False, color=None, err_msg=None, level=None, tofile=True):
         self.message = message
         self.fg = fg
         self.bg = bg
@@ -34,6 +38,7 @@ class Operation(object):
         self.color = color
         self.err_msg = err_msg
         self.level = level
+        self.tofile = tofile
 
     def format_message(self):
         return text(self.message)
@@ -46,7 +51,8 @@ class Operation(object):
             return click.style(u'%s' % msg, bg=bg, fg=fg)
 
     def success(self):
-        self.log(logs="INFO")
+        if self.tofile:
+            self.log(logs="INFO")
         click.secho(self.new_style("[o]", bg="green") + self.new_style(u' %s' % self.format_message(), fg="green"))
 
     def begin(self):
@@ -99,13 +105,13 @@ class Operation(object):
 
     def log(self, logs):
         if logs == "DEBUG":
-            logging.debug(self.message)
+            logger.debug(self.message)
         elif logs == "INFO":
-            logging.info(self.message)
+            logger.info(self.message)
         elif logs == "WARNING":
-            logging.warning(self.message)
+            logger.warning(self.message)
         elif logs == "ERROR":
             if self.err_msg:
-                logging.error(text(self.err_msg))
+                logger.error(text(self.err_msg))
             else:
-                logging.error(self.message)
+                logger.error(self.message)
