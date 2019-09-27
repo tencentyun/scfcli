@@ -10,11 +10,9 @@ from tcfcli.common.user_config import UserConfig
 log_name = ".scfcli.log"
 log_format = "%(asctime)s %(name)s:%(levelname)s:%(message)s"
 log_datefmt = "%d-%M-%Y %H:%M:%S"
-log_level = logging.DEBUG
 logging.basicConfig(
     format=log_format,
     datefmt=log_datefmt,
-    level=log_level,
     handlers=[RotatingFileHandler(log_name, maxBytes=100000, backupCount=1)])
 
 
