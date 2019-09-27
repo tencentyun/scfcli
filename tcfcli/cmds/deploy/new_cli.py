@@ -73,6 +73,12 @@ def deploy(template_file, cos_bucket, name, namespace, region, forced, skip_even
               $ scf deploy -f -ue
     '''
 
+    # 删除缓存目录（临时文件存放）
+    try:
+        shutil.rmtree(_BUILD_DIR)
+    except Exception as e:
+        Operation(e, err_msg=traceback.format_exc()).no_output()
+
     Deploy(template_file, cos_bucket, name, namespace, region, forced, skip_event, without_cos,
            update_event, history).start()
 
@@ -160,6 +166,8 @@ class Deploy(object):
             Operation(
                 "If you want to increase the upload speed, you can use --using-cos, the open command：scf configure set --using-cos Y").information()
 
+        error_state = False
+
         for namespace in self.resource:  # 遍历函数命名空间
 
             real_namespace = self.deploy_namespace if self.deploy_namespace else namespace
@@ -217,6 +225,12 @@ class Deploy(object):
                     break
 
             self.function_output(result_list, real_namespace)
+
+            if not error_state:
+                error_state = True if "False" in str(result_list) else False
+
+        if error_state:
+            raise DeployException("Not all deployments were successful, please check！")
 
         # 删除缓存目录（临时文件存放）
         try:
@@ -835,8 +849,6 @@ class Deploy(object):
     def function_output(self, function_dict, namespace):
         # print(function_dict)
 
-        error_state = True if "False" in str(function_dict) else False
-
         package_result = {"success": [], "failed": []}
         function_result = {"success": [], "failed": []}
 
@@ -893,7 +905,7 @@ class Deploy(object):
             if len(function_dict) > 0:
                 Operation("Deployment is complete and can be triggered by scf remote invoke").information()
                 Operation("For example: scf remote invoke -r %s -ns %s -n %s" % (
-                self.region, namespace, function_dict[0]["function"])).information()
+                    self.region, namespace, function_dict[0]["function"])).information()
 
                 if len(function_dict) == 1 and function_dict[0]['deploy_function']:
                     Information(region=self.region, namespace=namespace,
@@ -901,9 +913,6 @@ class Deploy(object):
                 else:
                     Operation("If you want to query function information, you can use: scf function info").information()
                     Operation("For example: scf function info -r %s -ns %s -n %s" % (
-                    self.region, namespace, function_dict[0]["function"])).information()
+                        self.region, namespace, function_dict[0]["function"])).information()
         except Exception as e:
             Operation(e, err_msg=traceback.format_exc()).no_output()
-
-        if error_state:
-            raise DeployException("Not all deployments were successful, please check！")

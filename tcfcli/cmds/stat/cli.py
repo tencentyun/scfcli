@@ -5,6 +5,7 @@ import pytz
 import datetime
 import time
 import sys
+import traceback
 from dateutil.tz import *
 import tcfcli.common.base_infor as infor
 from tcfcli.common.user_exceptions import *
@@ -42,8 +43,19 @@ metricTables = {
 @click.option('--endtime', type=str, help=help.ENDTIME)
 @click.option('-m', '--metric', type=str, help=help.METRIC)
 def stat(period, name, region, starttime, endtime, metric):
+    '''
+            \b
+            Get function stat.
+            \b
+            Common usage:
+                \b
+                * Get function stat.
+                  $ scf stat --name hello_world
+        '''
     if name is None:
-        raise InvalidEnvParameters("function name is unspecif")
+        Operation("Function Name must be specified. For example：scf stat -n hello_world").information()
+        Operation("You could get function list by：scf function list").information()
+        raise InvalidEnvParameters("Function Name not specified")
 
     startTime = None
     endTime = None
@@ -56,14 +68,14 @@ def stat(period, name, region, starttime, endtime, metric):
     ]
 
     if not (period == 60 or period == 300):
-        raise InvalidEnvParameters('period %s invalid. value is 60 or 300' % period)
+        raise InvalidEnvParameters('Period %s invalid. value is 60 or 300' % period)
 
     if region and region not in infor.REGIONS:
-        raise ArgsException("The region must in %s." % (", ".join(infor.REGIONS)))
+        raise ArgsException("The region must in %s." % (", ".join(infor.SHOW_REGIONS)))
 
     namespaces = ScfClient(region).list_ns()
     if not namespaces:
-        Operation("Region {r} not exist namespace".format(r=region)).warning()
+        Operation("Region {r} not exist namespace.".format(r=region)).exception()
         return
 
     flag = True
@@ -79,20 +91,22 @@ def stat(period, name, region, starttime, endtime, metric):
                     break
 
     if flag:
-        raise InvalidEnvParameters('function %s not exist' % name)
+        raise InvalidEnvParameters('Function %s not exist.' % name)
 
     if starttime:
         try:
             startTime = datetime.datetime.strptime(starttime,'%Y-%m-%d %H:%M:%S')
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise InvalidEnvParameters(e)
 
     if endtime:
         if startTime == None:
-            raise InvalidEnvParameters('starttime value unspecif')
+            raise InvalidEnvParameters('Starttime value is not specified.')
         try:
             endTime = datetime.datetime.strptime(endtime,'%Y-%m-%d %H:%M:%S')
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(),level="ERROR").no_output()
             raise InvalidEnvParameters(e)
 
     if not startTime:
@@ -101,7 +115,7 @@ def stat(period, name, region, starttime, endtime, metric):
         endTime = datetime.datetime.now()
 
     if endTime <= startTime:
-        raise InvalidEnvParameters('endtime cannot lt starttime')
+        raise InvalidEnvParameters('Endtime cannot lt starttime')
 
     nowUnixTime = int(time.mktime(startTime.timetuple()))
     secDiff = nowUnixTime % period
@@ -117,7 +131,7 @@ def stat(period, name, region, starttime, endtime, metric):
                 if metricTables[m]:
                     metrics.append(m)
             except Exception as e:
-                Operation("metric name '{name}' invalid.".format(name=m)).warning()
+                Operation("metric name '{name}' invalid.".format(name=m),err_msg=traceback.format_exc(), level="ERROR").exception()
     if not len(metrics):
         return
 

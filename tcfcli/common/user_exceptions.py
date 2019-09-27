@@ -25,7 +25,7 @@ class UserException(ClickException):
         if "--no-color" in sys.argv or "-nc" in sys.argv:
             echo(click.style("[x]") + click.style(u' %s' % text(self.format_message())), file=file)
         else:
-            echo(click.style("[x]", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"), file=file)
+            echo(click.style("[x] [ERROR] ", bg="red") + click.style(u' %s' % text(self.format_message()), fg="red"), file=file)
 
     exit_code = -1
 
