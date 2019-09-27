@@ -2,6 +2,8 @@
 
 import io
 import json
+import traceback
+from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import InvalidEnvVarsException
 
 
@@ -15,4 +17,5 @@ class FileUtil(object):
             with io.open(p, mode='r', encoding='utf-8') as fp:
                 return json.load(fp)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise InvalidEnvVarsException('read environment from file {} failed: {}'.format(p, str(e)))

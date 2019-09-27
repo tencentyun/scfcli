@@ -2,6 +2,8 @@
 
 import os
 import yaml
+import traceback
+from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import ContextException
 from tcfcli.libs.function.fam_function_provider import ScfFunctionProvider
 from tcfcli.libs.utils.yaml_parser import yaml_parse
@@ -52,6 +54,7 @@ class Context(object):
             try:
                 return yaml_parse(f.read())
             except (ValueError, yaml.YAMLError) as ex:
+                Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
                 raise ContextException("Parse template failed: {}".format(str(ex)))
         return
 

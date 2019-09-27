@@ -2,6 +2,7 @@
 
 import json
 import sys
+import traceback
 from tcfcli.cmds.cli import __version__
 from tcfcli.common.user_exceptions import *
 from tcfcli.common.operation_msg import Operation
@@ -42,6 +43,7 @@ class ScfClient(object):
             resp = self._client.GetFunction(req)
             return resp.to_json_string()
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -56,6 +58,7 @@ class ScfClient(object):
             resp = self._client.DeleteFunction(req)
             return resp.to_json_string()
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -72,6 +75,7 @@ class ScfClient(object):
             functions = resp.Functions
             return functions
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -189,6 +193,7 @@ class ScfClient(object):
             self.create_func(func, func_name, func_ns)
             return 0
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
                 return 1 if forced else 2
             else:
@@ -199,6 +204,7 @@ class ScfClient(object):
             self.update_func_config(func, func_name, func_ns)
             return True
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
 
     def update_code(self, func, func_name, func_ns):
@@ -206,6 +212,7 @@ class ScfClient(object):
             self.update_func_code(func, func_name, func_ns)
             return True
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
 
     def create_trigger(self, trigger, name, func_name, func_ns):
@@ -247,6 +254,7 @@ class ScfClient(object):
                 if namespace == ns_dict.get("Name"):
                     return namespace
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -259,6 +267,7 @@ class ScfClient(object):
         try:
             self._client_ext.CreateNamespace(namespace)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
         return
 
@@ -268,6 +277,7 @@ class ScfClient(object):
             namespaces = resp.get("Namespaces", [])
             return namespaces
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -280,6 +290,7 @@ class ScfClient(object):
             self._client_ext.CreateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
                                                      testModelName=testModelName, namespace=namespace)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
         return
 
@@ -288,6 +299,7 @@ class ScfClient(object):
             self._client_ext.UpdateFunctionTestModel(functionName=functionName, testModelValue=testModelValue,
                                                      testModelName=testModelName, namespace=namespace)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
         return
 
@@ -297,6 +309,7 @@ class ScfClient(object):
             testmodels = resp.get("TestModels", [])
             return testmodels
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -310,6 +323,7 @@ class ScfClient(object):
                                                          namespace=namespace)
             return resp
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -328,6 +342,7 @@ class ScfClient(object):
             resp = self._client.Invoke(req)
             return True, resp.to_json_string()
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:
                 s = err.get_message()
             else:
@@ -377,12 +392,14 @@ class ScfClient(object):
         try:
             self.create_trigger(trigger, name, func_name, func_ns)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
 
     def remove_trigger(self, trigger, func_name, func_ns):
         try:
             self.delete_trigger(trigger, func_name, func_ns)
         except TencentCloudSDKException as err:
+            Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return err
 
     def deploy(self, func, func_name, func_ns, forced):
@@ -447,6 +464,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
             # if isinstance(e, TencentCloudSDKException):
             #     raise
@@ -470,6 +488,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
             # if isinstance(e, TencentCloudSDKException):
             #     raise
@@ -494,6 +513,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
 
     def UpdateFunctionTestModel(self, functionName, testModelValue, testModelName, namespace):
@@ -514,6 +534,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
 
     def ListFunctionTestModels(self, functionName, namespace):
@@ -532,6 +553,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
 
     def GetFunctionTestModel(self, functionName, testModelName, namespace):
@@ -551,6 +573,7 @@ class ScfClientExt(scf_client.ScfClient):
                 reqid = response["Response"]["RequestId"]
                 raise TencentCloudSDKException(code, message, reqid)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise TCSDKException(str(e))
 
 

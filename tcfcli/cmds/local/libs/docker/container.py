@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import traceback
 import docker
 from .utils import to_posix_path
 from .attach_api import attach
+from tcfcli.common.operation_msg import Operation
 
 
 class Container(object):
@@ -85,13 +87,15 @@ class Container(object):
 
         try:
             self._docker_client.containers.get(self.id).remove(force=True)
-        except docker.errors.NotFound:
-            pass
+        except docker.errors.NotFound as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
         except docker.errors.APIError as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             err_msg = str(e)
             if err_msg.find('is already in progress') < 0 or err_msg.find('removal of container') < 0:
                 raise e
         except docker.errors.DockerException as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             raise Exception('delete container %s failed, error: %s' % (self.id, str(e)))
 
         self.id = None

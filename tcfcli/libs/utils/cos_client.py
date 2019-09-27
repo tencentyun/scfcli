@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import traceback
+
 from qcloud_cos import CosConfig
 from qcloud_cos import CosS3Client
 from tcfcli.common.user_config import UserConfig
@@ -43,6 +45,7 @@ class CosReset(CosS3Client):
                 if res.status_code < 400:  # 2xx和3xx都认为是成功的
                     return res
             except Exception as e:  # 捕获requests抛出的如timeout等客户端错误,转化为客户端错误
+                Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
                 if j < self._retry:
                     continue
                 raise CosClientError(str(e))
@@ -575,6 +578,7 @@ class CosClient(object):
                 # Operation(str(response)).warning()
                 raise UploadToCosFailed("Upload func package failed [No ETag].")
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             # error_msg = ""
             # if "<?xml" in e.message:
             #     msg_dict = xmltodict.parse(e.message)
@@ -608,6 +612,7 @@ class CosClient(object):
             if not response['ETag']:
                 return "Upload func package failed [No ETag]."
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             try:
                 if "<?xml" in str(e):
                     error_code = re.findall("<Code>(.*?)</Code>", str(e))[0]
@@ -631,6 +636,7 @@ class CosClient(object):
             bucket_list = response['Buckets']['Bucket']
             return (0, bucket_list)
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return (-1, e)
 
     def get_bucket(self, bucket):
@@ -654,6 +660,7 @@ class CosClient(object):
                 error = temp_data[1]
                 return error
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return e
 
     def create_bucket(self, bucket):
@@ -669,6 +676,7 @@ class CosClient(object):
             )
             return True
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return e
 
     def get_object_list(self, bucket, prefix):
@@ -680,6 +688,7 @@ class CosClient(object):
             )
             return response
         except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return e
 
     def copy_object(self, bucket_name, old_key, new_key):

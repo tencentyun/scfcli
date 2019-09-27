@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import yaml
 import json
-
 
 def yaml_dump(dict_to_dump, file_path):
     with open(file_path, "w") as f:
@@ -10,5 +11,5 @@ def yaml_dump(dict_to_dump, file_path):
 def yaml_parse(yaml_file):
     try:
         return json.loads(yaml_file)
-    except ValueError:
+    except ValueError as e:
         return yaml.safe_load(yaml_file)

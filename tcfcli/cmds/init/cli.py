@@ -2,6 +2,7 @@
 
 import os
 import zipfile
+import traceback
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.user_exceptions import *
 from cookiecutter.main import cookiecutter
@@ -77,6 +78,7 @@ class Init(object):
         try:
             cookiecutter(**params)
         except exceptions.CookiecutterException as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             # raise click.Abort()
             raise InitException(e)
         if runtime in infor.SERVICE_RUNTIME:

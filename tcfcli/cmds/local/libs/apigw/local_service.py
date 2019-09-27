@@ -7,8 +7,9 @@ import json
 import uuid
 import base64
 import logging
-
+import traceback
 from flask import Flask, Response, request
+from tcfcli.common.operation_msg import Operation
 from tcfcli.cmds.local.libs.apigw.path_converter import PathConverter
 from tcfcli.cmds.local.libs.events.api import ApigwEvent
 from tcfcli.cmds.local.libs.apigw.error_response import ErrorResponse
@@ -58,7 +59,8 @@ class LocalService(object):
 
         try:
             event = self._generate_api_event(request)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
             return ErrorResponse.InternalError()
 
         stdout = io.BytesIO()
@@ -82,7 +84,7 @@ class LocalService(object):
         try:
             status_code, headers, body = self._parse_output(return_value)
         except TypeError as ex:
-            logging.error('parse return value error: {}'.format(str(ex)))
+            Operation('parse return value error: {}'.format(str(ex)), err_msg=traceback.format_exc(), level="ERROR").exception()
             return ErrorResponse.InvalidResponseFormat()
 
         return self._response(status_code, headers, body)
