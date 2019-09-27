@@ -130,8 +130,8 @@ class ConfigureHelp():
     CHANGE_SHORT_HELP ="Configure change your user."
     CHANGE_USERID_HELP = 'UserId to change to.'
 
-    NOCOLOR = "Suppress colored output."
-    ALLOW_REPORT = "Cli will report some infos about command usage amount.You can turn off at any time."
+    NOCOLOR = "Suppress colored output. (y/n)"
+    ALLOW_REPORT = "Cli will report some infos about command usage amount.You can turn off at any time. (y/n)"
 
 
 class NativeHelp():

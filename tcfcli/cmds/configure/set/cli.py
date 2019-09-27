@@ -63,6 +63,8 @@ def set(**kwargs):
 
     if "allow_report" in kwargs and kwargs["allow_report"]:
         kwargs["allow_report"] = 'False' if kwargs["allow_report"] not in ["y", "Y"] else 'True'
+        if kwargs["allow_report"] == "True":
+            Operation('当前已开启数据收集，详情请参考 https://cloud.tencent.com/document/product/583/37766').out_infor()
 
     if "no_color" in kwargs and kwargs["no_color"]:
         kwargs["no_color"] = 'False' if kwargs["no_color"] not in ["y", "Y"] else 'True'
@@ -121,11 +123,15 @@ def set(**kwargs):
         #else:
         #    config["allow_report"] = attrs["allow_report"]
 
+        # if uc.section_map[UserConfig.OTHERS]['allow_report'].upper() == 'TRUE':
+        #     Operation('当前已开启数据收集，详情请参考 https://cloud.tencent.com/document/product/583/37766').out_infor()
+
+
         kwargs = config
 
     uc.set_attrs(kwargs)
     uc.flush()
-    if uc.section_map[UserConfig.OTHERS]['allow_report'].upper() == 'TRUE':
-        Operation('当前已开启数据收集，详情请参考 https://cloud.tencent.com/document/product/583/37766').out_infor()
+
+
 
 
