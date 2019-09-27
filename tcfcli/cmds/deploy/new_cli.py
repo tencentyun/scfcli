@@ -285,6 +285,7 @@ class Deploy(object):
                     function_resource[real_namespace][function][tsmacro.Properties]["LocalZipFile"] = code_url[
                         "zip_file"]
                 else:
+                    Operation("%s - %s: Package Failed" % (real_namespace, function)).exception()
                     del self.resource[namespace][function]
             except Exception as e:
                 Operation("%s - %s: %s" % (real_namespace, function, str(e)), err_msg=traceback.format_exc()).warning()
@@ -310,11 +311,14 @@ class Deploy(object):
         if zip_result[0] == True:
             zip_file, zip_file_name, zip_file_name_cos = zip_result[1:]
         else:
+            if len(zip_result) == 2:
+                Operation("%s - %s: %s"%(real_namespace, function, zip_result[1])).exception()
             return
 
         code_url = dict()
 
         file_size = os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name))
+        file_size = 0.01 if file_size == 0 else file_size
         Operation("%s - %s: Package name: %s, package size: %s kb" % (
             real_namespace, function, zip_file_name, str(file_size / 1000))).process()
 

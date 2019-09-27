@@ -26,3 +26,5 @@ if "-v" in sys.argv or "--version" in sys.argv:
 else:
     daily_task.daily_task()
 
+
+
