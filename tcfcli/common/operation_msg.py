@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
+import time
 import click
 import logging
 from logging.handlers import RotatingFileHandler
@@ -8,16 +10,18 @@ from logging import StreamHandler
 from builtins import str as text
 from tcfcli.common.user_config import UserConfig
 
-log_name = ".scfcli.log"
-log_format = "%(asctime)s %(name)s:%(levelname)s:%(message)s"
-log_datefmt = "%d-%M-%Y %H:%M:%S"
-logging.basicConfig(
-    format=log_format,
-    datefmt=log_datefmt)
+home = os.path.expanduser('~')
+_LOG_FILE_PATH_ = os.path.join(home, '.scfcli_log')
+if not os.path.exists(_LOG_FILE_PATH_):
+    os.makedirs(_LOG_FILE_PATH_)
+
+_LOG_FILE_ = os.path.join(_LOG_FILE_PATH_, 'scfcli.log')
 logger = logging.getLogger()
 for eve in logger.handlers:
     logger.handlers.remove(eve)
-logger.addHandler(RotatingFileHandler(log_name, maxBytes=100000, backupCount=1))
+fh = RotatingFileHandler(_LOG_FILE_, maxBytes=100000, backupCount=10)
+fh.setFormatter(logging.Formatter('%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'))
+logger.addHandler(fh)
 
 
 class Operation(object):
