@@ -85,7 +85,10 @@ class Information(object):
         if self.name:
             try:
                 function_info = self.information_client(self.namespace, self.name)
-                self.format_information(function_info)
+                if function_info:
+                    self.format_information(function_info)
+                else:
+                    Operation("Data not available, please check Region/Namespace/FunctionName.").exception()
             except:
                 Operation("Could not find function resource: %s - %s - %s" % (
                 self.region, self.namespace, self.name)).warning()

@@ -54,7 +54,7 @@ class Context(object):
             try:
                 return yaml_parse(f.read())
             except (ValueError, yaml.YAMLError) as ex:
-                Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
+                Operation(ex, err_msg=traceback.format_exc(), level="ERROR").no_output()
                 raise ContextException("Parse template failed: {}".format(str(ex)))
         return
 
