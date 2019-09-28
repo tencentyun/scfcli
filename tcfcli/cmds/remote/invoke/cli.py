@@ -7,6 +7,7 @@ from tcfcli.help.message import RemoteHelp as help
 import tcfcli.common.base_infor as infor
 from tcfcli.common.user_config import UserConfig
 import json
+import chardet
 
 REGIONS = infor.REGIONS
 INVOCATION_TYPE = infor.INVOCATION_TYPE
@@ -57,9 +58,7 @@ class Invoke(object):
 
             if len(invokeres['Result']['Log']) > 4000:
                 Operation('You could get more logs by: `scf logs -r %s -ns %s -n %s`' % (
-                region, namespace, name)).information()
-
-
+                    region, namespace, name)).information()
 
 
 @click.command(name='invoke', short_help=help.SHORT_HELP)
@@ -83,7 +82,7 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     """
 
     type_dict = {
-        "sync":"tail",
+        "sync": "tail",
         "async": "none"
     }
 
@@ -95,17 +94,32 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
         return
 
     if type.lower == "async":
-        Operation('invoke start ,you can get the invoke logs by excute `scf logs -r %s -ns %s -n %s`'%(region, namespace, name)).information()
+        Operation('invoke start ,you can get the invoke logs by excute `scf logs -r %s -ns %s -n %s`' % (
+            region, namespace, name)).information()
 
     if eventdata:
         try:
-            with open(eventdata, 'r') as f:
-                eventdata = f.read()
+            eventdata = get_data(eventdata)
         except Exception as e:
             raise EventFileException("Read file error: %s" % (str(e)))
     else:
         eventdata = json.dumps({"key1": "value1", "key2": "value2"})
 
-
-
     Invoke.do_cli(name, region, namespace, eventdata, invocationtype, type_dict[type.lower()])
+
+
+def get_data(path):
+    with open(path, 'rb') as file:  # 先用二进制打开
+        data = file.read()  # 读取文件内容
+    try:
+        return_data = data.decode("utf-8")
+    except Exception as e:
+        try:
+            return_data = data.decode("gbk")
+        except Exception as e:
+            try:
+                return_data = data.decode("ascii")
+            except:
+                return_data = data.decode(chardet.detect(data).get('encoding'))
+
+    return return_data

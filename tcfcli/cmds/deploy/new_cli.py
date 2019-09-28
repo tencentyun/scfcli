@@ -5,6 +5,7 @@ import random
 import time
 import re
 import json
+import chardet
 from io import BytesIO
 import shutil
 import hashlib
@@ -505,8 +506,23 @@ class Deploy(object):
                 ignore_dir_path = os.path.join(function_path, "ignore")
                 ignore_file_path = os.path.join(ignore_dir_path, "%s.ignore" % function)
                 if os.path.isfile(ignore_file_path):
-                    with open(ignore_file_path) as f:
-                        ignore_source_list = [str(eve_line).strip() for eve_line in f.readlines()]
+                    with open(ignore_file_path, "rb") as f:
+                        temp_data = f.readlines()
+                    ignore_source_list = []
+                    for eve_line in temp_data:
+                        try:
+                            read_data = eve_line.decode("utf-8")
+                        except Exception as e:
+                            try:
+                                read_data = eve_line.decode("gbk")
+                            except Exception as e:
+                                try:
+                                    read_data = eve_line.decode("ascii")
+                                except:
+                                    read_data = eve_line.decode(chardet.detect(eve_line).get('encoding'))
+                        ignore_source_list.append(str(read_data).strip())
+                        Operation("%s - %s : Ignore file found: \n    %s" % (
+                        namespace, function, "\n    ".join(ignore_source_list))).information()
 
                 os.chdir(function_path)
 
@@ -674,8 +690,7 @@ class Deploy(object):
                                     change_infor = True
                             elif event_type == "apigw":
                                 if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == \
-                                        eproperty[
-                                            'StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
+                                        eproperty['StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
                             elif event_type == "ckafka":
