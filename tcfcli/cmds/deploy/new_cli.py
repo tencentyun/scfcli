@@ -203,7 +203,7 @@ class Deploy(object):
 
             function_count = len(function_list)
             max_thread = int(50 / function_count)
-            max_thread = 1 if max_thread < 1 else max_thread
+            max_thread = 2 if max_thread < 2 else max_thread
 
             for function in function_list:
                 # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
@@ -322,12 +322,11 @@ class Deploy(object):
             return
 
         code_url = dict()
-
         file_size = os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name))
-        file_size = 0.01 if file_size == 0 else file_size
+        max_thread_file = int(file_size / 1000 / 30)
+        max_thread = 1 if max_thread_file < 1 else (max_thread if max_thread_file > max_thread else max_thread_file)
         Operation("%s - %s: Package name: %s, package size: %s kb" % (
-            real_namespace, function, zip_file_name, str(file_size / 1000))).process()
-
+            real_namespace, function, zip_file_name, 0.01 if file_size / 1000 == 0 else file_size / 1000)).process()
         using_cos = True if self.user_config.using_cos.upper().startswith("TRUE") else False
 
         if self.without_cos:
@@ -386,6 +385,7 @@ class Deploy(object):
                         file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
                         key=zip_file_name_cos,
                         md5=md5,
+                        max_thread=max_thread,
                     )
                     if upload_result != True:
                         if "your policy or acl has reached the limit" in upload_result:
