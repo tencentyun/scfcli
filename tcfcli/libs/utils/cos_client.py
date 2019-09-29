@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
-import time
 import traceback
-from tqdm import tqdm
 from threading import Thread
 from six.moves.queue import Queue
 from threading import Lock
