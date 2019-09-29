@@ -188,7 +188,7 @@ class Deploy(object):
             li = queues.Queue(1000, ctx=multiprocessing) if platform.python_version() >= '3' else queues.Queue(1000)
 
             workflow_process = None
-            function_list = []
+            temp_function_list = []
             for function in list(self.resource[namespace]):  # 遍历函数
 
                 # 去除掉函数类型行
@@ -198,42 +198,56 @@ class Deploy(object):
                 # 如果用户指定Function，则只提取用户已有的Function
                 if self.function is not None and function != self.function:
                     continue
+                temp_function_list.append(function)
 
-                function_list.append(function)
+            function_count = 0
+            function_list = []
+            function_team = []
+            for eve_function in temp_function_list:
+                function_team.append(eve_function)
+                function_count = function_count + 1
+                if len(function_team) == 10 or function_count == len(temp_function_list):
+                    function_list.append(function_team)
+                    function_team = []
+
 
             function_count = len(function_list)
             max_thread = int(75 / function_count)
             max_thread = 2 if max_thread < 2 else max_thread
 
-            for function in function_list:
-                # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
-                # 此处采用多进程实现
-                # self.workflow(namespace, function, message)
 
-                if self.history:
-                    self.workflow(namespace, real_namespace, function, li, 10)
-                else:
-                    workflow_process = Process(
-                        target=self.workflow,
-                        args=(namespace, real_namespace, function, li, max_thread)
-                    )
-                    workflow_process.start()
+            final_function_list = []
+            for function_team in function_list:
+                for function in function_team:
+                    # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
+                    # 此处采用多进程实现
+                    # self.workflow(namespace, function, message)
 
-            if workflow_process:
-                workflow_process.join()
+                    if self.history:
+                        self.workflow(namespace, real_namespace, function, li, 10)
+                    else:
+                        workflow_process = Process(
+                            target=self.workflow,
+                            args=(namespace, real_namespace, function, li, max_thread)
+                        )
+                        workflow_process.start()
 
-            result_list = []
-            while function_count != 0:
-                temp_li = li.get()
-                result_list.append(temp_li)
-                time.sleep(0.1)
-                if len(result_list) == function_count:
-                    break
+                if workflow_process:
+                    workflow_process.join()
 
-            self.function_output(result_list, real_namespace)
+                result_list = []
+                while len(function_team) != 0:
+                    temp_li = li.get()
+                    result_list.append(temp_li)
+                    final_function_list.append(temp_li)
+                    time.sleep(0.1)
+                    if len(result_list) == len(function_team):
+                        break
+
+            self.function_output(final_function_list, real_namespace)
 
             if not error_state:
-                error_state = True if "False" in str(result_list) else False
+                error_state = True if "False" in str(final_function_list) else False
 
         if error_state:
             raise DeployException("Not all deployments were successful, please check！")
