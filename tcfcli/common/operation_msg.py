@@ -2,11 +2,9 @@
 
 import os
 import sys
-import time
 import click
 import logging
 from logging.handlers import RotatingFileHandler
-from logging import StreamHandler
 from builtins import str as text
 from tcfcli.common.user_config import UserConfig
 
@@ -21,6 +19,7 @@ for eve in logger.handlers:
     logger.handlers.remove(eve)
 fh = RotatingFileHandler(_LOG_FILE_, maxBytes=100000, backupCount=10)
 fh.setFormatter(logging.Formatter('%(asctime)s - %(pathname)s[line:%(lineno)d] - %(levelname)s: %(message)s'))
+fh.setLevel(level=logging.FATAL)
 logger.addHandler(fh)
 
 

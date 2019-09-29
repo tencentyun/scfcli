@@ -198,56 +198,92 @@ class Deploy(object):
                 # 如果用户指定Function，则只提取用户已有的Function
                 if self.function is not None and function != self.function:
                     continue
+
                 temp_function_list.append(function)
 
+            # function_count = 0
+            # function_list = []
+            # function_team = []
+            # for eve_function in temp_function_list:
+            #     function_team.append(eve_function)
+            #     function_count = function_count + 1
+            #     if len(function_team) == 10 or function_count == len(temp_function_list):
+            #         function_list.append(function_team)
+            #         function_team = []
+            #
+            #
+            # function_count = len(function_list)
+            # max_thread = int(50 / function_count)
+            # max_thread = 2 if max_thread < 2 else max_thread
+            # #
+            #
+            # final_function_list = []
+            # for function_team in function_list:
+            #     for function in function_team:
+            #         # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
+            #         # 此处采用多进程实现
+            #         # self.workflow(namespace, function, message)
+            #
+            #         if self.history:
+            #             self.workflow(namespace, real_namespace, function, li, 10)
+            #         else:
+            #             workflow_process = Process(
+            #                 target=self.workflow,
+            #                 args=(namespace, real_namespace, function, li, max_thread)
+            #             )
+            #             workflow_process.start()
+            #
+            #     if workflow_process:
+            #         workflow_process.join()
+            #
+            #     result_list = []
+            #     while len(function_team) != 0:
+            #         temp_li = li.get()
+            #         result_list.append(temp_li)
+            #         final_function_list.append(temp_li)
+            #         time.sleep(0.1)
+            #         if len(result_list) == len(function_team):
+            #             break
+
             function_count = 0
-            function_list = []
-            function_team = []
-            for eve_function in temp_function_list:
-                function_team.append(eve_function)
-                function_count = function_count + 1
-                if len(function_team) == 10 or function_count == len(temp_function_list):
-                    function_list.append(function_team)
-                    function_team = []
-
-
-            function_count = len(function_list)
-            max_thread = int(50 / function_count)
+            result_list = []
+            function_total = len(temp_function_list)
+            max_thread = int(50 / (function_total if function_total <= 10 else 10))
             max_thread = 2 if max_thread < 2 else max_thread
+            max_funtion = 10
+            for eve_function in temp_function_list:
 
+                function_count = function_count + 1
+                if function_count >= max_funtion or function_count == function_total:
+                    if workflow_process:
+                        workflow_process.join()
+                    while True:
+                        try:
+                            temp_li = li.get(timeout=0.5)
+                            result_list.append(temp_li)
+                            max_funtion = max_funtion + 1
+                        except:
+                            break
 
-            final_function_list = []
-            for function_team in function_list:
-                for function in function_team:
-                    # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
-                    # 此处采用多进程实现
-                    # self.workflow(namespace, function, message)
+                if self.history:
+                    self.workflow(namespace, real_namespace, eve_function, li, 10)
+                else:
+                    workflow_process = Process(
+                        target=self.workflow,
+                        args=(namespace, real_namespace, eve_function, li, max_thread)
+                    )
+                    workflow_process.start()
 
-                    if self.history:
-                        self.workflow(namespace, real_namespace, function, li, 10)
-                    else:
-                        workflow_process = Process(
-                            target=self.workflow,
-                            args=(namespace, real_namespace, function, li, max_thread)
-                        )
-                        workflow_process.start()
+            while function_total != 0:
+                temp_li = li.get()
+                result_list.append(temp_li)
+                if len(result_list) == function_total:
+                    break
 
-                if workflow_process:
-                    workflow_process.join()
-
-                result_list = []
-                while len(function_team) != 0:
-                    temp_li = li.get()
-                    result_list.append(temp_li)
-                    final_function_list.append(temp_li)
-                    time.sleep(0.1)
-                    if len(result_list) == len(function_team):
-                        break
-
-            self.function_output(final_function_list, real_namespace)
+            self.function_output(result_list, real_namespace)
 
             if not error_state:
-                error_state = True if "False" in str(final_function_list) else False
+                error_state = True if "False" in str(result_list) else False
 
         if error_state:
             raise DeployException("Not all deployments were successful, please check！")
