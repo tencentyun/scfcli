@@ -27,7 +27,10 @@ class Invoke(object):
             raise NamespaceException("Region {r} not exist namespace {n}".format(r=region, n=namespace))
 
         functions = ScfClient(region).get_function(name, namespace)
+
         if not functions:
+            Operation("Could not found this funtion").warning()
+            Operation("You could get function name by: scf function list").warning()
             Operation("This command requires the --name option / -n shortcut. Usage: The function name").warning()
             return
 
