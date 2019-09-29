@@ -322,7 +322,6 @@ class CosReset(CosS3Client):
                     pool.add_task(self._upload_part, Bucket, Key, LocalFilePath, offset, part_size, i, uploadid, lst,
                                   resumable_flag, already_exist_parts, EnableMD5)
                     offset += part_size
-            pool.get_step()
             pool.wait_completion()
             result = pool.get_result()
             if not result['success_all'] or len(lst) != parts_num:
@@ -745,13 +744,6 @@ class SimpleThreadPool:
             self._queue.put((None, None, None))
 
         self._active = False
-
-    def get_step(self):
-        for i in range(1,50):
-            for worker in self._workers:
-                print(worker.get_result())
-            time.sleep(1)
-
 
     def get_result(self):
         assert self._finished

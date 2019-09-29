@@ -115,7 +115,5 @@ class Operation(object):
         elif logs == "WARNING":
             logger.warning(self.message)
         elif logs == "ERROR":
-            if self.err_msg:
-                logger.error(text(self.err_msg))
-            else:
-                logger.error(self.message)
+            err_msg = text(self.err_msg) if self.err_msg else self.message
+            logger.error(err_msg)
