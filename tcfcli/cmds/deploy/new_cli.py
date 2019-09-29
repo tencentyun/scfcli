@@ -203,7 +203,7 @@ class Deploy(object):
 
             function_count = len(function_list)
             max_thread = int(50 / function_count)
-            max_thread = 2 if max_thread < 2 else max_thread
+            max_thread = 1 if max_thread < 1 else max_thread
 
             for function in function_list:
                 # 前置判断完成，进行workflow： package -> deploy function -> deploy trigger
@@ -522,7 +522,7 @@ class Deploy(object):
                                     read_data = eve_line.decode(chardet.detect(eve_line).get('encoding'))
                         ignore_source_list.append(str(read_data).strip())
                         Operation("%s - %s : Ignore file found: \n    %s" % (
-                        namespace, function, "\n    ".join(ignore_source_list))).information()
+                            namespace, function, "\n    ".join(ignore_source_list))).information()
 
                 os.chdir(function_path)
 
