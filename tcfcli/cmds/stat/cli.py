@@ -159,7 +159,7 @@ def stat(period, name, region, starttime, endtime, metric):
 
     print(' '.join(columnsFmt))
     while (startTime <= endTime):
-        strTime = datetime.datetime.strftime(startTime, '%y%m%d %H:%M:%S')
+        strTime = datetime.datetime.strftime(startTime, '%Y-%m-%d %H:%M:%S')
         timestamp = int(time.mktime(startTime.timetuple()))
 
         values = ['{: ^17}'.format(strTime)]
