@@ -202,7 +202,7 @@ class Deploy(object):
                 function_list.append(function)
 
             function_count = len(function_list)
-            max_thread = int(50 / function_count)
+            max_thread = int(75 / function_count)
             max_thread = 2 if max_thread < 2 else max_thread
 
             for function in function_list:
@@ -323,7 +323,7 @@ class Deploy(object):
 
         code_url = dict()
         file_size = os.path.getsize(os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name))
-        max_thread_file = int(file_size / 1000 / 30)
+        max_thread_file = int(file_size / 1000 / 40)
         max_thread = 1 if max_thread_file < 1 else (max_thread if max_thread_file > max_thread else max_thread_file)
         Operation("%s - %s: Package name: %s, package size: %s kb" % (
             real_namespace, function, zip_file_name, 0.01 if file_size / 1000 == 0 else file_size / 1000)).process()
