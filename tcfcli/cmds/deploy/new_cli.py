@@ -212,7 +212,7 @@ class Deploy(object):
 
 
             function_count = len(function_list)
-            max_thread = int(75 / function_count)
+            max_thread = int(50 / function_count)
             max_thread = 2 if max_thread < 2 else max_thread
 
 
