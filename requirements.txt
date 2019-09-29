@@ -16,4 +16,4 @@ ptvsd>=4.2.0, <4.3.0
 jsonschema>=3.0.1,<4.0.0
 colorama>=0.4.1
 pytz>=2019.2
-
+tqdm==4.36.1
