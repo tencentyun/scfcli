@@ -324,7 +324,7 @@ class CosReset(CosS3Client):
                     pool.add_task(self._upload_part, Bucket, Key, LocalFilePath, offset, part_size, i, uploadid, lst,
                                   resumable_flag, already_exist_parts, EnableMD5)
                     offset += part_size
-            pool.get_step()
+            # pool.get_step()
             pool.wait_completion()
             result = pool.get_result()
             if not result['success_all'] or len(lst) != parts_num:
@@ -748,29 +748,29 @@ class SimpleThreadPool:
 
         self._active = False
 
-    def get_step(self):
-        time_start = time.time()
-        total_count = 0
-        pbar = tqdm(total=len(self._workers))
-        while True:
-            try:
-                temp_count = 0
-                for worker in self._workers:
-                    if len(worker.get_result()[2]) >= 1:
-                        temp_count = temp_count + 1
-                pbar.update(temp_count - total_count)
-                total_count = temp_count
-                if self._finished:
-                    pbar.update(len(self._workers) - total_count)
-                    return
-                if total_count == len(self._workers):
-                    pbar.update(len(self._workers) - total_count)
-                    return
-                if time.time() - time_start > 180:
-                    pbar.update(len(self._workers)-total_count)
-                    return
-            except Exception as e:
-                pass
+    # def get_step(self):
+    #     time_start = time.time()
+    #     total_count = 0
+    #     pbar = tqdm(total=len(self._workers))
+    #     while True:
+    #         try:
+    #             temp_count = 0
+    #             for worker in self._workers:
+    #                 if len(worker.get_result()[2]) >= 1:
+    #                     temp_count = temp_count + 1
+    #             pbar.update(temp_count - total_count)
+    #             total_count = temp_count
+    #             if self._finished:
+    #                 pbar.update(len(self._workers) - total_count)
+    #                 return
+    #             if total_count == len(self._workers):
+    #                 pbar.update(len(self._workers) - total_count)
+    #                 return
+    #             if time.time() - time_start > 180:
+    #                 pbar.update(len(self._workers)-total_count)
+    #                 return
+    #         except Exception as e:
+    #             pass
 
     def get_result(self):
         assert self._finished
