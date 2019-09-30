@@ -29,6 +29,7 @@ from tcfcli.libs.utils.cos_client import CosClient
 from tcfcli.common.operation_msg import Operation
 from tcfcli.common.cam_role import list_scf_role
 from tcfcli.cmds.function.information.cli import Information
+from tcfcli.common.gitignore import IgnoreList, MATCH_IGNORE
 
 _CURRENT_DIR = '.'
 _BUILD_DIR = os.path.join(os.getcwd(), '.scf_build')
@@ -515,15 +516,19 @@ class Deploy(object):
             raise RollbackException(err_msg)
 
     def package_zip_ignore(self, ignore_source_list, file_path):
-        if file_path not in (".", ".."):
-            for eve_ignore_file in ignore_source_list:
-                if fnmatch.fnmatch(os.path.normpath(file_path), os.path.normpath(eve_ignore_file)):
-                    return True
-                if os.path.isdir(eve_ignore_file):
-                    temp_path = eve_ignore_file if eve_ignore_file.endswith("/") else eve_ignore_file + "/"
-                    if file_path.startswith(temp_path):
-                        return True
-        return False
+        ignore = IgnoreList()
+        ignore.parse(ignore_source_list)
+        return ignore.match(file_path) == MATCH_IGNORE
+
+        # if file_path not in (".", ".."):
+        #     for eve_ignore_file in ignore_source_list:
+        #         if fnmatch.fnmatch(os.path.normpath(file_path), os.path.normpath(eve_ignore_file)):
+        #             return True
+        #         if os.path.isdir(eve_ignore_file):
+        #             temp_path = eve_ignore_file if eve_ignore_file.endswith("/") else eve_ignore_file + "/"
+        #             if file_path.startswith(temp_path):
+        #                 return True
+        # return False
 
     def package_zip_core(self, function_path, namespace, function):
 
