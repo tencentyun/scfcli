@@ -576,8 +576,8 @@ class Deploy(object):
                                 except:
                                     read_data = eve_line.decode(chardet.detect(eve_line).get('encoding'))
                         ignore_source_list.append(str(read_data).strip())
-                        Operation("%s - %s : Ignore file found: \n    %s" % (
-                            namespace, function, "\n    ".join(ignore_source_list))).information()
+                    Operation("%s - %s : Ignore file found: \n    %s" % (
+                    namespace, function, "\n    ".join(ignore_source_list))).information()
 
                 os.chdir(function_path)
 
