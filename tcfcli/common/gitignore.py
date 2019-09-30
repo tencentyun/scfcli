@@ -13,21 +13,6 @@ MATCH_DEFAULT = 'default'  #: Default to include, but something else may overrid
 
 
 class Pattern(object):
-    """
-    Represents a single pattern in a `.gitignore` file.
-
-    # Attributes
-  
-    parts (list of str): The parts of the pattern split by `/`. Joining
-      the parts using this separator gives the full pattern again.
-    invert (bool): True if the pattern explicitly *includes* the matched
-      files rather than excluding them.
-    is_abs (bool): True if the pattern is absolute (and thus only matches the
-      root project directory).
-    has_slash (bool): True if there is at least one slash in the pattern.
-    dir_onl (bool): True if this pattern matches only directories (that is
-      when the pattern ends with a slash).
-    """
 
     def __init__(self, pattern, invert=False):
         self.parts = pattern.split('/')
@@ -69,11 +54,6 @@ class Pattern(object):
 
 
 class IgnoreList(object):
-    """
-    A collection of the patterns in a `.gitignore` file. Must be initialized
-    with the path to the root directory of the repository to properly match
-    absolute paths in the patterns.
-    """
 
     def __init__(self, root=None, patterns=None):
         if root is not None:
@@ -162,115 +142,3 @@ class IgnoreList(object):
         """
 
         return self.match(filename, isdir) == MATCH_IGNORE
-
-
-class IgnoreListCollection(list):
-    """
-    Represents a collection of #IgnoreList#s. Used to combine `.gitignore` files
-    from multiple sources (see #gitignore.parse()).
-    """
-
-    def parse(self, lines, root):
-        """
-        Shortcut for #IgnoreList.parse() and #IgnoreListCollection.append().
-        """
-
-        lst = IgnoreList(root)
-        lst.parse(lines)
-        self.append(lst)
-
-    def match(self, filename, isdir=False):
-        """
-        Match all the #IgnoreList#s` in this collection. Returns one of
-
-        - #MATCH_DEFAULT
-        - #MATCH_IGNORE
-        - #MATCH_INCLUDE
-        """
-
-        for lst in self:
-            result = lst.match(filename, isdir)
-            if result != MATCH_DEFAULT:
-                return result
-        return MATCH_DEFAULT
-
-    def is_ignored(self, filename, isdir=False):
-        """
-        Matches and returns #True if the file/directory should be ignored.
-        """
-
-        return self.match(filename, isdir) == MATCH_IGNORE
-
-
-def parse(ignore_file='.gitignore', git_dir='.git', additional_files=(),
-          global_=True, root_dir=None, defaults=True):
-    """
-    Collects a list of all ignore patterns configured in a local Git repository
-    as specified in the Git documentation. See
-    https://git-scm.com/docs/gitignore#_description
-
-    The returned #IgnoreListCollection is guaranteed to contain at least one
-    #IgnoreList with #IgnoreList.root pointing to the specified *root_dir* (which
-    defaults to the parent directory of *git_dir*) as the first element.
-    """
-
-    result = IgnoreListCollection()
-
-    if root_dir is None:
-        if git_dir is None:
-            raise ValueError("root_dir or git_dir must be specified")
-        root_dir = os.path.dirname(os.path.abspath(git_dir))
-
-    def parse(filename, root=None):
-        if os.path.isfile(filename):
-            if root is None:
-                root = os.path.dirname(os.path.abspath(filename))
-            with open(filename) as fp:
-                result.parse(fp, root)
-
-    result.append(IgnoreList(root_dir))
-    if ignore_file is not None:
-        parse(ignore_file)
-    for filename in additional_files:
-        parse(filename)
-    if git_dir is not None:
-        parse(os.path.join(git_dir, 'info', 'exclude'), root_dir)
-    if global_:
-        # TODO: Read the core.excludeFiles configuration value.
-        parse(os.path.expanduser('~/.gitignore'), root_dir)
-    if defaults:
-        result.append(get_defaults(root_dir))
-    return result
-
-
-def get_defaults(root):
-    """
-    Returns a default #IgnoreList which excludes common SCM files and directories.
-    """
-
-    defaults = IgnoreList(root)
-    defaults.parse([
-        '.DS_Store',
-        '/.git',
-        '/.svn',
-        '/.hg'
-    ])
-    return defaults
-
-
-def walk(patterns, dirname):
-    """
-    Like #os.walk(), but filters the files and directories that are excluded by
-    the specified *patterns*.
-
-    # Arguments
-    patterns (IgnoreList, IgnoreListCollection): Can also be any object that
-      implements the #IgnoreList.match() interface.
-    dirname (str): The directory to walk.
-    """
-
-    join = os.path.join
-    for root, dirs, files in os.walk(dirname, topdown=True):
-        dirs[:] = [d for d in dirs if patterns.match(join(root, d), True) != MATCH_IGNORE]
-        files[:] = [f for f in files if patterns.match(join(root, f), False) != MATCH_IGNORE]
-        yield root, dirs, files
