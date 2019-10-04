@@ -602,13 +602,13 @@ class CosClient(object):
         code_uri_in_cos = bucket + '/' + key
         return code_uri_in_cos
 
-    def upload_file2cos2(self, bucket, file, key, md5, max_thread=5):
+    def upload_file2cos2(self, bucket, file, key, max_thread=5):
         try:
             response = self._client.upload_file(Bucket=bucket,
                                                 LocalFilePath=file,
                                                 Key=key,
                                                 MAXThread=max_thread,
-                                                EnableMD5=md5,
+                                                # EnableMD5=md5,
                                                 Metadata={
                                                     'x-cos-acl': 'public-read',
                                                     'Content-Type': 'application/x-zip-compressed',
