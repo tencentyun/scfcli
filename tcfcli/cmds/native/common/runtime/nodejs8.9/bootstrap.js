@@ -18,7 +18,7 @@ function wrapLog(invokeId) {
     };
     console.error = console.warn = function prettyConsoleLogErr() {
         var message = `${util.format.apply(this, arguments)}\n`;
-        runtime.console_log(message, err=true);
+        runtime.console_log(message, true);
     };
 };
 

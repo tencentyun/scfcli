@@ -435,7 +435,7 @@ class Deploy(object):
                         bucket=self.bucket_name,
                         file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
                         key=zip_file_name_cos,
-                        md5=md5,
+                        # md5=md5,
                         max_thread=max_thread,
                     )
                     if upload_result != True:
