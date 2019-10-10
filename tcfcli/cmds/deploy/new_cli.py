@@ -576,7 +576,7 @@ class Deploy(object):
                                     read_data = eve_line.decode(chardet.detect(eve_line).get('encoding'))
                         ignore_source_list.append(str(read_data).strip())
                     Operation("%s - %s : Ignore file found: \n    %s" % (
-                    namespace, function, "\n    ".join(ignore_source_list))).information()
+                        namespace, function, "\n    ".join(ignore_source_list))).information()
 
                 os.chdir(function_path)
 
@@ -746,6 +746,12 @@ class Deploy(object):
                                 if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == \
                                         eproperty['StageName'] and tproperty['HttpMethod'] == eproperty['HttpMethod']:
                                     eve_event_infor.pop("TriggerName")
+                                    if 'IntegratedResponse' not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']['isIntegratedResponse'] = 'FALSE'
+                                    else:
+                                        temp_ir = "TRUE" if temp_trigger['Properties']['IntegratedResponse'] else "FALSE"
+                                        temp_trigger['Properties']['isIntegratedResponse'] = temp_ir
+                                        temp_trigger['Properties'].pop("IntegratedResponse")
                                     change_infor = True
                             elif event_type == "ckafka":
                                 if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty[
@@ -761,7 +767,6 @@ class Deploy(object):
                                     'Events'] and tproperty['Filter'] == eproperty['Filter']:
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
-
                             if change_infor:
                                 if temp_trigger == eve_event_infor:
                                     trigger_status = False
@@ -871,6 +876,7 @@ class Deploy(object):
                                     'StageName': trigger_desc["release"]["environmentName"],
                                     'ServiceId': trigger_desc['service']['serviceId'],
                                     'HttpMethod': trigger_desc["api"]["requestConfig"]["method"],
+                                    'isIntegratedResponse': trigger_desc["api"]["isIntegratedResponse"]
                                 },
                                 "TriggerDesc": trigger_desc
                             })
