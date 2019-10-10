@@ -11,12 +11,11 @@ import chardet
 
 REGIONS = infor.REGIONS
 INVOCATION_TYPE = infor.INVOCATION_TYPE
-LOG_TYPE = infor.LOG_TYPE
 
 
 class Invoke(object):
     @staticmethod
-    def do_cli(name, region, namespace, eventdata, invocationtype, logtype):
+    def do_cli(name, region, namespace, eventdata, logtype, invocationtype):
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
         if not region:
@@ -69,10 +68,9 @@ class Invoke(object):
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
 @click.option('-e', '--eventdata', help=help.EVENTDATA)
-@click.option('-it', '--invocationtype', default='RequestResponse', help=help.INVOCATIONTYPE)
-@click.option('-t', '--type', default='sync', help=help.LOGTYPE)
+@click.option('-t', '--type', default='sync', help=help.INVOCATIONTYPE)
 @click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
-def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
+def invoke(name, region, namespace, eventdata, type, no_color):
     """
         \b
         Invoke the SCF remote function.
@@ -85,15 +83,15 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     """
 
     type_dict = {
-        "sync": "tail",
-        "async": "none"
+        "sync": "RequestResponse",
+        "async": "Event"
     }
 
-    if invocationtype.lower() not in INVOCATION_TYPE:
-        Operation("InvocationType must in {it}".format(it=INVOCATION_TYPE)).warning()
-        return
-    if type.lower() not in LOG_TYPE:
-        Operation("Log type must in {l}".format(l=LOG_TYPE)).warning()
+
+    logtype = "tail"
+
+    if type.lower() not in type_dict:
+        Operation("Log type must in {l}".format(l=INVOCATION_TYPE)).warning()
         return
 
     if type.lower == "async":
@@ -108,7 +106,7 @@ def invoke(name, region, namespace, eventdata, invocationtype, type, no_color):
     else:
         eventdata = json.dumps({"key1": "value1", "key2": "value2"})
 
-    Invoke.do_cli(name, region, namespace, eventdata, invocationtype, type_dict[type.lower()])
+    Invoke.do_cli(name, region, namespace, eventdata, logtype, type_dict[type.lower()])
 
 
 def get_data(path):

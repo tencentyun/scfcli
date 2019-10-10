@@ -9,5 +9,4 @@ EVENT_RUNTIME = ["python3.6", "python2.7", "go1", "php5", "php7", "nodejs6.10", 
 SERVICE_RUNTIME = ['nodejs8.9-service']
 HTTP_RUNTIME = ["nodejs8.9", "nodejs8.9-service"]
 FUNCTION_TYPE = ['HTTP', 'Event', 'Service']
-INVOCATION_TYPE = ['requestresponse', 'event']
-LOG_TYPE = ['async', 'sync']
+INVOCATION_TYPE = ['async', 'sync']

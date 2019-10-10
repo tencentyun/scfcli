@@ -251,4 +251,3 @@ class RemoteHelp():
     EVENTDATA = "Local eventdata file"
     NOCOLOR = "Suppress colored output"
     INVOCATIONTYPE ="The type of invoke remote function.Include %s." % infor.INVOCATION_TYPE
-    LOGTYPE = "The type of invoke remote function log.Include %s." % infor.LOG_TYPE
