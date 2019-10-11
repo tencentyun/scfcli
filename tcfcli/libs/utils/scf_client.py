@@ -349,7 +349,6 @@ class ScfClient(object):
                 s = err.get_message().encode("UTF-8")
         return False, s
 
-
     @staticmethod
     def _fill_trigger_req_desc(req, t, proper):
         if t == tsmacro.TrTimer:
@@ -382,7 +381,7 @@ class ScfClient(object):
             desc = {"event": proper.get(tsmacro.Events), "filter": proper.get(trmacro.Filter)}
             desc = json.dumps(desc, separators=(',', ':'))
         elif t == tsmacro.TrCKafka:
-            desc = {"maxMsgNum": proper.get(trmacro.MaxMsgNum), "offset": proper.get(trmacro.Offset)}
+            desc = {"maxMsgNum": str(proper.get(trmacro.MaxMsgNum)), "offset": proper.get(trmacro.Offset)}
             desc = json.dumps(desc, separators=(',', ':'))
         else:
             raise Exception("Invalid trigger type:{}".format(str(t)))
