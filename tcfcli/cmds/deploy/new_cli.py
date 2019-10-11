@@ -777,7 +777,6 @@ class Deploy(object):
                                         eve_event["Properties"].pop("Enable", eve_event["Properties"])
                                         err = ScfClient(region).remove_trigger(eve_event, function, namespace)
                                         if not err:
-                                            trigger_result.append((trigger, True))
                                             Operation("%s - %s: %s, The trigger is being redeployed." % (
                                                 namespace, function, temp_trigger['TriggerName'])).warning()
                                         else:
@@ -812,6 +811,7 @@ class Deploy(object):
                 except Exception as e:
                     Operation(e, err_msg=traceback.format_exc()).no_output()
                 time.sleep(0.1)
+                # print(len(trigger_result), trigger_count)
                 if len(trigger_result) == trigger_count:
                     break
             return trigger_result
