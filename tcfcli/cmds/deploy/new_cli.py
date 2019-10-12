@@ -6,6 +6,7 @@ import time
 import re
 import json
 import chardet
+import operator
 from io import BytesIO
 import shutil
 import hashlib
@@ -722,7 +723,7 @@ class Deploy(object):
             for trigger in events:
                 trigger_count = trigger_count + 1
                 trigger_status = True
-                msg = "%s - %s: Deploy %s trigger '%s' failure, this trigger has been created." % (
+                msg = "%s - %s: Trigger: %s - %s has been created." % (
                     str(namespace), str(function), events[trigger]['Type'], trigger)
                 if trigger_release:
                     try:
@@ -735,12 +736,14 @@ class Deploy(object):
                         for eve_event in trigger_release[str(events[trigger]['Type']).lower()]:
                             eve_event_infor = eve_event.copy()
                             eve_event_infor.pop("TriggerDesc", eve_event_infor)
+
                             change_infor = False
                             tproperty = temp_trigger['Properties']
                             eproperty = eve_event['Properties']
-
                             if event_type == "timer":
                                 if temp_trigger['TriggerName'] == eve_event['TriggerName']:
+                                    if "Enable" not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']["Enable"] = True
                                     change_infor = True
                             elif event_type == "apigw":
                                 if tproperty['ServiceId'] == eproperty['ServiceId'] and tproperty['StageName'] == \
@@ -749,26 +752,49 @@ class Deploy(object):
                                     if 'IntegratedResponse' not in temp_trigger['Properties']:
                                         temp_trigger['Properties']['isIntegratedResponse'] = 'FALSE'
                                     else:
-                                        temp_ir = "TRUE" if temp_trigger['Properties']['IntegratedResponse'] else "FALSE"
+                                        temp_ir = "TRUE" if temp_trigger['Properties'][
+                                            'IntegratedResponse'] else "FALSE"
                                         temp_trigger['Properties']['isIntegratedResponse'] = temp_ir
                                         temp_trigger['Properties'].pop("IntegratedResponse")
+                                    if "Enable" not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']["Enable"] = True
                                     change_infor = True
                             elif event_type == "ckafka":
                                 if tproperty['Name'] + "-" + eproperty['Topic'] == tproperty['Name'] + "-" + eproperty[
                                     'Topic']:
+                                    if "Enable" not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']["Enable"] = True
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
                             elif event_type == "cmq":
                                 if tproperty['Name'] == eproperty['Name']:
+                                    if "Enable" not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']["Enable"] = True
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
                             elif event_type == "cos":
                                 if tproperty['Bucket'] == eproperty['Bucket'] and tproperty['Events'] == eproperty[
                                     'Events'] and tproperty['Filter'] == eproperty['Filter']:
+                                    if "Enable" not in temp_trigger['Properties']:
+                                        temp_trigger['Properties']["Enable"] = True
                                     eve_event_infor.pop("TriggerName")
                                     change_infor = True
                             if change_infor:
-                                if temp_trigger == eve_event_infor:
+
+                                different = False
+                                keys_temp_trigger = temp_trigger.keys()
+                                keys_eve_event_infor = eve_event_infor.keys()
+                                sorted(keys_temp_trigger)
+                                sorted(keys_eve_event_infor)
+                                if keys_temp_trigger != keys_temp_trigger:
+                                    different = True
+                                if not different:
+                                    for eve in keys_temp_trigger:
+                                        if temp_trigger[eve] != eve_event_infor[eve]:
+                                            different = True
+                                            break
+
+                                if not different:
                                     trigger_status = False
                                     Operation(msg).warning()
                                     trigger_result.append((trigger, True))
@@ -862,7 +888,8 @@ class Deploy(object):
                             trigger[eve_trigger['Type']].append({
                                 'Type': 'Timer',
                                 'Properties': {
-                                    'CronExpression': trigger_desc['cron'],
+                                    'CronExpression': trigger_desc['cron'][2:-2] if str(
+                                        trigger_desc['cron']).startswith("0 ") else trigger_desc['cron'],
                                     'Enable': True if eve_trigger['Enable'] == 1 else False
                                 },
                                 'TriggerName': eve_trigger['TriggerName'],
@@ -876,7 +903,8 @@ class Deploy(object):
                                     'StageName': trigger_desc["release"]["environmentName"],
                                     'ServiceId': trigger_desc['service']['serviceId'],
                                     'HttpMethod': trigger_desc["api"]["requestConfig"]["method"],
-                                    'isIntegratedResponse': trigger_desc["api"]["isIntegratedResponse"]
+                                    'isIntegratedResponse': trigger_desc["api"]["isIntegratedResponse"],
+                                    'Enable': True if eve_trigger['Enable'] == 1 else False,
                                 },
                                 "TriggerDesc": trigger_desc
                             })
@@ -918,6 +946,7 @@ class Deploy(object):
                                 'Type': 'CMQ',
                                 'Properties': {
                                     'Name': eve_trigger['TriggerName'],
+                                    'Enable': True if eve_trigger['Enable'] == 1 else False,
                                 },
                                 "TriggerDesc": trigger_desc
                             })
