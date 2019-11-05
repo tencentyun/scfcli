@@ -55,6 +55,7 @@ class ScfLogClient(ScfBaseClient):
         req.EndTime = endtime
         req.Order = order
         req.Offset = 0
+        req.Namespace = self._ns
         if self._err_only:
             req.Filter = models.Filter()
             req.Filter.RetCode = "not0"
