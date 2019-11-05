@@ -223,6 +223,8 @@ class ScfClient(object):
         trigger_type = trigger.get(tsmacro.Type, "")
         req.Type = trigger_type.lower()
         proper = trigger.get(tsmacro.Properties, {})
+        if trmacro.Message in proper:
+            req.CustomArgument = proper[trmacro.Message]
         if trigger_type == tsmacro.TrCOS and trmacro.Bucket in proper:
             req.TriggerName = proper[trmacro.Bucket]
         if trigger_type in [tsmacro.TrCMQ] and trmacro.Name in proper:
