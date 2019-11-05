@@ -24,6 +24,7 @@ apigw_schema = {
                     "enum": ["OPEN", "CLOSE", True, False]
                 },
             },
+            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -46,7 +47,8 @@ timer_schema = {
                     "enum": ["OPEN", "CLOSE", True, False]
                 }   
             },
-            "required": ["CronExpression"],
+            "required": [trmacro.CronExp],
+            "additionalProperties": False,
         },
     },
     "required": [macro.Type, macro.Properties],
@@ -68,6 +70,7 @@ cmq_schema = {
                     "enum": ["OPEN", "CLOSE", True, False]
                 },
             },
+            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -98,6 +101,7 @@ cos_schema = {
                 }
             },
             "required": [macro.Events],
+            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -123,6 +127,7 @@ ckafka_schema = {
                 }
             },
             "required": [trmacro.Name, trmacro.Topic, trmacro.MaxMsgNum],
+            "additionalProperties": False
         }
     },
     "required": [macro.Type, macro.Properties],
