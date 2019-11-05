@@ -44,3 +44,5 @@ class TriggerMacro(object):
     Topic = "Topic"
     MaxMsgNum = "MaxMsgNum"
     Offset = "Offset"
+    ServiceId = "ServiceId"
+    Message = "Message"

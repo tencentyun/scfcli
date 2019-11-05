@@ -23,6 +23,9 @@ apigw_schema = {
                 trmacro.Enable: {
                     "enum": ["OPEN", "CLOSE", True, False]
                 },
+                trmacro.ServiceId: {
+                    "type": "string"
+                },
             },
             "additionalProperties": False
         }
@@ -45,7 +48,10 @@ timer_schema = {
                 trmacro.CronExp: {"type": "string"},
                 trmacro.Enable: {
                     "enum": ["OPEN", "CLOSE", True, False]
-                }   
+                },
+                trmacro.Message: {
+                    "type": "string"
+                },
             },
             "required": [trmacro.CronExp],
             "additionalProperties": False,
