@@ -37,7 +37,7 @@ class ContainerManager(object):
     def pull_image(self, image):
         try:
             if not self._is_quiet:
-                Operation('pull image %s...' % image, nl=False).Operation
+                Operation('pull image %s...' % image, nl=False).echo()
             for _ in self._docker_client.api.pull(image, stream=True, decode=True):
                 if not self._is_quiet:
                     Operation('.', nl=False).echo()
