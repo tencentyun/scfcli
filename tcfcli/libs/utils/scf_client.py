@@ -71,6 +71,7 @@ class ScfClient(object):
             req.Offset = 0
             req.Limit = 20
             req.Namespace = namespace
+            req.Type = 'Event'
             resp = self._client.ListFunctions(req)
             functions = resp.Functions
             return functions
