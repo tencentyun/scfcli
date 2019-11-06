@@ -251,7 +251,7 @@ class ScfClient(object):
 
     def get_ns(self, namespace):
         try:
-            resp = self._client_ext.ListNamespaces()
+            resp = self._client_ext.ListAllNamespaces()
             namespaces = resp.get("Namespaces", [])
             for ns_dict in namespaces:
                 if namespace == ns_dict.get("Name"):
@@ -450,6 +450,48 @@ class ScfClient(object):
 
 
 class ScfClientExt(scf_client.ScfClient):
+    def ListAllNamespaces(self):
+        try:
+            maxResponseCount = 1000
+            totalCount = 0
+            request = {
+                'Offset': 0,
+                'Limit': 100,
+            }
+
+            body = self.call("ListNamespaces", request)
+            response = json.loads(body)
+            if "Error" in response["Response"]:
+                code = response["Response"]["Error"]["Code"]
+                message = response["Response"]["Error"]["Message"]
+                reqid = response["Response"]["RequestId"]
+                raise TencentCloudSDKException(code, message, reqid)
+            totalCount = response["Response"]['TotalCount']
+            request['Offset'] += len(response["Response"]['Namespaces'])
+            totalCount -= request['Offset']
+
+            while totalCount > 0 and maxResponseCount > 0:
+
+                body = self.call("ListNamespaces", request)
+                result = json.loads(body)
+                if "Error" in result["Response"]:
+                    code = result["Response"]["Error"]["Code"]
+                    message = result["Response"]["Error"]["Message"]
+                    reqid = result["Response"]["RequestId"]
+                    raise TencentCloudSDKException(code, message, reqid)
+
+                response['Response']['Namespaces'] += result['Response']['Namespaces']
+                listLength = len(result["Response"]['Namespaces'])
+                request['Offset'] += listLength
+                totalCount -= listLength
+                maxResponseCount -= listLength
+            
+            return response['Response']
+
+        except Exception as e:
+            Operation(e, err_msg=traceback.format_exc(), level="ERROR").no_output()
+            raise TCSDKException(str(e))
+
     def ListNamespaces(self):
         try:
             request = {
