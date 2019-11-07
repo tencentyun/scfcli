@@ -19,6 +19,7 @@ os.chdir(work_dir)
 
 from tcfcli.cmds.deploy.new_cli import deploy
 from tcfcli.cmds.local.cli import local
+from tcfcli.cmds.login.cli import login
 from tcfcli.cmds.init.cli import init
 from tcfcli.cmds.validate.cli import validate
 from tcfcli.cmds.configure.cli import configure
@@ -60,6 +61,7 @@ cli.add_command(stat)
 cli.add_command(local)
 cli.add_command(function)
 cli.add_command(eventdata)
+cli.add_command(login)
 
 if __name__ == "__main__":
     cli()

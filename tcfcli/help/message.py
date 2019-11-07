@@ -163,6 +163,9 @@ class ValidateHelp():
 
     NOCOLOR = "Suppress colored output"
 
+class LoginHelp():
+    SHORT_HELP = "One click login"
+    REGION = "Specify the area where the function is located (e.g. ap-guangzhou)."
 
 class LogsHelp():
     # Logs Help Message
