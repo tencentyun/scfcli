@@ -38,6 +38,7 @@ class UserConfig(object):
         self.secret_key = "None"
         self.region = "None"
         self.appid = "None"
+        self.token = "None"
         self.using_cos = "False (By default, it isn't deployed by COS.)"
         self.python2_path = "None"
         self.python3_path = "None"
@@ -49,6 +50,7 @@ class UserConfig(object):
                 "secret_key": "None",
                 "region": "None",
                 "appid": "None",
+                "token": "None",
                 "using_cos": "False (By default, it isn't deployed by COS.)"
              },
             UserConfig.GIT_CONFIG: {
@@ -90,6 +92,7 @@ class UserConfig(object):
         self.secret_id = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['secret_id']
         self.secret_key = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['secret_key']
         self.region = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['region']
+        self.token = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['token']
         self.appid = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['appid']
         self.using_cos = self.section_map[UserConfig.USER_QCLOUD_CONFIG]['using_cos']
         self.python2_path = self.section_map[UserConfig.ENV]['python2_path']
