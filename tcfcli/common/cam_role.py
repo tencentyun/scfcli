@@ -11,7 +11,11 @@ def list_scf_role(region):
     try:
         uc = UserConfig()
         region = region if region else uc.region
-        cred = credential.Credential(uc.secret_id, uc.secret_key)
+        cred = None
+        if uc.token != None and uc.token != 'None':
+            cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key, token=uc.token)
+        else:
+            cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key)
         httpProfile = HttpProfile()
         httpProfile.endpoint = "cam.tencentcloudapi.com"
         clientProfile = ClientProfile()

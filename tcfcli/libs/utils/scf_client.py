@@ -23,7 +23,11 @@ class ScfClient(object):
 
     def __init__(self, region=None):
         uc = UserConfig()
-        self._cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key)
+        if uc.token != None and uc.token != 'None':
+            self._cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key, token=uc.token)
+        else:
+            self._cred = credential.Credential(secretId=uc.secret_id, secretKey=uc.secret_key)
+
         if region is None:
             self._region = uc.region
         else:
