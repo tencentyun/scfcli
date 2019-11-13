@@ -10,7 +10,8 @@ from tcfcli.common.http_server import HttpServer, HttpResponse
 from tcfcli.help.message import LoginHelp as help
 
 appId = '100005789219'
-redirectUrl = 'http://scfdev.tencentserverless.com/login'
+redirectUrl = 'http://scfdev.tencentserverless.com/release/authserver/success'
+# redirectUrl = 'http://scfdev.tencentserverless.com/login'
 authUrl = 'https://cloud.tencent.com/open/authorize?scope=login&app_id=%s&redirect_url=%s' % (appId, redirectUrl)
 event = Event()
 config = {}
@@ -35,15 +36,22 @@ def handlerToken(request):
         return True, HttpResponse('token invalid param', 412)
     if 'secretId' not in request.query:
         return True, HttpResponse('secretId invalid param', 412)
+    if 'appId' not in request.query:
+        return True, HttpResponse('appId invalid param', 412)
     if 'secretKey' not in request.query:
         return True, HttpResponse('secretKey invalid param', 412)
 
     config['secret_id'] = request.query['secretId']
     config['secret_key'] = request.query['secretKey']
     config['token'] = request.query['token']
+    config['appid'] = request.query['appId']
 
     event.set()
-    return True, HttpResponse('success')
+    response = HttpResponse('success')
+    response.addHeader('Access-Control-Allow-Origin', '*')
+    response.addHeader('Content-Type', 'text/plain')
+    return True, response
+
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
@@ -55,7 +63,7 @@ def login(region):
     else:
         pass
 
-    success = webbrowser.open_new_tab(authUrl)
+    success = webbrowser.open_new(authUrl)
     if not success:
         Operation("Open browser access authorize page faild.").exception()
         sys.exit(1)
@@ -72,12 +80,15 @@ def login(region):
     event.wait()
     httpd.stop()
     event.clear()
-    Operation("Login success. please set the region").process()
+    Operation("Login success.").process()
     if region == None:
+        Operation("Please set the region").process()
         region = click.prompt(text= ("TencentCloud region(default: ap-guangzhou)"), default='ap-guangzhou',
                         show_default=False)
     config['region'] = region
-
+    if not config:
+        Operation("Login failed.").exception()
+        return
     uc.set_attrs(config)
     uc.flush()
 
