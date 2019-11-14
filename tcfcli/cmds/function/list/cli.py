@@ -8,15 +8,15 @@ import tcfcli.common.base_infor as infor
 from tcfcli.common.user_config import UserConfig
 
 REGIONS = infor.REGIONS
-
+MAX_RESPONSE_ROWS = 1000
 
 class List(object):
     @staticmethod
-    def do_cli(region, namespace):
-        List.show(region, namespace)
+    def do_cli(region, offset, limit, namespace):
+        List.show(region, offset, limit, namespace)
 
     @staticmethod
-    def show(region, namespace):
+    def show(region, offset, limit, namespace):
         status = False
         if region and region not in REGIONS:
             raise ArgsException("region {r} not exists ,please select from{R}".format(r=region, R=REGIONS))
@@ -28,16 +28,17 @@ class List(object):
         if not rep:
             raise NamespaceException("Region {r} not exist namespace {n}".format(r=region, n=namespace))
 
-        functions = ScfClient(region).list_function(namespace)
-        if not functions:
+        result = ScfClient(region).list_function(offset, limit, namespace)
+        if not result:
             Operation("Region {r} namespace {n} not exist function".format(r=region, n=namespace)).warning()
             return
 
         Operation("Region:%s" % (region)).process()
         Operation("Namespace:%s " % (namespace)).process()
-        Operation("%-20s %-15s %-20s %-20s %-60s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName")).echo()
-        for function in functions:
-            Operation("%-20s %-24s %-20s %-20s %-60s" % (function.Runtime, List.status(function.Status),
+        Operation("Function Total:%s, response %d-%d record." % (result.TotalCount, offset + 1, offset + limit)).process()
+        Operation("%-15s %-18s %-25s %-20s %-5s" % ("Runtime", "Status", "AddTime", "ModTime", "FunctionName")).echo()
+        for function in result.Functions:
+            Operation("%-15s %-22s %-25s %-25s %-5s" % (function.Runtime, List.status(function.Status),
                                                            function.AddTime, function.ModTime,
                                                            function.FunctionName)).echo()
         if status:
@@ -57,8 +58,10 @@ class List(object):
 @click.command(name='list', short_help=help.LIST_SHORT_HELP)
 @click.option('-r', '--region', help=help.REGION)
 @click.option('-ns', '--namespace', default="default", help=help.NAMESPACE)
+@click.option('-l', '--limit', default=20, help=help.LIMIT)
+@click.option('-o', '--offset', default=0, help=help.OFFSET)
 @click.option('--no-color', '-nc', is_flag=True, default=False, help=help.NOCOLOR)
-def list(region, namespace, no_color):
+def list(region, namespace, limit, offset, no_color):
     """
         \b
         Show the SCF function list.
@@ -68,5 +71,6 @@ def list(region, namespace, no_color):
             * All function in ap-guangzhou and in namespace default
               $ scf function list --region ap-guangzhou --namespace default
     """
-
-    List.do_cli(region, namespace)
+    if limit > MAX_RESPONSE_ROWS:
+        limit = MAX_RESPONSE_ROWS
+    List.do_cli(region, offset, limit, namespace)

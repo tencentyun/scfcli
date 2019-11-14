@@ -65,16 +65,14 @@ class ScfClient(object):
                 s = err.get_message().encode("UTF-8")
         return None
 
-    def list_function(self, namespace=None):
+    def list_function(self, offset=0, limit=20, namespace='default'):
         try:
             req = models.ListFunctionsRequest()
-            req.Offset = 0
-            req.Limit = 20
+            req.Offset = offset
+            req.Limit = limit
             req.Namespace = namespace
             req.Type = 'Event'
-            resp = self._client.ListFunctions(req)
-            functions = resp.Functions
-            return functions
+            return self._client.ListFunctions(req)
         except TencentCloudSDKException as err:
             Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             if sys.version_info[0] == 3:

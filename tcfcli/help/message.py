@@ -212,6 +212,8 @@ class FunctionHelp():
     REGION = "Region name. Including %s." % REGIONS_STR
 
     NOCOLOR = "Suppress colored output"
+    LIMIT = "Number of response records. the value maximum 1000"
+    OFFSET = "Skip the number of records"
 
 
 class EventdataHelp():
