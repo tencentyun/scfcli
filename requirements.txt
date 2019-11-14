@@ -13,6 +13,7 @@ tencentcloud-sdk-python>=3.0.79
 pathlib2>=2.3.2
 chevron>=0.12.0, <0.13.0
 ptvsd>=4.2.0, <4.3.0
+more-itertools==5.0.0
 jsonschema>=3.0.1,<4.0.0
 colorama>=0.4.1
 pytz>=2019.2
