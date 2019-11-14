@@ -83,12 +83,10 @@ def stat(period, name, region, starttime, endtime, metric):
         if flag == False:
             break
 
-        functions = ScfClient(region).list_function(namespace['Name'])
-        if functions:
-            for k, func in enumerate(functions):
-                if name == func.FunctionName:
-                    flag = False
-                    break
+        function = ScfClient(region).get_function(name, namespace['Name'])
+        if function:
+            flag = False
+            break
 
     if flag:
         raise InvalidEnvParameters('Function %s not exist.' % name)

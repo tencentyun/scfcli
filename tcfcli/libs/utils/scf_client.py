@@ -276,7 +276,7 @@ class ScfClient(object):
 
     def list_ns(self):
         try:
-            resp = self._client_ext.ListNamespaces()
+            resp = self._client_ext.ListAllNamespaces()
             namespaces = resp.get("Namespaces", [])
             return namespaces
         except TencentCloudSDKException as err:
