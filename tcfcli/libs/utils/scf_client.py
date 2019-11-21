@@ -171,7 +171,7 @@ class ScfClient(object):
         resp = self._client.CreateFunction(req)
         return resp.to_json_string()
 
-    def deploy_func(self, func, func_name, func_ns, forced):
+    def deploy_func(self, func, func_name, func_ns):
         '''
 
         :param func:
@@ -190,13 +190,13 @@ class ScfClient(object):
             # self.create_service(func, func_name, func_ns)
             # else:
             self.create_func(func, func_name, func_ns)
-            return 0
+            return True
         except TencentCloudSDKException as err:
             Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
-            if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
-                return 1 if forced else 2
-            else:
-                return err
+            # if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
+            #     return 1 if forced else 2
+            # else:
+            return err
 
     def update_config(self, func, func_name, func_ns):
         try:

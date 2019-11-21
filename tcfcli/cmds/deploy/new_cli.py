@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import random
 import time
 import re
@@ -38,6 +39,9 @@ DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
+FUNC_STATUS_OK = 0
+FUNC_STATUS_NOT_UPDATE = 1
+FUNC_STATUS_NOT_FOUND = 2
 
 
 @click.command(short_help=help.SHORT_HELP)
@@ -635,6 +639,35 @@ class Deploy(object):
         else:
             return 1
 
+
+    def check_func_status(self, function, namespace, timeout=30):
+        '''
+        :param timeout: check function status timeout
+        :return 0 status normal
+               1 status can't update 
+               2 function not found
+        '''
+        
+        status = ''
+        while (status.upper() != 'ACTIVE'):
+            if timeout == 0:
+                break
+            funcJsonStr = ScfClient(self.region).get_function(function, namespace)
+            if funcJsonStr == None:
+                return FUNC_STATUS_NOT_FOUND
+
+            funcObject = json.loads(funcJsonStr)
+            status = funcObject.get('Status', '')
+            Operation(
+                    "%s - %s: Check function status %s" % (str(namespace), str(function), status)).process()
+            time.sleep(1)
+            timeout = timeout - 1
+
+        if status.upper() != 'ACTIVE':
+            return FUNC_STATUS_NOT_UPDATE
+        else:
+            return FUNC_STATUS_OK
+
     def deploy(self, function_resource, namespace, function, times=0):
         try:
             role = function_resource.get(tsmacro.Properties, {}).get(tsmacro.Role)
@@ -660,31 +693,56 @@ class Deploy(object):
                     Operation(u'%s - %s: %s' % (namespace, function, text(err_msg)), fg="red").exception()
                     return False
 
-            deploy_result = ScfClient(self.region).deploy_func(function_resource, function, namespace, self.forced)
+            func_status = self.check_func_status(function, namespace)
+            if func_status == FUNC_STATUS_NOT_UPDATE:
+                Operation("%s - %s: The function status can't update" % (namespace, function)).exception()
+                return False
 
-            if deploy_result == 1:
-                Operation("%s - %s: Function already exists, update it now" % (namespace, function)).process()
-                deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
-                if deploy_result == True:
-                    deploy_result = ScfClient(self.region).update_code(function_resource, function, namespace)
-                    deploy_result = 0 if deploy_result == True else deploy_result
-
-            if deploy_result == 0:
-                Operation("%s - %s: Deploy function success" % (str(namespace), str(function))).success()
-                if not self.skip_event:
-                    trigger_result = self.deploy_trigger_core(function_resource, function, namespace, self.region,
-                                                              trigger_release)
-                else:
-                    trigger_result = None
-                return (True, trigger_result)
-
-            elif deploy_result == 2:
+            if func_status != FUNC_STATUS_NOT_FOUND and self.forced == False:
                 Operation(
                     "%s - %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
                         str(namespace), str(function))).warning()
                 err_msg = "The function already exists."
                 Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                 return False
+
+            deploy_result = None
+            if func_status != FUNC_STATUS_NOT_FOUND:
+                Operation("%s - %s: Function already exists, update it now" % (namespace, function)).process()
+                deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
+                if deploy_result == True:
+                    func_status = self.check_func_status(function, namespace)
+                    if func_status == FUNC_STATUS_NOT_UPDATE:
+                        err_msg = 'The function status not allowed update code'
+                        Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+                        return False
+                    deploy_result = ScfClient(self.region).update_code(function_resource, function, namespace)
+                    # deploy_result = None if deploy_result == True else deploy_result
+
+            else:
+                deploy_result = ScfClient(self.region).deploy_func(function_resource, function, namespace)
+
+            if deploy_result == True:
+                Operation("%s - %s: Deploy function success" % (str(namespace), str(function))).success()
+                if not self.skip_event:
+                    func_status = self.check_func_status(function, namespace)
+                    if func_status == FUNC_STATUS_NOT_UPDATE:
+                        err_msg = 'The function status not allowed update trigger'
+                        Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+                        return False
+                    trigger_result = self.deploy_trigger_core(function_resource, function, namespace, self.region,
+                                                              trigger_release)
+                else:
+                    trigger_result = None
+                return (True, trigger_result)
+
+            # elif deploy_result == 2:
+            #     Operation(
+            #         "%s - %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
+            #             str(namespace), str(function))).warning()
+            #     err_msg = "The function already exists."
+            #     Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+            #     return False
 
             if deploy_result != None:
                 times = times + 1
