@@ -135,9 +135,10 @@ class Deploy(object):
         elif self.cos_bucket:
             Operation("Because of --cos-bucket, this time will be uploaded packages to the COS-Bucket: %s." % (
                 self.cos_bucket)).process()
-            cos_client = CosClient(self.cos_bucket)
+            cos_client = CosClient(self.region)
             Operation("Checking %s COS-Bucket: %s." % (self.region, self.cos_bucket)).process()
-            if cos_client.get_bucket(self.cos_bucket) == 0:
+            default_bucket = self.bucket_name + "-" + self.user_config.appid
+            if cos_client.get_bucket(default_bucket) == 0:
                 err_msg = "The COS-Bucket %s could not be found in %s. Please check it." % (
                     self.cos_bucket, self.region)
                 raise COSBucketException(err_msg)
@@ -398,17 +399,17 @@ class Deploy(object):
                         real_namespace, function, zip_file_name)).information()
             code_url["zip_file"] = os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name)
         elif self.cos_bucket:
-            upload_result = CosClient(self.cos_region).upload_file2cos2(bucket=self.cos_bucket, file=zip_file.read(),
+            upload_result = CosClient(self.cos_region).upload_file2cos2(bucket=self.cos_bucket, file=os.path.join(os.getcwd(), _BUILD_DIR, zip_file_name),
                                                                         key=zip_file_name_cos, max_thread=max_thread)
             if upload_result == True:
                 code_url["cos_bucket_name"] = self.cos_bucket
                 code_url["cos_object_name"] = "/" + zip_file_name_cos
-                msg = "%s - %s: Upload function zip file %s success." % (
+                msg = "%s - %s: Upload function zip file %s to cos success." % (
                     real_namespace, function, code_url["cos_object_name"],)
                 Operation(msg).success()
             else:
-                msg = "%s - %s: Upload function zip file %s failed: %s" % (
-                    real_namespace, function, code_url["cos_object_name"], upload_result)
+                msg = "%s - %s: Upload function zip file to cos %s failed: %s" % (
+                    real_namespace, function, self.cos_bucket, upload_result)
                 Operation(msg).exception()
                 return
         elif using_cos:
