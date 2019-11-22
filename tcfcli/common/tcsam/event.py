@@ -22,12 +22,8 @@ apigw_schema = {
                 },
                 trmacro.Enable: {
                     "enum": ["OPEN", "CLOSE", True, False]
-                },
-                trmacro.ServiceId: {
-                    "type": "string"
-                },
-            },
-            "additionalProperties": False
+                }
+            }
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -51,10 +47,9 @@ timer_schema = {
                 },
                 trmacro.Message: {
                     "type": "string"
-                },
+                }
             },
             "required": [trmacro.CronExp],
-            "additionalProperties": False,
         },
     },
     "required": [macro.Type, macro.Properties],
@@ -74,9 +69,8 @@ cmq_schema = {
                 "Name": {"type": "string"},
                 trmacro.Enable: {
                     "enum": ["OPEN", "CLOSE", True, False]
-                },
-            },
-            "additionalProperties": False
+                }
+            }
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -106,8 +100,7 @@ cos_schema = {
                     "enum": ["OPEN", "CLOSE", True, False]
                 }
             },
-            "required": [macro.Events],
-            "additionalProperties": False
+            "required": [macro.Events]
         }
     },
     "required": [macro.Type, macro.Properties],
@@ -132,8 +125,7 @@ ckafka_schema = {
                     "enum": ["OPEN", "CLOSE", True, False]
                 }
             },
-            "required": [trmacro.Name, trmacro.Topic, trmacro.MaxMsgNum],
-            "additionalProperties": False
+            "required": [trmacro.Name, trmacro.Topic, trmacro.MaxMsgNum]
         }
     },
     "required": [macro.Type, macro.Properties],
