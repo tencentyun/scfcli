@@ -694,7 +694,7 @@ class Deploy(object):
                     Operation(u'%s - %s: %s' % (namespace, function, text(err_msg)), fg="red").exception()
                     return False
 
-            func_status = self.check_func_status(function, namespace)
+            func_status = self.check_func_status(function, namespace, 90)
             if func_status == FUNC_STATUS_NOT_UPDATE:
                 Operation("%s - %s: The function status can't update" % (namespace, function)).exception()
                 return False
@@ -712,7 +712,7 @@ class Deploy(object):
                 Operation("%s - %s: Function already exists, update it now" % (namespace, function)).process()
                 deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
                 if deploy_result == True:
-                    func_status = self.check_func_status(function, namespace)
+                    func_status = self.check_func_status(function, namespace, 90)
                     if func_status == FUNC_STATUS_NOT_UPDATE:
                         err_msg = 'The function status not allowed update code'
                         Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
@@ -726,7 +726,7 @@ class Deploy(object):
             if deploy_result == True:
                 Operation("%s - %s: Deploy function success" % (str(namespace), str(function))).success()
                 if not self.skip_event:
-                    func_status = self.check_func_status(function, namespace)
+                    func_status = self.check_func_status(function, namespace, 90)
                     if func_status == FUNC_STATUS_NOT_UPDATE:
                         err_msg = 'The function status not allowed update trigger'
                         Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
