@@ -23,7 +23,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from tcfcli.help.message import DeployHelp as help
 from tcfcli.common.template import Template
 from tcfcli.common.user_exceptions import *
-from tcfcli.libs.utils.scf_client import ScfClient
+from tcfcli.libs.utils.scf_client import ScfClient, FunctionStatus, ResourceStatus
 from tcfcli.common import tcsam
 from tcfcli.common.user_config import UserConfig
 from tcfcli.common.tcsam.tcsam_macro import TcSamMacro as tsmacro
@@ -39,10 +39,6 @@ DEF_TMP_FILENAME = 'template.yaml'
 
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
-FUNC_STATUS_OK = 0
-FUNC_STATUS_NOT_UPDATE = 1
-FUNC_STATUS_NOT_FOUND = 2
-
 
 @click.command(short_help=help.SHORT_HELP)
 @click.option('--template-file', '-t', default=DEF_TMP_FILENAME, type=click.Path(exists=True), help=help.TEMPLATE_FILE)
@@ -650,24 +646,30 @@ class Deploy(object):
         '''
         
         status = ''
-        while (status.upper() != 'ACTIVE'):
+        while (True):
             if timeout == 0:
                 break
             funcJsonStr = ScfClient(self.region).get_function(function, namespace)
             if funcJsonStr == None:
-                return FUNC_STATUS_NOT_FOUND
+                return FunctionStatus.FUNC_STATUS_FAILED
 
             funcObject = json.loads(funcJsonStr)
             status = funcObject.get('Status', '')
             Operation(
                     "%s - %s: Check function status %s" % (str(namespace), str(function), status)).process()
+            if (status.upper() == 'ACTIVE'):
+                break
+            elif (status.upper() == 'CREATEFAILED'):
+                return FunctionStatus.FUNC_STATUS_FAILED
+            elif (status.upper() == 'UPDATEFAILED'):
+                return FunctionStatus.FUNC_STATUS_FAILED
             time.sleep(1)
             timeout = timeout - 1
 
         if status.upper() != 'ACTIVE':
-            return FUNC_STATUS_NOT_UPDATE
+            return FunctionStatus.FUNC_STATUS_FAILED
         else:
-            return FUNC_STATUS_OK
+            return FunctionStatus.FUNC_STATUS_ACTIVE
 
     def deploy(self, function_resource, namespace, function, times=0):
         try:
@@ -694,12 +696,17 @@ class Deploy(object):
                     Operation(u'%s - %s: %s' % (namespace, function, text(err_msg)), fg="red").exception()
                     return False
 
-            func_status = self.check_func_status(function, namespace, 90)
-            if func_status == FUNC_STATUS_NOT_UPDATE:
-                Operation("%s - %s: The function status can't update" % (namespace, function)).exception()
-                return False
+            deploy_result, err = ScfClient(self.region).deploy_func(function_resource, function, namespace)
+            func_status = ResourceStatus.RESOURCE_STATUS_FUNC_NOT_EXISTS
+            if deploy_result == False:
+                if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
+                    func_status = ResourceStatus.RESOURCE_STATUS_FUNC_EXISTS
+                else:
+                    return False
+            else:
+                func_status = FunctionStatus.FUNC_STATUS_ACTIVE
 
-            if func_status != FUNC_STATUS_NOT_FOUND and self.forced == False:
+            if func_status == ResourceStatus.RESOURCE_STATUS_FUNC_EXISTS and self.forced == False:
                 Operation(
                     "%s - %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
                         str(namespace), str(function))).warning()
@@ -707,27 +714,28 @@ class Deploy(object):
                 Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                 return False
 
-            deploy_result = None
-            if func_status != FUNC_STATUS_NOT_FOUND:
-                Operation("%s - %s: Function already exists, update it now" % (namespace, function)).process()
-                deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
-                if deploy_result == True:
-                    func_status = self.check_func_status(function, namespace, 90)
-                    if func_status == FUNC_STATUS_NOT_UPDATE:
-                        err_msg = 'The function status not allowed update code'
-                        Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
-                        return False
-                    deploy_result = ScfClient(self.region).update_code(function_resource, function, namespace)
-                    # deploy_result = None if deploy_result == True else deploy_result
+            func_status = self.check_func_status(function, namespace, 90)
+            if func_status == FunctionStatus.FUNC_STATUS_FAILED:
+                err_msg = 'The function status not allowed update config'
+                Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+                return False
 
-            else:
-                deploy_result = ScfClient(self.region).deploy_func(function_resource, function, namespace)
+            Operation("%s - %s: Function update it now" % (namespace, function)).process()
+            deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
+            if deploy_result == True:
+                func_status = self.check_func_status(function, namespace, 90)
+                if func_status == FunctionStatus.FUNC_STATUS_FAILED:
+                    err_msg = 'The function status not allowed update code'
+                    Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+                    return False
+                deploy_result = ScfClient(self.region).update_code(function_resource, function, namespace)
+
 
             if deploy_result == True:
                 Operation("%s - %s: Deploy function success" % (str(namespace), str(function))).success()
                 if not self.skip_event:
                     func_status = self.check_func_status(function, namespace, 90)
-                    if func_status == FUNC_STATUS_NOT_UPDATE:
+                    if func_status == FunctionStatus.FUNC_STATUS_FAILED:
                         err_msg = 'The function status not allowed update trigger'
                         Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                         return False
@@ -737,13 +745,6 @@ class Deploy(object):
                     trigger_result = None
                 return (True, trigger_result)
 
-            # elif deploy_result == 2:
-            #     Operation(
-            #         "%s - %s: You can add -f to update the function when it already exists. Example : scf deploy -f" % (
-            #             str(namespace), str(function))).warning()
-            #     err_msg = "The function already exists."
-            #     Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
-            #     return False
 
             if deploy_result != None:
                 times = times + 1

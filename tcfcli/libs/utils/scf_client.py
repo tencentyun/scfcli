@@ -18,6 +18,22 @@ from tcfcli.common.tcsam.tcsam_macro import TriggerMacro as trmacro
 import base64
 
 
+class FunctionStatus(object):
+    FUNC_STATUS_FAILED       = -1
+    #
+    # function status
+    FUNC_STATUS_ACTIVE       = 0
+    FUNC_STATUS_UPDATING     = 1
+    FUNC_STATUS_UPDATEFAILED = 2
+    FUNC_STATUS_CREATING     = 3
+    FUNC_STATUS_CREATEFAILED = 4
+
+class ResourceStatus(object):
+    #
+    # resource status
+    RESOURCE_STATUS_FUNC_NOT_EXISTS = 1
+    RESOURCE_STATUS_FUNC_EXISTS = 2
+
 class ScfClient(object):
     CLOUD_API_REQ_TIMEOUT = 120
 
@@ -190,13 +206,12 @@ class ScfClient(object):
             # self.create_service(func, func_name, func_ns)
             # else:
             self.create_func(func, func_name, func_ns)
-            return True
+            return True, None
         except TencentCloudSDKException as err:
             Operation(err, err_msg=traceback.format_exc(), level="ERROR").no_output()
             # if err.code in ["ResourceInUse.Function", "ResourceInUse.FunctionName"]:
-            #     return 1 if forced else 2
-            # else:
-            return err
+                # return False, RESOURCE_STATUS_FUNC_NOT_EXISTS
+            return False, err
 
     def update_config(self, func, func_name, func_ns):
         try:
