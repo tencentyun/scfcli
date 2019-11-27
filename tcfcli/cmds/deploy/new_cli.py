@@ -714,11 +714,12 @@ class Deploy(object):
                 Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
                 return False
 
-            func_status = self.check_func_status(function, namespace, 90)
-            if func_status == FunctionStatus.FUNC_STATUS_FAILED:
-                err_msg = 'The function status not allowed update config'
-                Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
-                return False
+            if func_status == FunctionStatus.FUNC_STATUS_ACTIVE:
+                func_status = self.check_func_status(function, namespace, 90)
+                if func_status == FunctionStatus.FUNC_STATUS_FAILED:
+                    err_msg = 'The function status not allowed update config'
+                    Operation(u'%s - %s: %s' % (str(namespace), str(function), text(err_msg)), fg="red").exception()
+                    return False
 
             Operation("%s - %s: Function update it now" % (namespace, function)).process()
             deploy_result = ScfClient(self.region).update_config(function_resource, function, namespace)
