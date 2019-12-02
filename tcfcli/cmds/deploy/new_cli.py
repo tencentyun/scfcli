@@ -133,7 +133,7 @@ class Deploy(object):
                 self.cos_bucket)).process()
             cos_client = CosClient(self.region)
             Operation("Checking %s COS-Bucket: %s." % (self.region, self.cos_bucket)).process()
-            default_bucket = self.bucket_name + "-" + self.user_config.appid
+            default_bucket = self.cos_bucket + "-" + self.user_config.appid
             if cos_client.get_bucket(default_bucket) == 0:
                 err_msg = "The COS-Bucket %s could not be found in %s. Please check it." % (
                     self.cos_bucket, self.region)
