@@ -37,6 +37,8 @@ _CURRENT_DIR = '.'
 _BUILD_DIR = os.path.join(os.getcwd(), '.scf_build')
 DEF_TMP_FILENAME = 'template.yaml'
 
+DEFAULT_ROLE = 'SCF_QcsRole'
+
 REGIONS = infor.REGIONS
 SERVICE_RUNTIME = infor.SERVICE_RUNTIME
 
@@ -673,18 +675,18 @@ class Deploy(object):
 
     def deploy(self, function_resource, namespace, function, times=0):
         try:
-            role = function_resource.get(tsmacro.Properties, {}).get(tsmacro.Role)
-            if role:
-                rolelist = list_scf_role(self.region)
-                if rolelist == None:
-                    Operation("%s - %s: Get Role list error" % (namespace, function)).exception()
-                    return False
-                elif role not in rolelist:
-                    Operation(
-                        "%s - %s: %s not exists in remote scf role list" % (namespace, function, role)).exception()
-                    if len(rolelist):
-                        Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).exception()
-                    return False
+            rolelist = list_scf_role(self.region)
+            if rolelist == None:
+                Operation("The current account has not authorized cloud functions to operate cloud resource permissions such as COS / APIGW / Ckafka, please refer to the tutorial https://url.cn/5KeWRRR to complete authorization").exception()
+                Operation("%s - %s: Get Role list error" % (namespace, function)).exception()
+                return False
+            elif DEFAULT_ROLE not in rolelist:
+                # Operation(
+                #     "%s - %s: %s not exists in remote scf role list" % (namespace, function, DEFAULT_ROLE)).exception()
+                Operation("The current account has not authorized cloud functions to operate cloud resource permissions such as COS / APIGW / Ckafka, please refer to the tutorial https://url.cn/5KeWRRR to complete authorization").exception()
+                if len(rolelist):
+                    Operation("%s - %s: You can choose from %s " % (namespace, function, str(rolelist))).exception()
+                return False
 
             function_data = self.function_trigger(self.region, namespace, function)
             trigger_release = None
