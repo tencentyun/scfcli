@@ -1,3 +1,8 @@
+from .event import apigw_schema
+from .event import cmq_schema
+from .event import timer_schema
+from .event import cos_schema
+from .event import ckafka_schema
 from .tcsam_macro import TcSamMacro as macro
 
 glob_schema = {
@@ -32,6 +37,23 @@ glob_schema = {
                     "nodejs6.10", "nodejs8.9", "php5", "php7", "go1", "java8", "Nodejs8.9-service"]
                 },
                 macro.Timeout: {"type": "integer", "exclusiveMinimum": 0},
+                macro.VpcConfig: {
+                    "type": "object",
+                    "properties":{
+                        macro.VpcId: {"type": "string"},
+                        macro.SubnetId: {"type": "string"}
+                    },
+                    "additionalProperties": False                  
+                },
+                macro.Events: {
+                    "type": ["object", "null"],
+                    "properties": {},
+                    "additionalProperties": {
+                        "type": "object",
+                        "oneOf": [apigw_schema, cos_schema, timer_schema, cmq_schema, ckafka_schema]
+                    }
+
+                }, 
             },
             "additionalProperties": False
         }
