@@ -5,7 +5,7 @@ import os
 from tcfcli.help.message import CommonHelp as help
 
 _DEAFULT_TEMPLATE_FILE = 'template.[yaml|yml]'
-
+DEF_TMP_FILENAME = "template.yaml"
 
 def get_template_abspath(ctx, param, template_name):
     if template_name == _DEAFULT_TEMPLATE_FILE:
@@ -23,7 +23,7 @@ def template_click_option():
     Click Option for template option
     """
     return click.option('--template', '-t',
-                        default=_DEAFULT_TEMPLATE_FILE,
+                        default=DEF_TMP_FILENAME,
                         type=click.Path(exists=True),
                         envvar="TCF_TEMPLATE_FILE",
                         callback=get_template_abspath,
