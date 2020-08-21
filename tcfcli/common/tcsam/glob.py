@@ -27,9 +27,9 @@ glob_schema = {
                 macro.MemSize: {"type": "integer", "exclusiveMinimum": 0},
                 macro.Runtime: {
                     "type": "string",
-                    "enum": ["Python2.7", "Python3.6", "Nodejs6.10", "Nodejs8.9",
+                    "enum": ["Python2.7", "Python3.6", "Nodejs6.10", "Nodejs8.9", "Nodejs10.15", "Nodejs12.16",
                     "Php5", "Php7", "Go1", "Java8", "python2.7", "python3.6", 
-                    "nodejs6.10", "nodejs8.9", "php5", "php7", "go1", "java8", "Nodejs8.9-service"]
+                    "nodejs6.10", "nodejs8.9", "nodejs10.15", "nodejs12.16", "php5", "php7", "go1", "java8", "Nodejs8.9-service"]
                 },
                 macro.Timeout: {"type": "integer", "exclusiveMinimum": 0},
             },
