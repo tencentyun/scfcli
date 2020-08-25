@@ -35,6 +35,8 @@ class LocalRuntime(object):
         'php7',
         'nodejs6.10',
         'nodejs8.9',
+        'nodejs10.15',
+        'nodejs12.16',
         'java8',
     ]
 
